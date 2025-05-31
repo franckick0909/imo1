@@ -1,7 +1,7 @@
 # Copiez ce fichier vers .env.local et configurez vos vraies valeurs
 
 # Better Auth Secret - Générez une clé secrète forte pour la production
-BETTER_AUTH_SECRET=your-super-secret-key-change-this-in-production
+BETTER_AUTH_SECRET=gxSAGGwyqCZ0iYk3dAcnZRX05ERtYcyl
 
 # URL de base pour Better Auth
 BETTER_AUTH_URL=http://localhost:3000
