@@ -1,0 +1,14 @@
+# Copiez ce fichier vers .env.local et configurez vos vraies valeurs
+
+# Better Auth Secret - Générez une clé secrète forte pour la production
+BETTER_AUTH_SECRET=your-super-secret-key-change-this-in-production
+
+# URL de base pour Better Auth
+BETTER_AUTH_URL=http://localhost:3000
+
+# Base de données PostgreSQL (à configurer avec vos vraies valeurs)
+DATABASE_URL="postgresql://username:password@localhost:5432/database_name"
+
+# Variables pour la production sur Vercel
+# BETTER_AUTH_URL=https://immo1.shop
+# DATABASE_URL="postgresql://..." # URL de votre base PostgreSQL sur Vercel 
