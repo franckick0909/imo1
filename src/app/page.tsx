@@ -12,34 +12,10 @@ export default function Home() {
   const [showSignIn, setShowSignIn] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
 
-  // Debug logs pour production
   useEffect(() => {
-    console.log("🔍 [DEBUG] Page d'accueil - État:", {
-      isPending,
-      session: session
-        ? { id: session.user.id, email: session.user.email }
-        : null,
-      userAgent: navigator.userAgent.includes("Chrome") ? "Chrome" : "Autre",
-      currentUrl: window.location.href,
-    });
-  }, [session, isPending]);
-
-  useEffect(() => {
-    console.log("🔄 [DEBUG] Tentative de redirection:", {
-      isPending,
-      hasSession: !!session,
-    });
-
     if (!isPending && session) {
-      console.log(
-        "✅ [DEBUG] Redirection vers dashboard...",
-        session.user.email
-      );
-
-      // Forcer la redirection avec replace pour éviter les boucles
-      setTimeout(() => {
-        router.replace("/dashboard");
-      }, 100);
+      // Redirection instantanée vers le dashboard
+      router.replace("/dashboard");
     }
   }, [session, isPending, router]);
 
@@ -56,16 +32,11 @@ export default function Home() {
     );
   }
 
-  // Si connecté, afficher un message de redirection en attendant
+  // Si connecté, redirection en cours
   if (session) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-lg mb-4">Redirection vers le dashboard...</div>
-          <div className="text-sm text-gray-600">
-            Utilisateur: {session.user.email}
-          </div>
-        </div>
+        <div className="text-lg">Redirection...</div>
       </div>
     );
   }
