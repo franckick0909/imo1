@@ -8,26 +8,15 @@ import { useEffect, useState } from "react";
 
 export default function Home() {
   const { data: session, isPending } = useSession();
+  const router = useRouter();
   const [showSignIn, setShowSignIn] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
-  const router = useRouter();
 
-  // Redirection vers dashboard si connecté
   useEffect(() => {
-    if (session && !isPending) {
+    if (!isPending && session) {
       router.push("/dashboard");
     }
   }, [session, isPending, router]);
-
-  const handleSignInClick = () => {
-    setShowSignUp(false);
-    setShowSignIn(true);
-  };
-
-  const handleSignUpClick = () => {
-    setShowSignIn(false);
-    setShowSignUp(true);
-  };
 
   const handleCloseModals = () => {
     setShowSignIn(false);
@@ -42,148 +31,178 @@ export default function Home() {
     );
   }
 
-  // Si connecté, on ne devrait pas voir cette page (redirection en cours)
-  if (session) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Redirection...</div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <Header
-        onSignInClick={handleSignInClick}
-        onSignUpClick={handleSignUpClick}
-      />
+    <>
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50">
+        {/* Header */}
+        <Header
+          onSignInClick={() => setShowSignIn(true)}
+          onSignUpClick={() => setShowSignUp(true)}
+        />
 
-      {/* Hero Section */}
-      <main className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          {/* Hero */}
-          <div className="text-center mb-16">
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl mb-6">
-              Trouvez votre{" "}
-              <span className="text-indigo-600">bien immobilier</span> idéal
+        {/* Hero Section */}
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
+          <div className="text-center">
+            <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
+              <span className="block">Trouvez votre</span>
+              <span className="block text-indigo-600">bien immobilier</span>
             </h1>
-            <p className="text-lg leading-8 text-gray-600 max-w-2xl mx-auto mb-8">
-              Découvrez notre plateforme moderne pour acheter, vendre ou louer
-              votre propriété. Des milliers d&apos;annonces vous attendent.
+            <p className="mt-3 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
+              La plateforme moderne pour acheter, vendre et louer des biens
+              immobiliers. Découvrez des milliers d&apos;annonces vérifiées.
             </p>
-            <div className="flex items-center justify-center gap-4">
-              <button
-                onClick={handleSignUpClick}
-                className="bg-indigo-600 text-white px-8 py-3 rounded-md hover:bg-indigo-700 transition duration-200 font-semibold"
-              >
-                Commencer maintenant
-              </button>
-              <button
-                onClick={handleSignInClick}
-                className="text-gray-900 px-8 py-3 border border-gray-300 rounded-md hover:bg-gray-50 transition duration-200 font-semibold"
-              >
-                J&apos;ai déjà un compte
-              </button>
+            <div className="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
+              <div className="rounded-md shadow">
+                <button
+                  onClick={() => setShowSignUp(true)}
+                  className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10 transition duration-200"
+                >
+                  Commencer gratuitement
+                </button>
+              </div>
+              <div className="mt-3 rounded-md shadow sm:mt-0 sm:ml-3">
+                <button
+                  onClick={() => setShowSignIn(true)}
+                  className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10 transition duration-200"
+                >
+                  Se connecter
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Features */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg
-                  className="w-8 h-8 text-indigo-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
+          {/* Features Section */}
+          <div className="mt-24">
+            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+              {/* Feature 1 */}
+              <div className="pt-6">
+                <div className="flow-root bg-white rounded-lg px-6 pb-8 shadow-sm border border-gray-100">
+                  <div className="-mt-6">
+                    <div>
+                      <span className="inline-flex items-center justify-center p-3 bg-indigo-500 rounded-md shadow-lg">
+                        <svg
+                          className="h-6 w-6 text-white"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                          />
+                        </svg>
+                      </span>
+                    </div>
+                    <h3 className="mt-8 text-lg font-medium text-gray-900 tracking-tight">
+                      Recherche avancée
+                    </h3>
+                    <p className="mt-5 text-base text-gray-500">
+                      Trouvez exactement ce que vous cherchez avec nos filtres
+                      intelligents et notre géolocalisation précise.
+                    </p>
+                  </div>
+                </div>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Recherche avancée
-              </h3>
-              <p className="text-gray-600">
-                Trouvez rapidement le bien qui correspond à vos critères grâce à
-                nos filtres intelligents.
-              </p>
-            </div>
 
-            <div className="text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg
-                  className="w-8 h-8 text-green-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
+              {/* Feature 2 */}
+              <div className="pt-6">
+                <div className="flow-root bg-white rounded-lg px-6 pb-8 shadow-sm border border-gray-100">
+                  <div className="-mt-6">
+                    <div>
+                      <span className="inline-flex items-center justify-center p-3 bg-indigo-500 rounded-md shadow-lg">
+                        <svg
+                          className="h-6 w-6 text-white"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                      </span>
+                    </div>
+                    <h3 className="mt-8 text-lg font-medium text-gray-900 tracking-tight">
+                      Annonces vérifiées
+                    </h3>
+                    <p className="mt-5 text-base text-gray-500">
+                      Toutes nos annonces sont vérifiées par notre équipe pour
+                      garantir leur authenticité et leur qualité.
+                    </p>
+                  </div>
+                </div>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Annonces vérifiées
-              </h3>
-              <p className="text-gray-600">
-                Toutes nos annonces sont vérifiées pour vous garantir des
-                informations fiables et actualisées.
-              </p>
-            </div>
 
-            <div className="text-center">
-              <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg
-                  className="w-8 h-8 text-yellow-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                  />
-                </svg>
+              {/* Feature 3 */}
+              <div className="pt-6">
+                <div className="flow-root bg-white rounded-lg px-6 pb-8 shadow-sm border border-gray-100">
+                  <div className="-mt-6">
+                    <div>
+                      <span className="inline-flex items-center justify-center p-3 bg-indigo-500 rounded-md shadow-lg">
+                        <svg
+                          className="h-6 w-6 text-white"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M13 10V3L4 14h7v7l9-11h-7z"
+                          />
+                        </svg>
+                      </span>
+                    </div>
+                    <h3 className="mt-8 text-lg font-medium text-gray-900 tracking-tight">
+                      Processus rapide
+                    </h3>
+                    <p className="mt-5 text-base text-gray-500">
+                      Publiez votre annonce ou contactez un vendeur en quelques
+                      clics seulement.
+                    </p>
+                  </div>
+                </div>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Suivi personnalisé
-              </h3>
-              <p className="text-gray-600">
-                Sauvegardez vos biens favoris et recevez des alertes pour les
-                nouvelles annonces qui vous intéressent.
-              </p>
             </div>
           </div>
 
           {/* CTA Section */}
-          <div className="bg-indigo-600 rounded-2xl p-8 text-center text-white">
-            <h2 className="text-3xl font-bold mb-4">
-              Prêt à commencer votre recherche ?
-            </h2>
-            <p className="text-indigo-100 mb-6 max-w-2xl mx-auto">
-              Rejoignez des milliers d&apos;utilisateurs qui font confiance à
-              Immo1 pour leurs projets immobiliers.
-            </p>
-            <button
-              onClick={handleSignUpClick}
-              className="bg-white text-indigo-600 px-8 py-3 rounded-md hover:bg-gray-50 transition duration-200 font-semibold"
-            >
-              Créer mon compte gratuitement
-            </button>
+          <div className="mt-24">
+            <div className="bg-indigo-600 rounded-lg shadow-xl overflow-hidden">
+              <div className="px-6 py-12 sm:px-12 sm:py-16 lg:flex lg:items-center lg:justify-between">
+                <div>
+                  <h2 className="text-3xl font-extrabold text-white sm:text-4xl">
+                    <span className="block">Prêt à commencer ?</span>
+                    <span className="block text-indigo-200">
+                      Rejoignez-nous dès aujourd&apos;hui.
+                    </span>
+                  </h2>
+                  <p className="mt-3 text-lg text-indigo-200">
+                    Créez votre compte gratuit et découvrez toutes nos
+                    fonctionnalités.
+                  </p>
+                </div>
+                <div className="mt-8 flex lg:mt-0 lg:flex-shrink-0">
+                  <div className="inline-flex rounded-md shadow">
+                    <button
+                      onClick={() => setShowSignUp(true)}
+                      className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-indigo-50 transition duration-200"
+                    >
+                      Créer un compte
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
 
       {/* Modales d'authentification */}
       <AuthModals
@@ -191,6 +210,6 @@ export default function Home() {
         showSignUp={showSignUp}
         onClose={handleCloseModals}
       />
-    </div>
+    </>
   );
 }

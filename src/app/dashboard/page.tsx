@@ -1,6 +1,7 @@
 "use client";
 
 import { signOut, useSession } from "@/lib/auth-client";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
@@ -42,8 +43,14 @@ export default function Dashboard() {
             </div>
             <div className="flex items-center space-x-4">
               <span className="text-gray-700">
-                Bonjour, {session.user.name || session.user.email}
+                {session.user.name || session.user.email}
               </span>
+              <Link
+                href="/profile"
+                className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition duration-200"
+              >
+                Mon profil
+              </Link>
               <button
                 onClick={handleSignOut}
                 className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition duration-200"
@@ -62,7 +69,8 @@ export default function Dashboard() {
             Tableau de bord
           </h2>
           <p className="text-gray-600">
-            Bienvenue sur votre espace personnel Immo1
+            Bienvenue sur votre espace personnel de{" "}
+            <span className="font-bold">{session.user.name}</span>
           </p>
         </div>
 

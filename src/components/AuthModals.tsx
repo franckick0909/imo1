@@ -1,6 +1,7 @@
 "use client";
 
 import { signIn, signUp } from "@/lib/auth-client";
+import Link from "next/link";
 import { useState } from "react";
 
 interface AuthModalsProps {
@@ -168,6 +169,19 @@ export default function AuthModals({
                 : "Me connecter"}
             </button>
           </form>
+
+          {/* Lien mot de passe oublié - uniquement pour la connexion */}
+          {showSignIn && (
+            <div className="mt-3 text-center">
+              <Link
+                href="/forgot-password"
+                className="text-sm text-indigo-600 hover:text-indigo-500"
+                onClick={handleClose}
+              >
+                Mot de passe oublié ?
+              </Link>
+            </div>
+          )}
 
           {/* Lien pour changer de mode */}
           <div className="mt-4 text-center">

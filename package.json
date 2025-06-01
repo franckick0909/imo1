@@ -11,12 +11,14 @@
   },
   "dependencies": {
     "@prisma/client": "^6.8.2",
+    "@react-email/tailwind": "^1.0.5",
     "@vercel/postgres": "^0.10.0",
     "better-auth": "^1.2.8",
     "next": "15.3.3",
     "prisma": "^6.8.2",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "resend": "^4.5.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
