@@ -1,42 +1,37 @@
 "use client";
 
-import { signIn, signOut, signUp, useSession } from "@/lib/auth-client";
-import { useState } from "react";
+import AuthModals from "@/components/AuthModals";
+import Header from "@/components/Header";
+import { useSession } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function Home() {
   const { data: session, isPending } = useSession();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [isSignUp, setIsSignUp] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [showSignIn, setShowSignIn] = useState(false);
+  const [showSignUp, setShowSignUp] = useState(false);
+  const router = useRouter();
 
-  const handleAuth = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      if (isSignUp) {
-        await signUp.email({
-          email,
-          password,
-          name,
-        });
-      } else {
-        await signIn.email({
-          email,
-          password,
-        });
-      }
-    } catch (error) {
-      console.error("Erreur d'authentification:", error);
-    } finally {
-      setLoading(false);
+  // Redirection vers dashboard si connecté
+  useEffect(() => {
+    if (session && !isPending) {
+      router.push("/dashboard");
     }
+  }, [session, isPending, router]);
+
+  const handleSignInClick = () => {
+    setShowSignUp(false);
+    setShowSignIn(true);
   };
 
-  const handleSignOut = async () => {
-    await signOut();
+  const handleSignUpClick = () => {
+    setShowSignIn(false);
+    setShowSignUp(true);
+  };
+
+  const handleCloseModals = () => {
+    setShowSignIn(false);
+    setShowSignUp(false);
   };
 
   if (isPending) {
@@ -47,134 +42,155 @@ export default function Home() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md mx-auto">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Immo1</h1>
-          <p className="text-gray-600">Plateforme immobilière moderne</p>
-        </div>
-
-        {session ? (
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="text-center">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">
-                Bienvenue, {session.user.name || session.user.email}!
-              </h2>
-              <p className="text-gray-600 mb-6">
-                Vous êtes connecté avec succès.
-              </p>
-              <button
-                onClick={handleSignOut}
-                className="w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 transition duration-200"
-              >
-                Se déconnecter
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="mb-4">
-              <div className="flex rounded-md shadow-sm">
-                <button
-                  type="button"
-                  onClick={() => setIsSignUp(false)}
-                  className={`flex-1 py-2 px-4 text-sm font-medium rounded-l-md border ${
-                    !isSignUp
-                      ? "bg-indigo-600 text-white border-indigo-600"
-                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                  }`}
-                >
-                  Se connecter
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsSignUp(true)}
-                  className={`flex-1 py-2 px-4 text-sm font-medium rounded-r-md border-t border-r border-b ${
-                    isSignUp
-                      ? "bg-indigo-600 text-white border-indigo-600"
-                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                  }`}
-                >
-                  S&apos;inscrire
-                </button>
-              </div>
-            </div>
-
-            <form onSubmit={handleAuth} className="space-y-4">
-              {isSignUp && (
-                <div>
-                  <label
-                    htmlFor="name"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Nom
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    required
-                  />
-                </div>
-              )}
-
-              <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  required
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Mot de passe
-                </label>
-                <input
-                  type="password"
-                  id="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  required
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 transition duration-200"
-              >
-                {loading
-                  ? "Chargement..."
-                  : isSignUp
-                  ? "Créer un compte"
-                  : "Se connecter"}
-              </button>
-            </form>
-          </div>
-        )}
-
-        <div className="mt-8 text-center text-sm text-gray-600">
-          <p>Test de l&apos;authentification Better Auth</p>
-          <p className="mt-1">Domaine: immo1.shop</p>
-        </div>
+  // Si connecté, on ne devrait pas voir cette page (redirection en cours)
+  if (session) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-lg">Redirection...</div>
       </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <Header
+        onSignInClick={handleSignInClick}
+        onSignUpClick={handleSignUpClick}
+      />
+
+      {/* Hero Section */}
+      <main className="py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          {/* Hero */}
+          <div className="text-center mb-16">
+            <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl mb-6">
+              Trouvez votre{" "}
+              <span className="text-indigo-600">bien immobilier</span> idéal
+            </h1>
+            <p className="text-lg leading-8 text-gray-600 max-w-2xl mx-auto mb-8">
+              Découvrez notre plateforme moderne pour acheter, vendre ou louer
+              votre propriété. Des milliers d&apos;annonces vous attendent.
+            </p>
+            <div className="flex items-center justify-center gap-4">
+              <button
+                onClick={handleSignUpClick}
+                className="bg-indigo-600 text-white px-8 py-3 rounded-md hover:bg-indigo-700 transition duration-200 font-semibold"
+              >
+                Commencer maintenant
+              </button>
+              <button
+                onClick={handleSignInClick}
+                className="text-gray-900 px-8 py-3 border border-gray-300 rounded-md hover:bg-gray-50 transition duration-200 font-semibold"
+              >
+                J&apos;ai déjà un compte
+              </button>
+            </div>
+          </div>
+
+          {/* Features */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg
+                  className="w-8 h-8 text-indigo-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                Recherche avancée
+              </h3>
+              <p className="text-gray-600">
+                Trouvez rapidement le bien qui correspond à vos critères grâce à
+                nos filtres intelligents.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg
+                  className="w-8 h-8 text-green-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                Annonces vérifiées
+              </h3>
+              <p className="text-gray-600">
+                Toutes nos annonces sont vérifiées pour vous garantir des
+                informations fiables et actualisées.
+              </p>
+            </div>
+
+            <div className="text-center">
+              <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg
+                  className="w-8 h-8 text-yellow-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                Suivi personnalisé
+              </h3>
+              <p className="text-gray-600">
+                Sauvegardez vos biens favoris et recevez des alertes pour les
+                nouvelles annonces qui vous intéressent.
+              </p>
+            </div>
+          </div>
+
+          {/* CTA Section */}
+          <div className="bg-indigo-600 rounded-2xl p-8 text-center text-white">
+            <h2 className="text-3xl font-bold mb-4">
+              Prêt à commencer votre recherche ?
+            </h2>
+            <p className="text-indigo-100 mb-6 max-w-2xl mx-auto">
+              Rejoignez des milliers d&apos;utilisateurs qui font confiance à
+              Immo1 pour leurs projets immobiliers.
+            </p>
+            <button
+              onClick={handleSignUpClick}
+              className="bg-white text-indigo-600 px-8 py-3 rounded-md hover:bg-gray-50 transition duration-200 font-semibold"
+            >
+              Créer mon compte gratuitement
+            </button>
+          </div>
+        </div>
+      </main>
+
+      {/* Modales d'authentification */}
+      <AuthModals
+        showSignIn={showSignIn}
+        showSignUp={showSignUp}
+        onClose={handleCloseModals}
+      />
     </div>
   );
 }
