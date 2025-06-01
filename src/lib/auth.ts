@@ -98,8 +98,8 @@ export const auth = betterAuth({
   },
   trustedOrigins: [
     "http://localhost:3000",
-    "https://immo1.shop",
-    "https://www.immo1.shop",
+    "https://www.immo1.shop", // Domaine principal avec www
+    "https://immo1.shop", // Domaine sans www pour compatibilité
   ],
   rateLimit: {
     window: 60, // 1 minute
