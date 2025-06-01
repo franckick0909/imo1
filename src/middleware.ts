@@ -10,8 +10,10 @@ const authRoutes = ["/login", "/register"];
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Récupérer le token de session depuis les cookies
-  const sessionToken = request.cookies.get("better-auth.session_token")?.value;
+  // Récupérer le token de session depuis les cookies (nom sécurisé en production)
+  const sessionToken =
+    request.cookies.get("__Secure-better-auth.session_token")?.value ||
+    request.cookies.get("better-auth.session_token")?.value;
 
   // Vérifier si c'est une route protégée
   const isProtectedRoute = protectedRoutes.some((route) =>
