@@ -241,7 +241,7 @@ export default function Profile() {
                     setFormData({ ...formData, name: e.target.value })
                   }
                   disabled={!isEditing}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-50 disabled:text-gray-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-50 disabled:text-gray-500 text-zinc-700"
                 />
               </div>
 
@@ -257,7 +257,7 @@ export default function Profile() {
                     setFormData({ ...formData, email: e.target.value })
                   }
                   disabled={!isEditing}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-50 disabled:text-gray-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-50 disabled:text-gray-500 text-zinc-700"
                 />
               </div>
 
@@ -353,7 +353,7 @@ export default function Profile() {
                       currentPassword: e.target.value,
                     })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-zinc-700"
                   placeholder="••••••••"
                 />
               </div>
@@ -368,7 +368,7 @@ export default function Profile() {
                   onChange={(e) =>
                     setFormData({ ...formData, newPassword: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-zinc-700"
                   placeholder="••••••••"
                   minLength={8}
                 />
@@ -387,7 +387,7 @@ export default function Profile() {
                       confirmPassword: e.target.value,
                     })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-zinc-700"
                   placeholder="••••••••"
                   minLength={8}
                 />

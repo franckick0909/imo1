@@ -1,19 +1,42 @@
 "use client";
 
-import { signOut, useSession } from "@/lib/auth-client";
+import { admin, signOut, useSession } from "@/lib/auth-client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export default function Dashboard() {
   const { data: session, isPending } = useSession();
   const router = useRouter();
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     if (!isPending && !session) {
       router.push("/");
     }
   }, [session, isPending, router]);
+
+  // Vérifier si l'utilisateur est admin
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (session) {
+        try {
+          const response = await admin.hasPermission({
+            permissions: {
+              user: ["list"],
+            },
+          });
+          // Si pas d'erreur, l'utilisateur a les permissions admin
+          setIsAdmin(!response.error);
+        } catch {
+          console.log("Pas d'accès admin");
+          setIsAdmin(false);
+        }
+      }
+    };
+
+    checkAdminStatus();
+  }, [session]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -45,6 +68,15 @@ export default function Dashboard() {
               <span className="text-gray-700">
                 {session.user.name || session.user.email}
               </span>
+              {/* Lien Admin si l'utilisateur est admin */}
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition duration-200 font-medium"
+                >
+                  🔧 Admin
+                </Link>
+              )}
               <Link
                 href="/profile"
                 className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition duration-200"
@@ -71,6 +103,11 @@ export default function Dashboard() {
           <p className="text-gray-600">
             Bienvenue sur votre espace personnel de{" "}
             <span className="font-bold">{session.user.name}</span>
+            {isAdmin && (
+              <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                Administrateur
+              </span>
+            )}
           </p>
         </div>
 

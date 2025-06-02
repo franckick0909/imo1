@@ -2,7 +2,7 @@ import { OtpTemplate } from "@/components/email-templates/OtpTemplate";
 import { ResetPasswordTemplate } from "@/components/email-templates/ResetPasswordTemplate";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { emailOTP } from "better-auth/plugins";
+import { admin, emailOTP } from "better-auth/plugins";
 import React from "react";
 import { Resend } from "resend";
 import prisma from "./prisma";
@@ -90,6 +90,17 @@ export const auth = betterAuth({
       },
       otpLength: 6,
       expiresIn: 300, // 5 minutes
+    }),
+    admin({
+      defaultRole: "user",
+      adminRoles: ["admin"],
+      // Vous définir comme administrateur principal
+      adminUserIds: ["13PWg3s3uKUdHKRwpdC0WeOY9cacK4oL"], // ID de franckick2@gmail.com
+      impersonationSessionDuration: 60 * 60, // 1 heure
+      defaultBanReason: "Violation des conditions d'utilisation",
+      defaultBanExpiresIn: undefined, // Ban permanent par défaut
+      bannedUserMessage:
+        "Votre compte a été suspendu. Contactez le support pour plus d'informations.",
     }),
   ],
   session: {

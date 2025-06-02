@@ -27,6 +27,11 @@ model User {
   accounts Account[]
   sessions Session[]
 
+  role       String?
+  banned     Boolean?
+  banReason  String?
+  banExpires DateTime?
+
   @@map("user")
 }
 
@@ -61,6 +66,8 @@ model Session {
   updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  impersonatedBy String?
 
   @@map("session")
 }
