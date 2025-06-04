@@ -1,47 +1,18 @@
 "use client";
 
-import { admin, signOut, useSession } from "@/lib/auth-client";
-import Link from "next/link";
+import { useSession } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 export default function Dashboard() {
   const { data: session, isPending } = useSession();
   const router = useRouter();
-  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     if (!isPending && !session) {
       router.push("/");
     }
   }, [session, isPending, router]);
-
-  // Vérifier si l'utilisateur est admin
-  useEffect(() => {
-    const checkAdminStatus = async () => {
-      if (session) {
-        try {
-          const response = await admin.hasPermission({
-            permissions: {
-              user: ["list"],
-            },
-          });
-          // Si pas d'erreur, l'utilisateur a les permissions admin
-          setIsAdmin(!response.error);
-        } catch {
-          console.log("Pas d'accès admin");
-          setIsAdmin(false);
-        }
-      }
-    };
-
-    checkAdminStatus();
-  }, [session]);
-
-  const handleSignOut = async () => {
-    await signOut();
-    router.push("/");
-  };
 
   if (isPending) {
     return (
@@ -57,43 +28,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Navigation */}
-      <nav className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-bold text-gray-900">Immo1</h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-gray-700">
-                {session.user.name || session.user.email}
-              </span>
-              {/* Lien Admin si l'utilisateur est admin */}
-              {isAdmin && (
-                <Link
-                  href="/admin"
-                  className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition duration-200 font-medium"
-                >
-                  🔧 Admin
-                </Link>
-              )}
-              <Link
-                href="/profile"
-                className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition duration-200"
-              >
-                Mon profil
-              </Link>
-              <button
-                onClick={handleSignOut}
-                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition duration-200"
-              >
-                Se déconnecter
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
-
       {/* Contenu principal */}
       <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
@@ -103,11 +37,6 @@ export default function Dashboard() {
           <p className="text-gray-600">
             Bienvenue sur votre espace personnel de{" "}
             <span className="font-bold">{session.user.name}</span>
-            {isAdmin && (
-              <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                Administrateur
-              </span>
-            )}
           </p>
         </div>
 

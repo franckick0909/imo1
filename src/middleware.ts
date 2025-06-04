@@ -4,9 +4,6 @@ import { NextResponse } from "next/server";
 // Routes qui nécessitent une authentification
 const protectedRoutes = ["/dashboard", "/profile", "/settings"];
 
-// Routes réservées aux utilisateurs non connectés
-const authRoutes = ["/login", "/register"];
-
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -20,9 +17,6 @@ export function middleware(request: NextRequest) {
     pathname.startsWith(route)
   );
 
-  // Vérifier si c'est une route d'authentification
-  const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
-
   // Si route protégée et pas de session, rediriger vers l'accueil
   if (isProtectedRoute && !sessionToken) {
     const redirectUrl = new URL("/", request.url);
@@ -30,10 +24,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  // Si route d'auth et utilisateur connecté, rediriger vers dashboard
-  if (isAuthRoute && sessionToken) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
+  // SUPPRESSION : Plus de redirection automatique pour les utilisateurs connectés
+  // Les utilisateurs connectés peuvent rester sur la page d'accueil et naviguer librement
 
   return NextResponse.next();
 }

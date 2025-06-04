@@ -8,6 +8,13 @@ export const authClient = createAuthClient({
       : typeof window !== "undefined"
         ? window.location.origin
         : process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+  onError: (error: { message?: string; code?: string }) => {
+    console.error("Erreur de connexion:", error);
+    return {
+      message: error.message || "Une erreur est survenue lors de l'authentification",
+      code: error.code,
+    };
+  },
   plugins: [emailOTPClient(), adminClient()],
 });
 
