@@ -34,15 +34,15 @@ const Toast = ({
   const getToastStyles = () => {
     switch (type) {
       case "success":
-        return "bg-green-100 text-green-600";
+        return "bg-green-50 text-green-400";
       case "error":
-        return "bg-red-100 text-red-600";
+        return "bg-red-50 text-red-400";
       case "warning":
-        return "bg-amber-100 text-amber-600";
+        return "bg-amber-50 text-amber-400";
       case "info":
-        return "bg-blue-100 text-blue-600";
+        return "bg-blue-50 text-blue-400";
       default:
-        return "bg-gray-100 text-gray-600";
+        return "bg-gray-50 text-gray-400";
     }
   };
 
@@ -125,56 +125,27 @@ const Toast = ({
         return null;
     }
   };
-
-  // Animations d'entrée/sortie
-  const getAnimationVariants = () => {
-    const isTop = position.includes("top");
-    const isCenter = position.includes("center");
-
-    return {
-      initial: {
-        opacity: 0,
-        y: isTop ? -50 : 50,
-        x: isCenter ? 0 : position.includes("right") ? 50 : -50,
-        scale: 0.9,
-      },
-      animate: {
-        opacity: 1,
-        y: 0,
-        x: 0,
-        scale: 1,
-      },
-      exit: {
-        opacity: 0,
-        y: isTop ? -20 : 20,
-        x: isCenter ? 0 : position.includes("right") ? 20 : -20,
-        scale: 0.95,
-      },
-    };
-  };
-
-  const variants = getAnimationVariants();
+  
 
   return (
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          className={`fixed z-[10000] ${getPositionStyles()}`}
-          variants={variants}
-          initial="initial"
-          animate="animate"
-          exit="exit"
+          className={`fixed z-[1000] ${getPositionStyles()}`}
+          initial={{ opacity: 0, y: 50, scale: 0.9 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 50, scale: 0.9 }}
           transition={{
-            duration: 0.3,
-            ease: [0.16, 1, 0.3, 1],
-            scale: { duration: 0.2 },
+            type: "spring",
+            damping: 20,
+            stiffness: 100,
+            mass: 0.4,
           }}
         >
           <div
             className={`
             ${getToastStyles()} 
             px-6 py-4 rounded-lg shadow-2xl max-w-md min-w-[300px]
-            border border-white/20 backdrop-blur-sm
           `}
           >
             <div className="flex items-center space-x-3">
@@ -206,7 +177,7 @@ const Toast = ({
             {/* Barre de progression optionnelle */}
             {duration > 0 && (
               <motion.div
-                className="absolute bottom-0 left-0 h-1 bg-white/30 rounded-b-lg"
+                className="absolute bottom-0 left-0 h-0.5 bg-current rounded-b-lg"
                 initial={{ width: "100%" }}
                 animate={{ width: "0%" }}
                 transition={{ duration: duration / 1000, ease: "linear" }}
