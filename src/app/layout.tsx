@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/ui/ToastContainer";
 import Header from "@/components/Header";
+import { ViewTransitions } from "next-view-transitions";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,15 +26,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className="h-full">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased h-full`}
-      >
-        <ToastProvider>
-          <Header />
-          {children}
-        </ToastProvider>
-      </body>
-    </html>
+    <ViewTransitions>
+      <html lang="fr" className="h-full">
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased h-full`}
+        >
+          <ToastProvider>
+            <Header />
+            {children}
+          </ToastProvider>
+        </body>
+      </html>
+    </ViewTransitions>
   );
 }

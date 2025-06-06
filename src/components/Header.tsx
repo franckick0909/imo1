@@ -2,25 +2,136 @@
 
 import { admin, signOut, useSession } from "@/lib/auth-client";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useTransitionRouter } from "next-view-transitions";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useToast } from "@/components/ui/ToastContainer";
 import AuthModals from "@/components/AuthModals";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface HeaderProps {
   onSignInClick?: () => void;
   onSignUpClick?: () => void;
 }
 
+// Définition des liens de navigation
+const publicLinks = [
+  { href: "/immo/achat", label: "Achat" },
+  { href: "/immo/vente", label: "Vente" },
+  { href: "/immo/location", label: "Location" },
+  { href: "/contact", label: "Contact" },
+];
+
+const staggerMenuItems = {
+  open: {
+    transition: { staggerChildren: 0.09, delayChildren: 0.3 },
+  },
+  closed: {
+    transition: { staggerChildren: 0.09, staggerDirection: -1 },
+  },
+};
+
+const staggerAuthItems = {
+  open: {
+    transition: { staggerChildren: 0.09, delayChildren: 0.8 },
+  },
+  closed: {
+    transition: { staggerChildren: 0.09, staggerDirection: -1 },
+  },
+};
+
+const statusVariants = {
+  initial: {
+    scale: 0.8,
+    opacity: 0,
+    transition: {
+      duration: 0.3,
+      ease: [0.76, 0, 0.24, 1],
+    },
+  },
+  open: {
+    scale: 1,
+    opacity: 1,
+    transition: {
+      duration: 0.8,
+      ease: [0.87, 0, 0.13, 1],
+      delay: 0.7,
+    },
+  },
+  exit: {
+    scale: 0.8,
+    opacity: 0,
+    transition: {
+      duration: 0.3,
+      ease: [0.76, 0, 0.24, 1],
+    },
+  },
+};
+
+const linkVariants = {
+  initial: {
+    y: "30vh",
+    transition: {
+      duration: 0.5,
+      ease: [0.76, 0, 0.24, 1],
+    },
+  },
+  open: {
+    y: 0,
+    transition: {
+      duration: 1.2,
+      ease: [0.87, 0, 0.13, 1],
+    },
+  },
+  exit: {
+    y: "30vh",
+    transition: {
+      duration: 0.5,
+      ease: [0.76, 0, 0.24, 1],
+    },
+  },
+};
+
+const containerVariants = {
+  hidden: {
+    width: 96,
+    height: 32,
+    transition: {
+      duration: 1,
+      ease: [0.87, 0, 0.13, 1],
+      when: "afterChildren",
+    },
+  },
+  visible: {
+    width: 440,
+    height: 550,
+    transition: {
+      duration: 0.8,
+      ease: [0.87, 0, 0.13, 1],
+      when: "beforeChildren",
+      delayChildren: 0.3,
+    },
+  },
+};
+
 export default function Header({ onSignInClick, onSignUpClick }: HeaderProps) {
   const { data: session, isPending } = useSession();
   const [isAdmin, setIsAdmin] = useState(false);
   const { success } = useToast();
-  const router = useRouter();
+  const router = useTransitionRouter();
+  const pathname = usePathname();
 
   // État des modales (seulement si pas de callbacks fournis)
   const [showSignIn, setShowSignIn] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
+
+  // État du menu mobile
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Fermer le menu quand on change de page
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [pathname]);
 
   // Vérifier si l'utilisateur est admin
   useEffect(() => {
@@ -32,10 +143,8 @@ export default function Header({ onSignInClick, onSignUpClick }: HeaderProps) {
               user: ["list"],
             },
           });
-          // Si pas d'erreur, l'utilisateur a les permissions admin
           setIsAdmin(!response.error);
         } catch {
-          console.log("Pas d'accès admin");
           setIsAdmin(false);
         }
       } else {
@@ -46,10 +155,56 @@ export default function Header({ onSignInClick, onSignUpClick }: HeaderProps) {
     checkAdminStatus();
   }, [session]);
 
+  // Fonction d'animation pour les transitions de vue
+  function slideInOut() {
+    // Animation pour l'élément sortant
+    document.documentElement.animate(
+      [
+        {
+          opacity: 1,
+          scale: 1,
+          transform: "translateY(0)",
+        },
+        {
+          opacity: 0.2,
+          scale: 0.95,
+          transform: "translateY(-35%)",
+        },
+      ],
+      {
+        duration: 1000,
+        easing: "cubic-bezier(0.76, 0, 0.24, 1)",
+        fill: "forwards",
+        pseudoElement: "::view-transition-old(root)",
+      }
+    );
+
+    // Animation pour l'élément entrant
+    document.documentElement.animate(
+      [
+        {
+          clipPath: "polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)",
+        },
+        {
+          clipPath: "polygon(0% 100%, 100% 100%, 100% 0%, 0% 0%)",
+        },
+      ],
+      {
+        duration: 1000,
+        easing: "cubic-bezier(0.76, 0, 0.24, 1)",
+        fill: "forwards",
+        pseudoElement: "::view-transition-new(root)",
+      }
+    );
+  }
+
   const handleSignOut = async () => {
     await signOut();
     success("Déconnexion réussie !");
-    router.push("/");
+    setIsMenuOpen(false);
+    router.push("/", {
+      onTransitionReady: slideInOut,
+    });
   };
 
   const handleSignInClick = () => {
@@ -58,6 +213,7 @@ export default function Header({ onSignInClick, onSignUpClick }: HeaderProps) {
     } else {
       setShowSignIn(true);
     }
+    setIsMenuOpen(false);
   };
 
   const handleSignUpClick = () => {
@@ -66,6 +222,7 @@ export default function Header({ onSignInClick, onSignUpClick }: HeaderProps) {
     } else {
       setShowSignUp(true);
     }
+    setIsMenuOpen(false);
   };
 
   const handleCloseModals = () => {
@@ -83,151 +240,274 @@ export default function Header({ onSignInClick, onSignUpClick }: HeaderProps) {
     }
   };
 
+  // Liens connectés (après connexion)
+  const authenticatedLinks = [
+    { href: "/dashboard", label: "Dashboard" },
+    { href: "/profile", label: "Profil" },
+    ...(isAdmin ? [{ href: "/admin", label: "Admin" }] : []),
+  ];
+
   return (
     <>
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo */}
-            <div className="flex items-center">
-              <Link href="/" className="flex items-center">
-                <div className="w-8 h-8 bg-indigo-600 rounded-md flex items-center justify-center mr-2">
-                  <svg
-                    className="w-5 h-5 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                    />
-                  </svg>
-                </div>
-                <h1 className="text-xl font-bold text-gray-900">Immo1</h1>
-              </Link>
-            </div>
+      <header className="fixed top-0 left-0 w-full z-50 transition-all duration-300 h-16 bg-white/90 backdrop-blur-md border-b border-gray-200/50">
+        <div className="w-full h-full px-4 flex justify-between items-center">
+          {/* Logo */}
+          <Link
+            href="/"
+            onClick={(e) => {
+              e.preventDefault();
+              router.push("/", {
+                onTransitionReady: slideInOut,
+              });
+            }}
+            className="text-2xl font-bold text-gray-900 hover:text-indigo-600 transition-colors"
+          >
+            Immo1
+          </Link>
 
-            {/* Navigation centrale */}
-            <nav className="hidden md:flex space-x-8">
-              <Link
-                href="/"
-                className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium transition duration-200"
-              >
-                🏠 Accueil
-              </Link>
-              <Link
-                href="/annonces"
-                className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium transition duration-200"
-              >
-                Annonces
-              </Link>
-              <Link
-                href="/services"
-                className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium transition duration-200"
-              >
-                Services
-              </Link>
-              <Link
-                href="/contact"
-                className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium transition duration-200"
-              >
-                Contact
-              </Link>
-            </nav>
-
-            {/* Boutons d'authentification */}
-            <div className="flex items-center space-x-4">
-              {isPending ? (
-                <div className="text-sm text-gray-500">Chargement...</div>
-              ) : session ? (
-                <div className="flex items-center space-x-4">
-                  <span className="text-gray-700 text-sm">
-                    {session.user.name || session.user.email}
-                  </span>
-
-                  {/* Lien Dashboard */}
-                  <Link
-                    href="/dashboard"
-                    className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition duration-200 text-sm font-medium"
-                  >
-                    Dashboard
-                  </Link>
-
-                  {/* Lien Admin si l'utilisateur est admin */}
-                  {isAdmin && (
-                    <Link
-                      href="/admin"
-                      className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition duration-200 text-sm font-medium"
-                    >
-                      🔧 Admin
-                    </Link>
-                  )}
-
-                  {/* Lien Mon profil */}
-                  <Link
-                    href="/profile"
-                    className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition duration-200 text-sm font-medium"
-                  >
-                    Mon profil
-                  </Link>
-
-                  {/* Bouton Se déconnecter */}
-                  <button
-                    type="button"
-                    onClick={handleSignOut}
-                    className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition duration-200 text-sm font-medium"
-                  >
-                    Se déconnecter
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center space-x-3">
-                  <button
-                    type="button"
-                    data-signin-trigger
-                    onClick={handleSignInClick}
-                    className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium transition duration-200"
-                  >
-                    Se connecter
-                  </button>
-                  <button
-                    type="button"
-                    data-signup-trigger
-                    onClick={handleSignUpClick}
-                    className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition duration-200 text-sm font-medium"
-                  >
-                    S&apos;inscrire
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Menu mobile */}
-            <div className="md:hidden">
+          <div className="flex items-center gap-4">
+            {/* Bouton de connexion pour utilisateurs non connectés */}
+            {!session && !isPending && (
               <button
                 type="button"
-                className="text-gray-600 hover:text-gray-900"
-                title="Menu"
+                onClick={handleSignInClick}
+                className="bg-zinc-100 hover:bg-zinc-200 text-black px-4 h-9 rounded-full text-sm font-medium transition-colors duration-300 cursor-pointer"
               >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
+                Se connecter
               </button>
-            </div>
+            )}
+
+            {/* Bouton menu amélioré */}
+            <motion.button
+              type="button"
+              aria-label="Menu navigation"
+              className="relative z-50 focus:outline-none cursor-pointer"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
+              <div className="w-24 h-9 flex flex-col justify-center items-center overflow-hidden">
+                <motion.div
+                  className="flex flex-col"
+                  animate={{ y: isMenuOpen ? "-25%" : "25%" }}
+                  transition={{ duration: 0.3, ease: [0.76, 0, 0.24, 1] }}
+                >
+                  <span className="h-9 w-24 flex items-center justify-center text-black font-medium rounded-full bg-white">
+                    Menu
+                  </span>
+                  <span className="h-9 w-24 flex items-center justify-center font-medium rounded-full bg-black text-white">
+                    Fermer
+                  </span>
+                </motion.div>
+              </div>
+            </motion.button>
           </div>
+
+          {/* Menu avec animations améliorées */}
+          <AnimatePresence mode="wait">
+            {isMenuOpen && (
+              <motion.div
+                className="fixed top-4 right-4 bg-zinc-100 z-40 flex flex-col rounded-3xl min-w-24 min-h-8 overflow-hidden"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
+              >
+                <div className="flex flex-col h-full justify-center p-8">
+                  {/* Affichage statut connecté en haut avec animation propre */}
+                  {session && (
+                    <div className="mb-8">
+                      <motion.p
+                        className="text-gray-800 text-sm uppercase font-medium tracking-wider"
+                        variants={statusVariants}
+                        initial="initial"
+                        animate="open"
+                        exit="exit"
+                      >
+                        Connecté :{" "}
+                        <span className="text-amber-800 font-bold">
+                          {session.user.name || session.user.email}
+                        </span>
+                      </motion.p>
+                    </div>
+                  )}
+
+                  {/* Navigation publique */}
+                  <motion.nav
+                    className="flex flex-col space-y-4 items-start uppercase"
+                    variants={staggerMenuItems}
+                    initial="closed"
+                    animate="open"
+                    exit="closed"
+                  >
+                    {/* Liens publics */}
+                    {publicLinks.map((link) => (
+                      <div key={link.href} className="overflow-hidden relative">
+                        <motion.div
+                          variants={linkVariants}
+                          initial="initial"
+                          animate="open"
+                          exit="initial"
+                          className="relative"
+                        >
+                          <Link
+                            href={link.href}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              setIsMenuOpen(false);
+                              router.push(link.href, {
+                                onTransitionReady: slideInOut,
+                              });
+                            }}
+                            className="text-2xl text-gray-800 hover:text-gray-900 transition-colors inline-block relative group font-bold"
+                          >
+                            {link.label}
+                            <motion.span className="absolute bottom-0 left-0 w-full h-0.5 bg-gray-900 transform origin-left transition-all duration-300 scale-x-0 group-hover:scale-x-100" />
+                          </Link>
+                        </motion.div>
+                      </div>
+                    ))}
+                  </motion.nav>
+
+                  {/* Séparation et navigation authentifiée */}
+                  {session ? (
+                    <>
+                      {/* Divider élégant */}
+                      <motion.div
+                        className="flex items-center justify-center my-8"
+                        variants={statusVariants}
+                        initial="initial"
+                        animate="open"
+                        exit="exit"
+                      >
+                        <div className="flex-1 h-0.5 bg-gradient-to-r from-transparent via-gray-800/60 to-transparent"></div>
+                        <div className="mx-4 w-2 h-2 bg-gray-800/70 rounded-full"></div>
+                        <div className="flex-1 h-0.5 bg-gradient-to-r from-transparent via-gray-800/60 to-transparent"></div>
+                      </motion.div>
+
+                      {/* Navigation connectée avec animation séparée */}
+                      <motion.nav
+                        className="flex flex-col space-y-4 items-start uppercase"
+                        variants={staggerAuthItems}
+                        initial="closed"
+                        animate="open"
+                        exit="closed"
+                      >
+                        {authenticatedLinks.map((link) => (
+                          <div
+                            key={link.href}
+                            className="overflow-hidden relative"
+                          >
+                            <motion.div
+                              variants={linkVariants}
+                              initial="initial"
+                              animate="open"
+                              exit="initial"
+                              className="relative"
+                            >
+                              <Link
+                                href={link.href}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  setIsMenuOpen(false);
+                                  router.push(link.href, {
+                                    onTransitionReady: slideInOut,
+                                  });
+                                }}
+                                className="text-2xl text-gray-800 hover:text-gray-900 transition-colors inline-block relative group"
+                              >
+                                {link.label}
+                                <motion.span className="absolute bottom-0 left-0 w-full h-0.5 bg-gray-900 transform origin-left transition-all duration-300 scale-x-0 group-hover:scale-x-100" />
+                              </Link>
+                            </motion.div>
+                          </div>
+                        ))}
+
+                        {/* Bouton déconnexion */}
+                        <div className="overflow-hidden relative">
+                          <motion.div
+                            variants={linkVariants}
+                            initial="initial"
+                            animate="open"
+                            exit="initial"
+                            className="relative"
+                          >
+                            <button
+                              type="button"
+                              onClick={handleSignOut}
+                              className="text-xl text-white bg-red-400 px-4 py-2 rounded-lg hover:bg-red-500 transition-colors inline-block relative group text-left uppercase"
+                            >
+                              Se déconnecter
+                            </button>
+                          </motion.div>
+                        </div>
+                      </motion.nav>
+                    </>
+                  ) : (
+                    /* Navigation non connectée avec animation séparée */
+                    <>
+                      {/* Divider élégant */}
+                      <motion.div
+                        className="flex items-center justify-center my-8"
+                        variants={statusVariants}
+                        initial="initial"
+                        animate="open"
+                        exit="exit"
+                      >
+                        <div className="flex-1 h-0.5 bg-gradient-to-r from-transparent via-gray-800/60 to-transparent"></div>
+                        <div className="mx-4 w-2 h-2 bg-gray-800/70 rounded-full"></div>
+                        <div className="flex-1 h-0.5 bg-gradient-to-r from-transparent via-gray-800/60 to-transparent"></div>
+                      </motion.div>
+
+                      <motion.nav
+                        className="flex flex-col space-y-6 items-start uppercase"
+                        variants={staggerAuthItems}
+                        initial="closed"
+                        animate="open"
+                        exit="closed"
+                      >
+                        <div className="overflow-hidden relative">
+                          <motion.div
+                            variants={linkVariants}
+                            initial="initial"
+                            animate="open"
+                            exit="initial"
+                            className="relative"
+                          >
+                            <button
+                              type="button"
+                              onClick={handleSignInClick}
+                              className="text-xl text-gray-800 hover:text-gray-900 transition-colors inline-block relative group text-left uppercase"
+                            >
+                              Se connecter
+                              <motion.span className="absolute bottom-0 left-0 w-full h-0.5 bg-gray-900 transform origin-left transition-all duration-300 scale-x-0 group-hover:scale-x-100" />
+                            </button>
+                          </motion.div>
+                        </div>
+
+                        <div className="overflow-hidden relative">
+                          <motion.div
+                            variants={linkVariants}
+                            initial="initial"
+                            animate="open"
+                            exit="initial"
+                            className="relative"
+                          >
+                            <button
+                              type="button"
+                              onClick={handleSignUpClick}
+                              className="text-xl text-gray-800 hover:text-gray-900 transition-colors inline-block relative group text-left uppercase"
+                            >
+                              S&apos;inscrire
+                              <motion.span className="absolute bottom-0 left-0 w-full h-0.5 bg-gray-900 transform origin-left transition-all duration-300 scale-x-0 group-hover:scale-x-100" />
+                            </button>
+                          </motion.div>
+                        </div>
+                      </motion.nav>
+                    </>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </header>
 

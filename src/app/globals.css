@@ -24,3 +24,29 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Support pour l'API View Transitions */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none !important;
+  mix-blend-mode: normal;
+}
+
+/* Pour éviter les problèmes de flash sur mobile */
+html.dark-mode {
+  color-scheme: dark;
+}
+
+/* Styles pour assurer une transition fluide */
+html {
+  scroll-behavior: smooth;
+}
+
+::view-transition-new(root) {
+  z-index: 10000;
+  animation: none !important;
+}
+::view-transition-old(root) {
+  z-index: 1;
+  animation: none !important;
+}
