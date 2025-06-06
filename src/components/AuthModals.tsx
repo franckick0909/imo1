@@ -463,7 +463,8 @@ export default function AuthModals({
         provider,
         callbackURL: "/",
       });
-    } catch (error) {
+    } catch (err) {
+      console.error("Erreur OAuth:", err);
       error("Erreur lors de la connexion avec " + provider);
     }
   };
