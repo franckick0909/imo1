@@ -30,19 +30,19 @@ const Toast = ({
     }
   }, [isVisible, duration, onClose]);
 
-  // Styles selon le type
+  // Styles selon le type avec glassmorphism
   const getToastStyles = () => {
     switch (type) {
       case "success":
-        return "bg-green-50 text-green-400";
+        return "bg-emerald-500 text-white border border-emerald-400";
       case "error":
-        return "bg-red-50 text-red-400";
+        return "bg-rose-500 text-white border border-rose-400";
       case "warning":
-        return "bg-amber-50 text-amber-400";
+          return "bg-orange-500 text-white border border-amber-400";
       case "info":
-        return "bg-blue-50 text-blue-400";
+        return "bg-sky-500 text-white border border-sky-400";
       default:
-        return "bg-gray-50 text-gray-400";
+        return "bg-zinc-500 text-white border border-zinc-400";
     }
   };
 
@@ -67,94 +67,116 @@ const Toast = ({
     switch (type) {
       case "success":
         return (
-          <svg
-            className="w-5 h-5 flex-shrink-0"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path
-              fillRule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-              clipRule="evenodd"
-            />
-          </svg>
+          <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-xs">
+            <svg
+              className="w-4 h-4 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth={3}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="m4.5 12.75 6 6 9-13.5"
+              />
+            </svg>
+          </div>
         );
       case "error":
         return (
-          <svg
-            className="w-5 h-5 flex-shrink-0"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path
-              fillRule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-              clipRule="evenodd"
-            />
-          </svg>
+          <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-xs">
+            <svg
+              className="w-4 h-4 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth={3}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </div>
         );
       case "warning":
         return (
-          <svg
-            className="w-5 h-5 flex-shrink-0"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path
-              fillRule="evenodd"
-              d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-              clipRule="evenodd"
-            />
-          </svg>
+          <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-xs">
+            <svg
+              className="w-4 h-4 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth={3}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+              />
+            </svg>
+          </div>
         );
       case "info":
         return (
-          <svg
-            className="w-5 h-5 flex-shrink-0"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path
-              fillRule="evenodd"
-              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-              clipRule="evenodd"
-            />
-          </svg>
+          <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-xs">
+            <svg
+              className="w-4 h-4 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth={3}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"
+              />
+            </svg>
+          </div>
         );
       default:
         return null;
     }
   };
-  
 
   return (
     <AnimatePresence>
       {isVisible && (
         <motion.div
-          className={`fixed z-[1000] ${getPositionStyles()}`}
-          initial={{ opacity: 0, y: 50, scale: 0.9 }}
+          className={`fixed z-[1000] overflow-hidden ${getPositionStyles()}`}
+          initial={{ opacity: 0, y: 50, scale: 0.8 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 50, scale: 0.9 }}
+          exit={{ opacity: 0, y: 50, scale: 0.8 }}
           transition={{
             type: "spring",
-            damping: 20,
-            stiffness: 100,
-            mass: 0.4,
+            damping: 25,
+            stiffness: 120,
+            mass: 0.3,
           }}
         >
           <div
             className={`
             ${getToastStyles()} 
-            px-6 py-4 rounded-lg shadow-2xl max-w-md min-w-[300px]
+            px-6 py-4 rounded-2xl backdrop-blur-xl shadow-2xl max-w-md min-w-[320px]
+            transition-all duration-300
+            ring-1 ring-white/20
           `}
           >
-            <div className="flex items-center space-x-3">
-              {getIcon()}
-              <p className="text-sm font-medium flex-1">{message}</p>
+            <div className="flex items-start space-x-4">
+              <div className="flex-shrink-0 pt-0.5">{getIcon()}</div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm leading-relaxed break-words">
+                  {message}
+                </p>
+              </div>
               <button
                 type="button"
                 onClick={onClose}
-                className="text-white/80 hover:text-white transition-colors duration-200 ml-4"
+                className="flex-shrink-0 p-1 rounded-lg hover:bg-white/10 transition-all duration-200 
+                          text-white/70 hover:text-white hover:scale-110 active:scale-95"
                 title="Fermer la notification"
                 aria-label="Fermer la notification"
               >
@@ -163,25 +185,27 @@ const Toast = ({
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
+                  strokeWidth={2.5}
                 >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    strokeWidth={2}
                     d="M6 18L18 6M6 6l12 12"
                   />
                 </svg>
               </button>
             </div>
 
-            {/* Barre de progression optionnelle */}
+            {/* Barre de progression stylée avec bords arrondis */}
             {duration > 0 && (
-              <motion.div
-                className="absolute bottom-0 left-0 h-0.5 bg-current rounded-b-lg"
-                initial={{ width: "100%" }}
-                animate={{ width: "0%" }}
-                transition={{ duration: duration / 1000, ease: "linear" }}
-              />
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/10 overflow-hidden rounded-b-2xl w-[96%] mx-auto">
+                <motion.div
+                  className="h-full bg-gradient-to-r from-white/80 to-white/60 shadow-sm rounded-b-2xl"
+                  initial={{ width: "100%" }}
+                  animate={{ width: "0%" }}
+                  transition={{ duration: duration / 1000, ease: "linear" }}
+                />
+              </div>
             )}
           </div>
         </motion.div>
