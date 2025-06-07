@@ -323,7 +323,7 @@ export default function Header({ onSignInClick, onSignUpClick }: HeaderProps) {
                         exit="exit"
                       >
                         Connecté :{" "}
-                        <span className="text-amber-800 font-bold">
+                        <span className="text-indigo-600 font-bold">
                           {session.user.name || session.user.email}
                         </span>
                       </motion.p>

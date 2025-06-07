@@ -1,6 +1,7 @@
 "use client";
 
 import { useToast } from "@/components/ui/ToastContainer";
+import Input from "@/components/ui/Input";
 import { signIn, signUp } from "@/lib/auth-client";
 import {
   signInSchema,
@@ -416,21 +417,6 @@ export default function AuthModals({
     </motion.div>
   );
 
-  const ErrorMessage = ({ message }: { message?: string }) => {
-    if (!message) return null;
-    return (
-      <motion.p
-        initial={{ opacity: 0, height: 0, y: -10 }}
-        animate={{ opacity: 1, height: "auto", y: 0 }}
-        exit={{ opacity: 0, height: 0, y: -10 }}
-        transition={{ duration: 0.3, ease: customEasing }}
-        className="text-sm text-red-600 mt-2"
-      >
-        {message}
-      </motion.p>
-    );
-  };
-
   const LoadingSpinner = () => (
     <motion.svg
       className="h-5 w-5 text-white mr-3"
@@ -568,49 +554,21 @@ export default function AuthModals({
                   >
                     {/* Email */}
                     <motion.div variants={itemVariants}>
-                      <label
-                        htmlFor="signin-email"
-                        className="block text-sm font-medium text-gray-700 mb-2"
-                      >
-                        Adresse email
-                      </label>
-                      <motion.input
+                      <Input
                         type="email"
-                        id="signin-email"
+                        label="Adresse email"
                         {...signInForm.register("email")}
-                        className={`w-full px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-zinc-700 transition-all duration-200 ${
-                          signInForm.formState.errors.email
-                            ? "border-red-300 focus:border-red-500"
-                            : "border-gray-300 focus:border-indigo-500"
-                        }`}
-                        placeholder="votre@email.com"
-                      />
-                      <ErrorMessage
-                        message={signInForm.formState.errors.email?.message}
+                        error={signInForm.formState.errors.email?.message}
                       />
                     </motion.div>
 
                     {/* Mot de passe */}
                     <motion.div variants={itemVariants}>
-                      <label
-                        htmlFor="signin-password"
-                        className="block text-sm font-medium text-gray-700 mb-2"
-                      >
-                        Mot de passe
-                      </label>
-                      <motion.input
+                      <Input
                         type="password"
-                        id="signin-password"
+                        label="Mot de passe"
                         {...signInForm.register("password")}
-                        className={`w-full px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-zinc-700 transition-all duration-200 ${
-                          signInForm.formState.errors.password
-                            ? "border-red-300 focus:border-red-500"
-                            : "border-gray-300 focus:border-indigo-500"
-                        }`}
-                        placeholder="••••••••"
-                      />
-                      <ErrorMessage
-                        message={signInForm.formState.errors.password?.message}
+                        error={signInForm.formState.errors.password?.message}
                       />
                     </motion.div>
 
@@ -729,97 +687,41 @@ export default function AuthModals({
                   >
                     {/* Nom */}
                     <motion.div variants={itemVariants}>
-                      <label
-                        htmlFor="signup-name"
-                        className="block text-sm font-medium text-gray-700 mb-2"
-                      >
-                        Nom complet
-                      </label>
-                      <motion.input
+                      <Input
                         type="text"
-                        id="signup-name"
+                        label="Nom complet"
                         {...signUpForm.register("name")}
-                        className={`w-full px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-zinc-700 transition-all duration-200 ${
-                          signUpForm.formState.errors.name
-                            ? "border-red-300 focus:border-red-500"
-                            : "border-gray-300 focus:border-indigo-500"
-                        }`}
-                        placeholder="Votre nom complet"
-                      />
-                      <ErrorMessage
-                        message={signUpForm.formState.errors.name?.message}
+                        error={signUpForm.formState.errors.name?.message}
                       />
                     </motion.div>
 
                     {/* Email */}
                     <motion.div variants={itemVariants}>
-                      <label
-                        htmlFor="signup-email"
-                        className="block text-sm font-medium text-gray-700 mb-2"
-                      >
-                        Adresse email
-                      </label>
-                      <motion.input
+                      <Input
                         type="email"
-                        id="signup-email"
+                        label="Adresse email"
                         {...signUpForm.register("email")}
-                        className={`w-full px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-zinc-700 transition-all duration-200 ${
-                          signUpForm.formState.errors.email
-                            ? "border-red-300 focus:border-red-500"
-                            : "border-gray-300 focus:border-indigo-500"
-                        }`}
-                        placeholder="votre@email.com"
-                      />
-                      <ErrorMessage
-                        message={signUpForm.formState.errors.email?.message}
+                        error={signUpForm.formState.errors.email?.message}
                       />
                     </motion.div>
 
                     {/* Mot de passe */}
                     <motion.div variants={itemVariants}>
-                      <label
-                        htmlFor="signup-password"
-                        className="block text-sm font-medium text-gray-700 mb-2"
-                      >
-                        Mot de passe
-                      </label>
-                      <motion.input
+                      <Input
                         type="password"
-                        id="signup-password"
+                        label="Mot de passe"
                         {...signUpForm.register("password")}
-                        className={`w-full px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-zinc-700 transition-all duration-200 ${
-                          signUpForm.formState.errors.password
-                            ? "border-red-300 focus:border-red-500"
-                            : "border-gray-300 focus:border-indigo-500"
-                        }`}
-                        placeholder="••••••••"
-                      />
-                      <ErrorMessage
-                        message={signUpForm.formState.errors.password?.message}
+                        error={signUpForm.formState.errors.password?.message}
                       />
                     </motion.div>
 
                     {/* Confirmation mot de passe */}
                     <motion.div variants={itemVariants}>
-                      <label
-                        htmlFor="signup-confirm-password"
-                        className="block text-sm font-medium text-gray-700 mb-2"
-                      >
-                        Confirmer le mot de passe
-                      </label>
-                      <motion.input
+                      <Input
                         type="password"
-                        id="signup-confirm-password"
+                        label="Confirmer le mot de passe"
                         {...signUpForm.register("confirmPassword")}
-                        className={`w-full px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-zinc-700 transition-all duration-200 ${
-                          signUpForm.formState.errors.confirmPassword
-                            ? "border-red-300 focus:border-red-500"
-                            : "border-gray-300 focus:border-indigo-500"
-                        }`}
-                        placeholder="••••••••"
-                      />
-                      <ErrorMessage
-                        message={
+                        error={
                           signUpForm.formState.errors.confirmPassword?.message
                         }
                       />

@@ -34,7 +34,7 @@ const Toast = ({
   const getToastStyles = () => {
     switch (type) {
       case "success":
-        return "bg-emerald-500 text-white border border-emerald-400";
+        return "bg-green-500 text-white border border-green-400";
       case "error":
         return "bg-rose-500 text-white border border-rose-400";
       case "warning":
