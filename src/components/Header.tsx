@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { useToast } from "@/components/ui/ToastContainer";
 import AuthModals from "@/components/AuthModals";
 import { motion, AnimatePresence } from "framer-motion";
+import { FiUser } from "react-icons/fi";
 
 interface HeaderProps {
   onSignInClick?: () => void;
@@ -103,8 +104,10 @@ const containerVariants = {
     },
   },
   visible: {
+    maxWidth: "90%",
     width: 440,
-    height: 550,
+    height: 500,
+    maxHeight: "100%",
     transition: {
       duration: 0.8,
       ease: [0.87, 0, 0.13, 1],
@@ -249,7 +252,7 @@ export default function Header({ onSignInClick, onSignUpClick }: HeaderProps) {
 
   return (
     <>
-      <header className="fixed top-0 left-0 w-full z-50 transition-all duration-300 h-16 bg-white/90 backdrop-blur-md border-b border-gray-200/50">
+      <header className="fixed top-0 left-0 w-full z-50 transition-all duration-300 h-16 border-b border-gray-200/50">
         <div className="w-full h-full px-4 flex justify-between items-center">
           {/* Logo */}
           <Link
@@ -269,11 +272,12 @@ export default function Header({ onSignInClick, onSignUpClick }: HeaderProps) {
             {/* Bouton de connexion pour utilisateurs non connectés */}
             {!session && !isPending && (
               <button
+                aria-label="Se connecter"
                 type="button"
                 onClick={handleSignInClick}
                 className="bg-zinc-100 hover:bg-zinc-200 text-black px-4 h-9 rounded-full text-sm font-medium transition-colors duration-300 cursor-pointer"
               >
-                Se connecter
+                <FiUser className="w-4 h-4" />
               </button>
             )}
 
