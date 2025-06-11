@@ -17,10 +17,10 @@ export default function Home() {
     );
   }
 
-  const handleOpenSignUp = () => {
+  /*  const handleOpenSignUp = () => {
     setShowSignUp(true);
     setShowSignIn(false);
-  };
+  };  */
 
   const handleOpenSignIn = () => {
     setShowSignIn(true);
@@ -43,17 +43,20 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50">
       {/* Hero Section */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
         <div className="text-center">
           <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
-            <span className="block">Trouvez votre</span>
-            <span className="block text-indigo-600">bien immobilier</span>
+            <span className="block">Votre peau mérite</span>
+            <span className="block text-emerald-600">
+              le meilleur de la nature
+            </span>
           </h1>
           <p className="mt-3 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-            La plateforme moderne pour acheter, vendre et louer des biens
-            immobiliers. Découvrez des milliers d&apos;annonces vérifiées.
+            Découvrez notre gamme de crèmes bio artisanales, formulées avec des
+            ingrédients naturels pour révéler la beauté authentique de votre
+            peau.
           </p>
 
           {/* Affichage conditionnel selon l'état de connexion */}
@@ -61,17 +64,17 @@ export default function Home() {
             // Boutons pour utilisateurs non connectés
             <div className="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
               <div className="rounded-md shadow">
-                <button
-                  onClick={handleOpenSignUp}
-                  className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10 transition duration-200"
+                <a
+                  href="/products"
+                  className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 md:py-4 md:text-lg md:px-10 transition duration-200"
                 >
-                  Commencer gratuitement
-                </button>
+                  Découvrir nos produits
+                </a>
               </div>
               <div className="mt-3 rounded-md shadow sm:mt-0 sm:ml-3">
                 <button
                   onClick={handleOpenSignIn}
-                  className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10 transition duration-200"
+                  className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-emerald-600 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10 transition duration-200"
                 >
                   Se connecter
                 </button>
@@ -82,18 +85,18 @@ export default function Home() {
             <div className="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
               <div className="rounded-md shadow">
                 <a
-                  href="/dashboard"
-                  className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10 transition duration-200"
+                  href="/products"
+                  className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 md:py-4 md:text-lg md:px-10 transition duration-200"
                 >
-                  Accéder au Dashboard
+                  Découvrir nos produits
                 </a>
               </div>
               <div className="mt-3 rounded-md shadow sm:mt-0 sm:ml-3">
                 <a
-                  href="/annonces"
-                  className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10 transition duration-200"
+                  href="/dashboard"
+                  className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-emerald-600 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10 transition duration-200"
                 >
-                  Voir les annonces
+                  Mon compte
                 </a>
               </div>
             </div>
@@ -108,7 +111,7 @@ export default function Home() {
               <div className="flow-root bg-white rounded-lg px-6 pb-8 shadow-sm border border-gray-100">
                 <div className="-mt-6">
                   <div>
-                    <span className="inline-flex items-center justify-center p-3 bg-indigo-500 rounded-md shadow-lg">
+                    <span className="inline-flex items-center justify-center p-3 bg-emerald-500 rounded-md shadow-lg">
                       <svg
                         className="h-6 w-6 text-white"
                         fill="none"
@@ -118,18 +121,18 @@ export default function Home() {
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                          strokeWidth={1.5}
+                          d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
                         />
                       </svg>
                     </span>
                   </div>
                   <h3 className="mt-8 text-lg font-medium text-gray-900 tracking-tight">
-                    Recherche avancée
+                    100% Bio & Naturel
                   </h3>
                   <p className="mt-5 text-base text-gray-500">
-                    Trouvez exactement ce que vous cherchez avec nos filtres
-                    intelligents et notre géolocalisation précise.
+                    Tous nos produits sont certifiés biologiques, formulés avec
+                    des ingrédients naturels soigneusement sélectionnés.
                   </p>
                 </div>
               </div>
@@ -140,7 +143,7 @@ export default function Home() {
               <div className="flow-root bg-white rounded-lg px-6 pb-8 shadow-sm border border-gray-100">
                 <div className="-mt-6">
                   <div>
-                    <span className="inline-flex items-center justify-center p-3 bg-indigo-500 rounded-md shadow-lg">
+                    <span className="inline-flex items-center justify-center p-3 bg-emerald-500 rounded-md shadow-lg">
                       <svg
                         className="h-6 w-6 text-white"
                         fill="none"
@@ -150,18 +153,18 @@ export default function Home() {
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                          strokeWidth={1.5}
+                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                         />
                       </svg>
                     </span>
                   </div>
                   <h3 className="mt-8 text-lg font-medium text-gray-900 tracking-tight">
-                    Annonces vérifiées
+                    Fait avec Amour
                   </h3>
                   <p className="mt-5 text-base text-gray-500">
-                    Toutes nos annonces sont vérifiées par notre équipe pour
-                    garantir leur authenticité et leur qualité.
+                    Chaque crème est préparée artisanalement en petites
+                    quantités pour garantir fraîcheur et qualité.
                   </p>
                 </div>
               </div>
@@ -172,7 +175,7 @@ export default function Home() {
               <div className="flow-root bg-white rounded-lg px-6 pb-8 shadow-sm border border-gray-100">
                 <div className="-mt-6">
                   <div>
-                    <span className="inline-flex items-center justify-center p-3 bg-indigo-500 rounded-md shadow-lg">
+                    <span className="inline-flex items-center justify-center p-3 bg-emerald-500 rounded-md shadow-lg">
                       <svg
                         className="h-6 w-6 text-white"
                         fill="none"
@@ -182,18 +185,18 @@ export default function Home() {
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M13 10V3L4 14h7v7l9-11h-7z"
+                          strokeWidth={1.5}
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                         />
                       </svg>
                     </span>
                   </div>
                   <h3 className="mt-8 text-lg font-medium text-gray-900 tracking-tight">
-                    Processus rapide
+                    Livraison Rapide
                   </h3>
                   <p className="mt-5 text-base text-gray-500">
-                    Publiez votre annonce ou contactez un vendeur en quelques
-                    clics seulement.
+                    Recevez vos produits rapidement et en parfait état grâce à
+                    notre emballage éco-responsable.
                   </p>
                 </div>
               </div>
@@ -201,35 +204,74 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Produits en vedette placeholder */}
+        <div className="mt-24">
+          <div className="text-center">
+            <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
+              Nos Produits Phares
+            </h2>
+            <p className="mt-4 max-w-2xl mx-auto text-xl text-gray-500">
+              Une sélection de nos meilleures crèmes pour prendre soin de votre
+              peau au quotidien
+            </p>
+          </div>
+
+          {/* Grid des produits - sera remplacé par de vrais produits */}
+          <div className="mt-12 grid grid-cols-1 gap-y-10 sm:grid-cols-2 gap-x-6 lg:grid-cols-3 xl:gap-x-8">
+            {[1, 2, 3].map((product) => (
+              <div key={product} className="group relative">
+                <div className="w-full min-h-80 bg-gray-200 aspect-w-1 aspect-h-1 rounded-md overflow-hidden group-hover:opacity-75 lg:h-80 lg:aspect-none">
+                  <div className="w-full h-full flex items-center justify-center text-gray-400">
+                    <svg
+                      className="w-16 h-16"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M4 3a2 2 0 000 4h12a2 2 0 000-4H4zm0 6a2 2 0 000 4h12a2 2 0 000-4H4zm0 6a2 2 0 000 4h12a2 2 0 000-4H4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                </div>
+                <div className="mt-4 flex justify-between">
+                  <div>
+                    <h3 className="text-sm text-gray-700">
+                      <span aria-hidden="true" className="absolute inset-0" />
+                      Crème Bio #{product}
+                    </h3>
+                    <p className="mt-1 text-sm text-gray-500">
+                      Soin naturel premium
+                    </p>
+                  </div>
+                  <p className="text-sm font-medium text-gray-900">€29,99</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* CTA Section */}
         <div className="mt-24">
-          <div className="bg-indigo-600 rounded-lg shadow-xl overflow-hidden">
+          <div className="bg-emerald-600 rounded-lg shadow-xl overflow-hidden">
             <div className="px-6 py-12 sm:px-12 sm:py-16 lg:flex lg:items-center lg:justify-between">
               <div>
                 <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-                  <span className="block">Prêt à commencer ?</span>
-                  <span className="block text-indigo-200">
-                    Rejoignez-nous dès aujourd&apos;hui.
+                  <span className="block">Prêt à chouchouter votre peau ?</span>
+                  <span className="block text-emerald-200">
+                    Découvrez nos crèmes bio dès maintenant.
                   </span>
                 </h2>
               </div>
               <div className="mt-8 flex lg:mt-0 lg:flex-shrink-0">
                 <div className="inline-flex rounded-md shadow">
-                  {!session ? (
-                    <button
-                      onClick={handleOpenSignUp}
-                      className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-indigo-50 transition duration-200"
-                    >
-                      Créer un compte
-                    </button>
-                  ) : (
-                    <a
-                      href="/dashboard"
-                      className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-indigo-50 transition duration-200"
-                    >
-                      Voir mon dashboard
-                    </a>
-                  )}
+                  <a
+                    href="/products"
+                    className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-emerald-600 bg-white hover:bg-emerald-50 transition duration-200"
+                  >
+                    Voir tous nos produits
+                  </a>
                 </div>
               </div>
             </div>

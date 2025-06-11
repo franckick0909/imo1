@@ -188,6 +188,111 @@ export default function AdminDashboard() {
 
       {/* Contenu principal */}
       <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        {/* Navigation rapide */}
+        <div className="mb-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            Navigation rapide
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Link
+              href="/admin/products"
+              className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-emerald-50 hover:border-emerald-300 transition-colors group"
+            >
+              <div className="bg-emerald-100 p-3 rounded-lg group-hover:bg-emerald-200 transition-colors">
+                <svg
+                  className="w-6 h-6 text-emerald-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                  />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <h3 className="font-medium text-gray-900">Produits</h3>
+                <p className="text-sm text-gray-500">Gérer le catalogue</p>
+              </div>
+            </Link>
+
+            <Link
+              href="/admin/categories"
+              className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors group"
+            >
+              <div className="bg-blue-100 p-3 rounded-lg group-hover:bg-blue-200 transition-colors">
+                <svg
+                  className="w-6 h-6 text-blue-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                  />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <h3 className="font-medium text-gray-900">Catégories</h3>
+                <p className="text-sm text-gray-500">Organiser les produits</p>
+              </div>
+            </Link>
+
+            <Link
+              href="/admin/orders"
+              className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-purple-50 hover:border-purple-300 transition-colors group"
+            >
+              <div className="bg-purple-100 p-3 rounded-lg group-hover:bg-purple-200 transition-colors">
+                <svg
+                  className="w-6 h-6 text-purple-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                  />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <h3 className="font-medium text-gray-900">Commandes</h3>
+                <p className="text-sm text-gray-500">Suivi des ventes</p>
+              </div>
+            </Link>
+
+            <div className="flex items-center p-4 border border-gray-200 rounded-lg bg-gray-50">
+              <div className="bg-gray-200 p-3 rounded-lg">
+                <svg
+                  className="w-6 h-6 text-gray-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"
+                  />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <h3 className="font-medium text-gray-700">Utilisateurs</h3>
+                <p className="text-sm text-gray-500">Section actuelle</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
             Gestion des utilisateurs

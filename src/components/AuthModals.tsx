@@ -384,7 +384,7 @@ export default function AuthModals({
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
-            strokeWidth={2}
+            strokeWidth={1.5}
             d="M6 18L18 6M6 6l12 12"
           />
         </svg>
@@ -530,9 +530,9 @@ export default function AuthModals({
             exit="exit"
             onClick={!isTransitioning ? handleClose : undefined}
           >
-            <div className="flex items-center justify-center min-h-full">
+            <div className="flex items-center justify-center min-h-screen">
               <motion.div
-                className="bg-white rounded-xl shadow-2xl max-w-md w-full relative"
+                className="bg-white rounded-xl shadow-2xl max-w-md w-full relative my-8"
                 //        variants={modalVariants}
                 initial={{ opacity: 0, y: "100%" }}
                 animate={{ opacity: 1, y: "0%" }}
@@ -664,9 +664,9 @@ export default function AuthModals({
             exit="exit"
             onClick={!isTransitioning ? handleClose : undefined}
           >
-            <div className="flex items-center justify-center min-h-full">
+            <div className="flex items-center justify-center min-h-screen">
               <motion.div
-                className="bg-white rounded-xl shadow-2xl max-w-md w-full relative"
+                className="bg-white rounded-xl shadow-2xl max-w-md w-full relative my-8"
                 initial={{ opacity: 0, y: "100%" }}
                 animate={{ opacity: 1, y: "0%" }}
                 exit={{ opacity: 0, x: "100%" }}

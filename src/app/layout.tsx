@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import "../styles/responsive.css";
 import { ToastProvider } from "@/components/ui/ToastContainer";
 import Header from "@/components/Header";
 import { ViewTransitions } from "next-view-transitions";
@@ -28,15 +29,15 @@ export default function RootLayout({
   return (
     <ViewTransitions>
       <html lang="fr" className="h-full">
-        <body
+      <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased h-full`}
-        >
+      >
           <ToastProvider>
             <Header />
-            {children}
+        {children}
           </ToastProvider>
-        </body>
-      </html>
+      </body>
+    </html>
     </ViewTransitions>
   );
 }

@@ -1,0 +1,18 @@
+/* Responsive CartSidebar */
+@media (min-width: 640px) {
+  [data-responsive-width="true"] {
+    width: 420px !important;
+  }
+}
+
+@media (min-width: 768px) {
+  [data-responsive-width="true"] {
+    width: 480px !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  [data-responsive-width="true"] {
+    width: 500px !important;
+  }
+}

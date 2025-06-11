@@ -32,6 +32,10 @@ model User {
   banReason  String?
   banExpires DateTime?
 
+  // E-commerce relations
+  orders    Order[]
+  cartItems CartItem[]
+
   @@map("user")
 }
 
@@ -81,4 +85,182 @@ model Verification {
   updatedAt  DateTime? @updatedAt
 
   @@map("verification")
+}
+
+// E-commerce Schema
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  slug        String   @unique
+  image       String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  products Product[]
+
+  @@map("category")
+}
+
+model Product {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  longDescription String?
+  price           Decimal
+  comparePrice    Decimal? // Prix barré pour les promotions
+  sku             String?  @unique
+  barcode         String?
+
+  // Stock management
+  stock             Int     @default(0)
+  lowStockThreshold Int     @default(5)
+  trackStock        Boolean @default(true)
+
+  // Product details
+  weight     Decimal?
+  dimensions String? // "L x W x H"
+
+  // SEO & URLs
+  slug            String  @unique
+  metaTitle       String?
+  metaDescription String?
+
+  // Status
+  isActive   Boolean @default(true)
+  isFeatured Boolean @default(false)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  images     ProductImage[]
+  orderItems OrderItem[]
+  cartItems  CartItem[]
+
+  @@map("product")
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  url       String
+  alt       String?
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_image")
+}
+
+model Cart {
+  id        String   @id @default(cuid())
+  userId    String? // NULL pour les invités
+  sessionId String? // Pour les paniers invités
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cartItems CartItem[]
+
+  @@map("cart")
+}
+
+model CartItem {
+  id       String @id @default(cuid())
+  quantity Int
+
+  // Relations
+  cartId String?
+  cart   Cart?   @relation(fields: [cartId], references: [id], onDelete: Cascade)
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, productId]) // Un utilisateur ne peut avoir qu'un item par produit
+  @@map("cart_item")
+}
+
+model Order {
+  id          String      @id @default(cuid())
+  orderNumber String      @unique
+  status      OrderStatus @default(PENDING)
+
+  // Customer info
+  userId        String?
+  user          User?   @relation(fields: [userId], references: [id])
+  customerEmail String
+  customerName  String
+
+  // Pricing
+  subtotal     Decimal
+  shippingCost Decimal @default(0)
+  taxAmount    Decimal @default(0)
+  totalAmount  Decimal
+
+  // Shipping address
+  shippingAddress Json
+  billingAddress  Json?
+
+  // Payment
+  paymentStatus PaymentStatus @default(PENDING)
+  paymentMethod String?
+  paymentId     String? // ID de transaction externe
+
+  // Shipping
+  shippingMethod String?
+  trackingNumber String?
+
+  // Timestamps
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  shippedAt   DateTime?
+  deliveredAt DateTime?
+
+  orderItems OrderItem[]
+
+  @@map("order")
+}
+
+model OrderItem {
+  id       String  @id @default(cuid())
+  quantity Int
+  price    Decimal // Prix au moment de la commande
+
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@map("order_item")
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
 }
