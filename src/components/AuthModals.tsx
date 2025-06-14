@@ -532,7 +532,7 @@ export default function AuthModals({
           >
             <div className="flex items-center justify-center min-h-screen">
               <motion.div
-                className="bg-white rounded-xl shadow-2xl max-w-md w-full relative my-8"
+                className="bg-white rounded-xl shadow-2xl max-w-md w-full relative my-6"
                 //        variants={modalVariants}
                 initial={{ opacity: 0, y: "100%" }}
                 animate={{ opacity: 1, y: "0%" }}
@@ -550,7 +550,7 @@ export default function AuthModals({
                 <motion.div className="p-6" variants={itemVariants}>
                   <form
                     onSubmit={signInForm.handleSubmit(handleSignIn)}
-                    className="space-y-4"
+                    className="space-y-2"
                   >
                     {/* Email */}
                     <motion.div variants={itemVariants}>
@@ -683,7 +683,7 @@ export default function AuthModals({
                 <motion.div className="p-6" variants={itemVariants}>
                   <form
                     onSubmit={signUpForm.handleSubmit(handleSignUp)}
-                    className="space-y-4"
+                    className="space-y-2"
                   >
                     {/* Nom */}
                     <motion.div variants={itemVariants}>

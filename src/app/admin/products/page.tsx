@@ -1,6 +1,7 @@
 "use client";
 
-import { useTransitionRouter } from "next-view-transitions";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 // Types pour les produits et catégories
@@ -14,80 +15,50 @@ interface Category {
 interface Product {
   id: string;
   name: string;
-  description: string;
+  description: string | null;
   price: number;
-  comparePrice?: number;
+  comparePrice?: number | null;
   stock: number;
   isActive: boolean;
   isFeatured: boolean;
   category: Category;
-  images: { url: string; alt: string }[];
+  images: { id: string; url: string; alt: string | null; position: number }[];
   createdAt: string;
 }
 
 export default function AdminProductsPage() {
-  const router = useTransitionRouter();
+  const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Simuler le chargement des données (à remplacer par de vrais appels API)
+  // Charger les données réelles depuis l'API
   useEffect(() => {
-    // Simuler un délai de chargement
-    setTimeout(() => {
-      setCategories([
-        { id: "1", name: "Hydratation", slug: "hydratation", isActive: true },
-        { id: "2", name: "Anti-âge", slug: "anti-age", isActive: true },
-        { id: "3", name: "Purification", slug: "purification", isActive: true },
-      ]);
+    const fetchData = async () => {
+      try {
+        // Récupérer les produits
+        const productsResponse = await fetch("/api/admin/products");
+        if (productsResponse.ok) {
+          const productsData = await productsResponse.json();
+          setProducts(Array.isArray(productsData) ? productsData : []);
+        }
 
-      setProducts([
-        {
-          id: "1",
-          name: "Crème Hydratante Bio",
-          description:
-            "Une crème hydratante enrichie aux extraits naturels de plantes.",
-          price: 29.99,
-          comparePrice: 39.99,
-          stock: 15,
-          isActive: true,
-          isFeatured: true,
-          category: {
-            id: "1",
-            name: "Hydratation",
-            slug: "hydratation",
-            isActive: true,
-          },
-          images: [
-            { url: "/placeholder-300x300.jpg", alt: "Crème hydratante" },
-          ],
-          createdAt: "2024-01-15T10:00:00Z",
-        },
-        {
-          id: "2",
-          name: "Sérum Anti-Âge Vitamine C",
-          description:
-            "Sérum concentré à la vitamine C naturelle pour illuminer la peau.",
-          price: 49.99,
-          stock: 8,
-          isActive: true,
-          isFeatured: false,
-          category: {
-            id: "2",
-            name: "Anti-âge",
-            slug: "anti-age",
-            isActive: true,
-          },
-          images: [
-            { url: "/placeholder-300x300.jpg", alt: "Sérum vitamine C" },
-          ],
-          createdAt: "2024-01-14T15:30:00Z",
-        },
-      ]);
-      setLoading(false);
-    }, 1000);
+        // Récupérer les catégories
+        const categoriesResponse = await fetch("/api/categories");
+        if (categoriesResponse.ok) {
+          const categoriesData = await categoriesResponse.json();
+          setCategories(Array.isArray(categoriesData) ? categoriesData : []);
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement des données:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
   const filteredProducts = products.filter((product) => {
@@ -99,26 +70,77 @@ export default function AdminProductsPage() {
     return matchesCategory && matchesSearch;
   });
 
-  const handleDeleteProduct = (productId: string) => {
+  const handleDeleteProduct = async (productId: string) => {
     if (confirm("Êtes-vous sûr de vouloir supprimer ce produit ?")) {
-      setProducts(products.filter((p) => p.id !== productId));
+      try {
+        const response = await fetch(`/api/admin/products/${productId}`, {
+          method: "DELETE",
+        });
+
+        if (response.ok) {
+          setProducts(products.filter((p) => p.id !== productId));
+        } else {
+          alert("Erreur lors de la suppression du produit");
+        }
+      } catch (error) {
+        console.error("Erreur:", error);
+        alert("Erreur lors de la suppression du produit");
+      }
     }
   };
 
-  const handleToggleActive = (productId: string) => {
-    setProducts(
-      products.map((p) =>
-        p.id === productId ? { ...p, isActive: !p.isActive } : p
-      )
-    );
+  const handleToggleActive = async (productId: string) => {
+    const product = products.find((p) => p.id === productId);
+    if (!product) return;
+
+    try {
+      const response = await fetch(`/api/admin/products/${productId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ isActive: !product.isActive }),
+      });
+
+      if (response.ok) {
+        const updatedProduct = await response.json();
+        setProducts(
+          products.map((p) => (p.id === productId ? updatedProduct : p))
+        );
+      } else {
+        alert("Erreur lors de la mise à jour du produit");
+      }
+    } catch (error) {
+      console.error("Erreur:", error);
+      alert("Erreur lors de la mise à jour du produit");
+    }
   };
 
-  const handleToggleFeatured = (productId: string) => {
-    setProducts(
-      products.map((p) =>
-        p.id === productId ? { ...p, isFeatured: !p.isFeatured } : p
-      )
-    );
+  const handleToggleFeatured = async (productId: string) => {
+    const product = products.find((p) => p.id === productId);
+    if (!product) return;
+
+    try {
+      const response = await fetch(`/api/admin/products/${productId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ isFeatured: !product.isFeatured }),
+      });
+
+      if (response.ok) {
+        const updatedProduct = await response.json();
+        setProducts(
+          products.map((p) => (p.id === productId ? updatedProduct : p))
+        );
+      } else {
+        alert("Erreur lors de la mise à jour du produit");
+      }
+    } catch (error) {
+      console.error("Erreur:", error);
+      alert("Erreur lors de la mise à jour du produit");
+    }
   };
 
   if (loading) {
@@ -299,11 +321,13 @@ export default function AdminProductsPage() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               >
                 <option value="all">Toutes les catégories</option>
-                {categories.map((category) => (
-                  <option key={category.id} value={category.slug}>
-                    {category.name}
-                  </option>
-                ))}
+                {categories &&
+                  Array.isArray(categories) &&
+                  categories.map((category) => (
+                    <option key={category.id} value={category.slug}>
+                      {category.name}
+                    </option>
+                  ))}
               </select>
             </div>
 
@@ -380,26 +404,36 @@ export default function AdminProductsPage() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="h-12 w-12 flex-shrink-0">
-                            <div className="h-12 w-12 rounded-lg bg-gray-200 flex items-center justify-center">
-                              <svg
-                                className="w-6 h-6 text-gray-400"
-                                fill="currentColor"
-                                viewBox="0 0 20 20"
-                              >
-                                <path
-                                  fillRule="evenodd"
-                                  d="M4 3a2 2 0 000 4h12a2 2 0 000-4H4zm0 6a2 2 0 000 4h12a2 2 0 000-4H4zm0 6a2 2 0 000 4h12a2 2 0 000-4H4z"
-                                  clipRule="evenodd"
-                                />
-                              </svg>
-                            </div>
+                            {product.images.length > 0 ? (
+                              <Image
+                                src={product.images[0].url}
+                                alt={product.images[0].alt || product.name}
+                                className="h-12 w-12 rounded-lg object-cover"
+                                width={48}
+                                height={48}
+                              />
+                            ) : (
+                              <div className="h-12 w-12 rounded-lg bg-gray-200 flex items-center justify-center">
+                                <svg
+                                  className="w-6 h-6 text-gray-400"
+                                  fill="currentColor"
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path
+                                    fillRule="evenodd"
+                                    d="M4 3a2 2 0 000 4h12a2 2 0 000-4H4zm0 6a2 2 0 000 4h12a2 2 0 000-4H4zm0 6a2 2 0 000 4h12a2 2 0 000-4H4z"
+                                    clipRule="evenodd"
+                                  />
+                                </svg>
+                              </div>
+                            )}
                           </div>
                           <div className="ml-4">
                             <div className="text-sm font-medium text-gray-900 max-w-xs truncate">
                               {product.name}
                             </div>
                             <div className="text-sm text-gray-500 max-w-xs truncate">
-                              {product.description}
+                              {product.description || "Aucune description"}
                             </div>
                           </div>
                         </div>
@@ -478,6 +512,7 @@ export default function AdminProductsPage() {
                           </button>
 
                           <button
+                            type="button"
                             onClick={() => handleToggleActive(product.id)}
                             className={`p-1 rounded ${product.isActive ? "text-red-600 hover:text-red-900" : "text-green-600 hover:text-green-900"}`}
                             title={product.isActive ? "Désactiver" : "Activer"}

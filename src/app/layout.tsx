@@ -1,10 +1,23 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import "../styles/responsive.css";
-import { ToastProvider } from "@/components/ui/ToastContainer";
 import Header from "@/components/Header";
+import { ToastProvider } from "@/components/ui/ToastContainer";
+import type { Metadata } from "next";
 import { ViewTransitions } from "next-view-transitions";
+import { Geist, Geist_Mono } from "next/font/google";
+import "../styles/responsive.css";
+import "./globals.css";
+
+// Gestion globale des erreurs de transition
+if (typeof window !== "undefined") {
+  window.addEventListener("unhandledrejection", (event) => {
+    if (
+      event.reason?.name === "AbortError" &&
+      event.reason?.message?.includes("Transition was skipped")
+    ) {
+      // Ignorer silencieusement les erreurs de transition interrompues
+      event.preventDefault();
+    }
+  });
+}
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,15 +42,15 @@ export default function RootLayout({
   return (
     <ViewTransitions>
       <html lang="fr" className="h-full">
-      <body
+        <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased h-full`}
-      >
+        >
           <ToastProvider>
             <Header />
-        {children}
+            {children}
           </ToastProvider>
-      </body>
-    </html>
+        </body>
+      </html>
     </ViewTransitions>
   );
 }

@@ -1,10 +1,9 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useTransitionRouter } from "next-view-transitions";
-import Link from "next/link";
-import { useState, useEffect } from "react";
+import { Link } from "next-view-transitions";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 // Liens de navigation commerce
 const navigationLinks = [
@@ -51,8 +50,8 @@ const linkVariants = {
 
 const containerVariants = {
   hidden: {
-    width: 30,
     height: 10,
+    width: 30,
     transition: {
       duration: 1,
       ease: [0.87, 0, 0.13, 1],
@@ -60,9 +59,10 @@ const containerVariants = {
     },
   },
   visible: {
-    maxWidth: "90%",
+    maxWidth: "94vw",
     width: 400,
-    height: 600,
+    height: "60vh",
+    maxHeight: "60vh",
     transition: {
       duration: 0.8,
       ease: [0.87, 0, 0.13, 1],
@@ -74,54 +74,12 @@ const containerVariants = {
 
 export default function NavigationMenu() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const router = useTransitionRouter();
   const pathname = usePathname();
 
   // Fermer le menu quand on change de page
   useEffect(() => {
     setIsMenuOpen(false);
   }, [pathname]);
-
-  // Fonction d'animation pour les transitions de vue
-  function slideInOut() {
-    document.documentElement.animate(
-      [
-        {
-          opacity: 1,
-          scale: 1,
-          transform: "translateY(0)",
-        },
-        {
-          opacity: 0.2,
-          scale: 0.95,
-          transform: "translateY(-35%)",
-        },
-      ],
-      {
-        duration: 1000,
-        easing: "cubic-bezier(0.76, 0, 0.24, 1)",
-        fill: "forwards",
-        pseudoElement: "::view-transition-old(root)",
-      }
-    );
-
-    document.documentElement.animate(
-      [
-        {
-          clipPath: "polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)",
-        },
-        {
-          clipPath: "polygon(0% 100%, 100% 100%, 100% 0%, 0% 0%)",
-        },
-      ],
-      {
-        duration: 1000,
-        easing: "cubic-bezier(0.76, 0, 0.24, 1)",
-        fill: "forwards",
-        pseudoElement: "::view-transition-new(root)",
-      }
-    );
-  }
 
   return (
     <>
@@ -184,13 +142,7 @@ export default function NavigationMenu() {
                     >
                       <Link
                         href={link.href}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setIsMenuOpen(false);
-                          router.push(link.href, {
-                            onTransitionReady: slideInOut,
-                          });
-                        }}
+                        onClick={() => setIsMenuOpen(false)}
                         className="text-base sm:text-lg md:text-xl text-emerald-800 hover:text-emerald-900 transition-colors inline-block relative group font-semibold"
                       >
                         {link.label}
@@ -211,13 +163,7 @@ export default function NavigationMenu() {
                 </p>
                 <Link
                   href="/products?category=anti-age"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setIsMenuOpen(false);
-                    router.push("/products?category=anti-age", {
-                      onTransitionReady: slideInOut,
-                    });
-                  }}
+                  onClick={() => setIsMenuOpen(false)}
                   className="text-xs text-emerald-800 font-medium hover:text-emerald-900 underline"
                 >
                   Voir la collection →

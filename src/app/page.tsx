@@ -2,6 +2,7 @@
 
 import AuthModals from "@/components/AuthModals";
 import { useSession } from "@/lib/auth-client";
+import { Link } from "next-view-transitions";
 import { useState } from "react";
 
 export default function Home() {
@@ -64,12 +65,12 @@ export default function Home() {
             // Boutons pour utilisateurs non connectés
             <div className="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
               <div className="rounded-md shadow">
-                <a
+                <Link
                   href="/products"
                   className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 md:py-4 md:text-lg md:px-10 transition duration-200"
                 >
                   Découvrir nos produits
-                </a>
+                </Link>
               </div>
               <div className="mt-3 rounded-md shadow sm:mt-0 sm:ml-3">
                 <button
@@ -84,20 +85,20 @@ export default function Home() {
             // Boutons pour utilisateurs connectés
             <div className="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8">
               <div className="rounded-md shadow">
-                <a
+                <Link
                   href="/products"
                   className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 md:py-4 md:text-lg md:px-10 transition duration-200"
                 >
                   Découvrir nos produits
-                </a>
+                </Link>
               </div>
               <div className="mt-3 rounded-md shadow sm:mt-0 sm:ml-3">
-                <a
+                <Link
                   href="/dashboard"
                   className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-emerald-600 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10 transition duration-200"
                 >
                   Mon compte
-                </a>
+                </Link>
               </div>
             </div>
           )}
@@ -266,12 +267,12 @@ export default function Home() {
               </div>
               <div className="mt-8 flex lg:mt-0 lg:flex-shrink-0">
                 <div className="inline-flex rounded-md shadow">
-                  <a
+                  <Link
                     href="/products"
                     className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-emerald-600 bg-white hover:bg-emerald-50 transition duration-200"
                   >
                     Voir tous nos produits
-                  </a>
+                  </Link>
                 </div>
               </div>
             </div>

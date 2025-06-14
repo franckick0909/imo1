@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useTransitionRouter } from "next-view-transitions";
-import { useForm } from "react-hook-form";
+import CloudinaryUpload from "@/components/CloudinaryUpload";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 // Schema de validation
@@ -38,7 +39,7 @@ interface Category {
 }
 
 export default function NewProductPage() {
-  const router = useTransitionRouter();
+  const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [images, setImages] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -64,12 +65,17 @@ export default function NewProductPage() {
 
   // Charger les catégories
   useEffect(() => {
-    // Simuler le chargement des catégories
-    setCategories([
-      { id: "1", name: "Hydratation", slug: "hydratation" },
-      { id: "2", name: "Anti-âge", slug: "anti-age" },
-      { id: "3", name: "Purification", slug: "purification" },
-    ]);
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch("/api/categories");
+        const data = await response.json();
+        setCategories(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Erreur lors du chargement des catégories:", error);
+      }
+    };
+
+    fetchCategories();
   }, []);
 
   // Fonction utilitaire pour la génération de slug (pour future utilisation)
@@ -88,30 +94,43 @@ export default function NewProductPage() {
     setIsSubmitting(true);
 
     try {
-      // Simulation de l'envoi
-      console.log("Données du produit:", data);
+      // Préparer les données avec les images
+      const productData = {
+        ...data,
+        images: images,
+      };
 
-      // Ici, vous feriez l'appel API pour créer le produit
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      console.log("Données du produit:", productData);
+
+      // Appel API pour créer le produit
+      const response = await fetch("/api/products", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(productData),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result.error || "Erreur lors de la création du produit"
+        );
+      }
+
+      console.log("Produit créé:", result.product);
 
       // Redirection vers la liste des produits
       router.push("/admin/products");
     } catch (error) {
       console.error("Erreur lors de la création du produit:", error);
+      alert(
+        "Erreur lors de la création du produit: " + (error as Error).message
+      );
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const addImageUrl = () => {
-    const url = prompt("Entrez l'URL de l'image:");
-    if (url) {
-      setImages([...images, url]);
-    }
-  };
-
-  const removeImage = (index: number) => {
-    setImages(images.filter((_, i) => i !== index));
   };
 
   return (
@@ -159,7 +178,7 @@ export default function NewProductPage() {
               Informations de base
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-zinc-700">
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Nom du produit *
@@ -214,12 +233,16 @@ export default function NewProductPage() {
                   {...register("categoryId")}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none placeholder:text-gray-400 text-gray-400"
                 >
-                  <option value="" title="Sélectionner une catégorie">Sélectionner une catégorie</option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
+                  <option value="" title="Sélectionner une catégorie">
+                    Sélectionner une catégorie
+                  </option>
+                  {categories &&
+                    Array.isArray(categories) &&
+                    categories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
                 </select>
                 {errors.categoryId && (
                   <p className="text-red-500 text-sm mt-1">
@@ -243,7 +266,7 @@ export default function NewProductPage() {
           </div>
 
           {/* Prix et stock */}
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 text-zinc-700">
             <h2 className="text-xl font-semibold text-gray-900 mb-6">
               Prix et Stock
             </h2>
@@ -273,15 +296,18 @@ export default function NewProductPage() {
                   Prix de comparaison (€)
                 </label>
                 <input
-                  {...register("comparePrice", { valueAsNumber: true })}
+                  {...register("comparePrice", {
+                    setValueAs: (value) =>
+                      value === "" ? undefined : parseFloat(value),
+                  })}
                   type="number"
                   step="0.01"
                   min="0"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none placeholder:text-gray-400"
-                  placeholder="39.99"
+                  placeholder="39.99 (optionnel)"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Prix barré pour les promotions
+                  Prix barré pour les promotions (optionnel)
                 </p>
                 {watchComparePrice &&
                   watchPrice &&
@@ -294,14 +320,14 @@ export default function NewProductPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium mb-2 text-zinc-700">
                   Stock initial *
                 </label>
                 <input
                   {...register("stock", { valueAsNumber: true })}
                   type="number"
                   min="0"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none text-gray-400"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none placeholder:text-gray-400"
                   placeholder="25"
                 />
                 {errors.stock && (
@@ -316,10 +342,12 @@ export default function NewProductPage() {
                   Seuil stock faible
                 </label>
                 <input
-                  {...register("lowStockThreshold", { valueAsNumber: true })}
+                  {...register("lowStockThreshold", {
+                    setValueAs: (value) => (value === "" ? 5 : parseInt(value)),
+                  })}
                   type="number"
                   min="0"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none text-gray-400"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none placeholder:text-gray-400"
                   placeholder="5"
                 />
                 <p className="text-xs text-gray-500 mt-1">
@@ -346,18 +374,21 @@ export default function NewProductPage() {
               Caractéristiques physiques
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-zinc-700">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Poids (kg)
                 </label>
                 <input
-                  {...register("weight", { valueAsNumber: true })}
+                  {...register("weight", {
+                    setValueAs: (value) =>
+                      value === "" ? undefined : parseFloat(value),
+                  })}
                   type="number"
                   step="0.001"
                   min="0"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none placeholder:text-gray-400"
-                  placeholder="0.05"
+                  placeholder="0.05 (optionnel)"
                 />
               </div>
 
@@ -388,73 +419,18 @@ export default function NewProductPage() {
           </div>
 
           {/* Images */}
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 text-zinc-700">
             <h2 className="text-xl font-semibold text-gray-900 mb-6">Images</h2>
 
-            <div className="space-y-4">
-              <button
-                type="button"
-                onClick={addImageUrl}
-                className="w-full border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-emerald-400 transition-colors"
-              >
-                <svg
-                  className="w-12 h-12 mx-auto text-gray-400 mb-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
-                <p className="text-gray-600">Cliquez pour ajouter une image</p>
-                <p className="text-sm text-gray-500 mt-1">
-                  Ou glissez-déposez vos images ici
-                </p>
-              </button>
-
-              {images.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {images.map((image, index) => (
-                    <div key={index} className="relative group">
-                      <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center border">
-                        <span className="text-sm text-gray-500">
-                          Image {index + 1}
-                        </span>
-                      </div>
-                      <button
-                        title="Supprimer l'image"
-                        aria-label="Supprimer l'image"
-                        type="button"
-                        onClick={() => removeImage(index)}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={1.5}
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <CloudinaryUpload
+              images={images}
+              onImagesChange={setImages}
+              maxImages={8}
+            />
           </div>
 
           {/* SEO */}
-          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 text-zinc-700">
             <h2 className="text-xl font-semibold text-gray-900 mb-6">
               SEO et référencement
             </h2>

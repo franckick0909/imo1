@@ -1,17 +1,17 @@
 "use client";
 
+import { signOut, useSession } from "@/lib/auth-client";
 import { AnimatePresence, motion } from "framer-motion";
-import { useState, useEffect, useRef } from "react";
-import { usePathname } from "next/navigation";
 import { useTransitionRouter } from "next-view-transitions";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import {
-  FiSettings,
-  FiPackage,
-  FiShield,
-  FiLogOut,
   FiLogIn,
+  FiLogOut,
+  FiPackage,
+  FiSettings,
+  FiShield,
 } from "react-icons/fi";
-import { useSession, signOut } from "@/lib/auth-client";
 import AuthModals from "./AuthModals";
 import Portal from "./Portal";
 
@@ -87,9 +87,22 @@ export default function UserMenu() {
 
   const handleNavigation = (href: string) => {
     setIsUserMenuOpen(false);
-    router.push(href, {
-      onTransitionReady: slideInOut,
-    });
+    // Pour les pages admin, utiliser une navigation simple sans transition
+    if (href.startsWith("/admin")) {
+      router.push(href);
+    } else {
+      // Utiliser un timeout de sécurité pour les transitions
+      const timeoutId = setTimeout(() => {
+        router.push(href);
+      }, 2000);
+
+      router.push(href, {
+        onTransitionReady: () => {
+          clearTimeout(timeoutId);
+          slideInOut();
+        },
+      });
+    }
   };
 
   const handleOpenSignIn = () => {

@@ -28,7 +28,8 @@ body {
 /* Support pour l'API View Transitions */
 ::view-transition-old(root),
 ::view-transition-new(root) {
-  animation: none !important;
+  animation-duration: 0.2s !important;
+  animation-timing-function: ease-in-out !important;
   mix-blend-mode: normal;
 }
 
@@ -44,9 +45,22 @@ html {
 
 ::view-transition-new(root) {
   z-index: 10000;
-  animation: none !important;
+  animation-duration: 0.2s !important;
 }
 ::view-transition-old(root) {
   z-index: 1;
-  animation: none !important;
+  animation-duration: 0.2s !important;
+}
+
+/* Fallback pour les transitions qui échouent */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
+}
+
+/* Timeout de sécurité pour les transitions */
+html {
+  view-transition-name: none;
 }

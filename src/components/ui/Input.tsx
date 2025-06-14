@@ -21,7 +21,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     // États visuels
     const getInputStyles = () => {
       const baseStyles =
-        "w-full px-4 py-[10px] bg-transparent border-0 border-b-1 transition-all duration-200 focus:outline-none text-gray-900 placeholder-gray-500";
+        "w-full px-2 py-1 bg-transparent border-0 border-b-1 transition-all duration-200 focus:outline-none text-gray-900 placeholder-gray-500";
 
       if (error) {
         return `${baseStyles} border-b-red-500`;

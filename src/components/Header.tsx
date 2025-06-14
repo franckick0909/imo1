@@ -1,17 +1,15 @@
 "use client";
 
-import NavigationMenu from "./NavigationMenu";
-import CartSidebar from "./CartSidebar";
-import UserMenu from "./UserMenu";
-import Link from "next/link";
-import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useTransitionRouter } from "next-view-transitions";
+import { Link } from "next-view-transitions";
+import { useEffect, useState } from "react";
+import CartSidebar from "./CartSidebar";
+import NavigationMenu from "./NavigationMenu";
+import UserMenu from "./UserMenu";
 
 export default function Header() {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
-  const router = useTransitionRouter();
 
   useEffect(() => {
     const controlHeader = () => {
@@ -48,47 +46,6 @@ export default function Header() {
     };
   }, [lastScrollY]);
 
-  // Fonction d'animation pour les transitions de vue
-  function slideInOut() {
-    document.documentElement.animate(
-      [
-        {
-          opacity: 1,
-          scale: 1,
-          transform: "translateY(0)",
-        },
-        {
-          opacity: 0.2,
-          scale: 0.95,
-          transform: "translateY(-35%)",
-        },
-      ],
-      {
-        duration: 1000,
-        easing: "cubic-bezier(0.76, 0, 0.24, 1)",
-        fill: "forwards",
-        pseudoElement: "::view-transition-old(root)",
-      }
-    );
-
-    document.documentElement.animate(
-      [
-        {
-          clipPath: "polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%)",
-        },
-        {
-          clipPath: "polygon(0% 100%, 100% 100%, 100% 0%, 0% 0%)",
-        },
-      ],
-      {
-        duration: 1000,
-        easing: "cubic-bezier(0.76, 0, 0.24, 1)",
-        fill: "forwards",
-        pseudoElement: "::view-transition-new(root)",
-      }
-    );
-  }
-
   const headerVariants = {
     visible: {
       y: 0,
@@ -123,12 +80,6 @@ export default function Header() {
         <div className="flex-1 flex justify-center">
           <Link
             href="/"
-            onClick={(e) => {
-              e.preventDefault();
-              router.push("/", {
-                onTransitionReady: slideInOut,
-              });
-            }}
             className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-emerald-800 transition-all duration-300 cursor-pointer"
           >
             BioCrème
