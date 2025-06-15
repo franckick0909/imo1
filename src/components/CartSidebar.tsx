@@ -1,74 +1,28 @@
 "use client";
 
+import { useCart } from "@/contexts/CartContext";
 import { AnimatePresence, motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { Link, useTransitionRouter } from "next-view-transitions";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useTransitionRouter } from "next-view-transitions";
-
-interface CartItem {
-  id: number;
-  name: string;
-  price: number;
-  quantity: number;
-  image: string;
-}
+import { useEffect, useState } from "react";
 
 export default function CartSidebar() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const router = useTransitionRouter();
   const pathname = usePathname();
-
-  // Mock cart items pour l'exemple
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: 1,
-      name: "Crème Hydratante Bio à l'Aloe Vera",
-      price: 29.99,
-      quantity: 1,
-      image: "/placeholder.jpg",
-    },
-    {
-      id: 2,
-      name: "Sérum Anti-Âge Vitamine C",
-      price: 49.99,
-      quantity: 2,
-      image: "/placeholder.jpg",
-    },
-    {
-      id: 3,
-      name: "Masque Argile Verte & Thé Vert",
-      price: 24.99,
-      quantity: 1,
-      image: "/placeholder.jpg",
-    },
-  ]);
+  const { items, total, itemCount, updateQuantity, removeItem, isHydrated } =
+    useCart();
 
   // Fermer le panier quand on change de page
   useEffect(() => {
     setIsCartOpen(false);
   }, [pathname]);
 
-  const cartTotal = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
-  const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-
-  const updateQuantity = (id: number, newQuantity: number) => {
-    if (newQuantity <= 0) {
-      setCartItems(cartItems.filter((item) => item.id !== id));
-    } else {
-      setCartItems(
-        cartItems.map((item) =>
-          item.id === id ? { ...item, quantity: newQuantity } : item
-        )
-      );
-    }
-  };
-
-  const removeItem = (id: number) => {
-    setCartItems(cartItems.filter((item) => item.id !== id));
-  };
+  // Afficher un état de chargement pendant l'hydratation
+  const displayItemCount = isHydrated ? itemCount : 0;
+  const displayItems = isHydrated ? items : [];
+  const displayTotal = isHydrated ? total : 0;
 
   return (
     <>
@@ -95,15 +49,15 @@ export default function CartSidebar() {
             />
           </svg>
           {/* Badge du nombre d'articles */}
-          {totalItems > 0 && (
+          {displayItemCount > 0 && (
             <span className="absolute -top-0.5 sm:-top-1 -right-0.5 sm:-right-1 bg-emerald-500 text-white text-xs rounded-full h-4 sm:h-5 w-4 sm:w-5 flex items-center justify-center font-medium">
-              {totalItems}
+              {displayItemCount}
             </span>
           )}
         </button>
       </div>
 
-      {/* Cart Sidebar - Sans Overlay */}
+      {/* Cart Sidebar */}
       <AnimatePresence>
         {isCartOpen && (
           <motion.div
@@ -120,13 +74,11 @@ export default function CartSidebar() {
               width: "500px",
               maxWidth: "90vw",
             }}
-            // Responsive avec CSS custom properties pour plus de contrôle
-            data-responsive-width="true"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 sm:p-5 md:p-6 border-b border-gray-200">
               <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
-                Mon Panier ({totalItems})
+                Mon Panier ({displayItemCount})
               </h2>
               <button
                 type="button"
@@ -152,7 +104,13 @@ export default function CartSidebar() {
 
             {/* Contenu du panier */}
             <div className="flex-1 overflow-y-auto">
-              {cartItems.length === 0 ? (
+              {!isHydrated ? (
+                // État de chargement pendant l'hydratation
+                <div className="flex flex-col items-center justify-center h-full p-6">
+                  <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                  <p className="text-gray-500">Chargement du panier...</p>
+                </div>
+              ) : displayItems.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full p-6">
                   <svg
                     className="w-16 h-16 text-gray-400 mb-4"
@@ -187,7 +145,7 @@ export default function CartSidebar() {
                 </div>
               ) : (
                 <div className="p-6 space-y-4">
-                  {cartItems.map((item) => (
+                  {displayItems.map((item) => (
                     <motion.div
                       key={item.id}
                       layout
@@ -197,86 +155,58 @@ export default function CartSidebar() {
                       className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg"
                     >
                       {/* Image */}
-                      <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <svg
-                          className="w-8 h-8 text-gray-400"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M4 3a2 2 0 000 4h12a2 2 0 000-4H4zm0 6a2 2 0 000 4h12a2 2 0 000-4H4zm0 6a2 2 0 000 4h12a2 2 0 000-4H4z"
-                            clipRule="evenodd"
+                      <div className="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                        {item.image && item.image !== "/placeholder.jpg" ? (
+                          <Image
+                            src={item.image}
+                            alt={item.name}
+                            width={64}
+                            height={64}
+                            className="w-full h-full object-cover"
                           />
-                        </svg>
+                        ) : (
+                          <svg
+                            className="w-8 h-8 text-gray-400"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M4 3a2 2 0 000 4h12a2 2 0 000-4H4zm0 6a2 2 0 000 4h12a2 2 0 000-4H4zm0 6a2 2 0 000 4h12a2 2 0 000-4H4z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        )}
                       </div>
 
                       {/* Détails */}
-                      <div className="flex-1">
-                        <h4 className="font-medium text-gray-900 text-sm leading-tight">
+                      <div className="flex-1 min-w-0">
+                        <Link
+                          href={`/products/${item.slug}`}
+                          onClick={() => setIsCartOpen(false)}
+                          className="font-medium text-gray-900 hover:text-emerald-600 transition-colors block truncate"
+                        >
                           {item.name}
-                        </h4>
-                        <p className="text-emerald-600 font-semibold mt-1">
-                          €{item.price.toFixed(2)}
+                        </Link>
+                        <p className="text-sm text-gray-500 mt-1">
+                          €{item.price.toFixed(2)} / unité
                         </p>
+                        <p className="text-sm font-medium text-emerald-600 mt-1">
+                          Total: €{(item.price * item.quantity).toFixed(2)}
+                        </p>
+                      </div>
 
-                        {/* Contrôles quantité */}
-                        <div className="flex items-center gap-3 mt-2">
-                          <div className="flex items-center border border-gray-300 rounded text-gray-700">
-                            <button
-                              type="button"
-                              onClick={() =>
-                                updateQuantity(item.id, item.quantity - 1)
-                              }
-                              className="p-1 hover:bg-gray-100 transition-colors"
-                              aria-label="Diminuer la quantité"
-                            >
-                              <svg
-                                className="w-4 h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={1.5}
-                                  d="M20 12H4"
-                                />
-                              </svg>
-                            </button>
-                            <span className="px-3 py-1 text-sm font-medium">
-                              {item.quantity}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                updateQuantity(item.id, item.quantity + 1)
-                              }
-                              className="p-1 hover:bg-gray-100 transition-colors"
-                              aria-label="Augmenter la quantité"
-                            >
-                              <svg
-                                className="w-4 h-4"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={1.5}
-                                  d="M12 4v16m8-8H4"
-                                />
-                              </svg>
-                            </button>
-                          </div>
-
+                      {/* Contrôles quantité */}
+                      <div className="flex flex-col items-end gap-2">
+                        <div className="flex items-center gap-2 text-zinc-700">
                           <button
                             type="button"
-                            onClick={() => removeItem(item.id)}
-                            className="text-red-500 hover:text-red-700 transition-colors p-1"
-                            aria-label="Supprimer l'article"
+                            onClick={() =>
+                              updateQuantity(item.id, item.quantity - 1)
+                            }
+                            className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center transition-colors"
+                            disabled={item.quantity <= 1}
+                            aria-label="Diminuer la quantité"
                           >
                             <svg
                               className="w-4 h-4"
@@ -287,19 +217,57 @@ export default function CartSidebar() {
                               <path
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
-                                strokeWidth={1.5}
-                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                strokeWidth={2}
+                                d="M20 12H4"
+                              />
+                            </svg>
+                          </button>
+                          <span className="w-8 text-center font-medium">
+                            {item.quantity}
+                          </span>
+                          <button
+                            onClick={() =>
+                              updateQuantity(item.id, item.quantity + 1)
+                            }
+                            className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center transition-colors"
+                            disabled={item.quantity >= item.stock}
+                            aria-label="Augmenter la quantité"
+                          >
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 4v16m8-8H4"
                               />
                             </svg>
                           </button>
                         </div>
-                      </div>
-
-                      {/* Prix total pour cet article */}
-                      <div className="text-right">
-                        <p className="font-semibold text-gray-900">
-                          €{(item.price * item.quantity).toFixed(2)}
-                        </p>
+                        <button
+                          onClick={() => removeItem(item.id)}
+                          className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-50 transition-colors"
+                          aria-label="Supprimer cet article"
+                          title="Supprimer cet article"
+                        >
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                            />
+                          </svg>
+                        </button>
                       </div>
                     </motion.div>
                   ))}
@@ -307,53 +275,35 @@ export default function CartSidebar() {
               )}
             </div>
 
-            {/* Footer avec total et boutons */}
-            {cartItems.length > 0 && (
-              <div className="border-t border-gray-200 p-6 space-y-4">
-                {/* Sous-total */}
-                <div className="flex justify-between items-center text-lg">
-                  <span className="font-medium text-gray-900">Sous-total</span>
-                  <span className="font-bold text-emerald-600">
-                    €{cartTotal.toFixed(2)}
+            {/* Footer avec total et checkout */}
+            {isHydrated && displayItems.length > 0 && (
+              <div className="border-t border-gray-200 p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="text-lg font-semibold text-gray-900">
+                    Total:
+                  </span>
+                  <span className="text-2xl font-bold text-emerald-600">
+                    €{displayTotal.toFixed(2)}
                   </span>
                 </div>
-
-                <p className="text-sm text-gray-500 text-center">
-                  Frais de livraison calculés à l&apos;étape suivante
-                </p>
-
-                {/* Boutons d'action */}
-                <div className="space-y-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsCartOpen(false);
-                      router.push("/cart");
-                    }}
-                    className="w-full bg-emerald-600 text-white py-3 px-4 rounded-lg hover:bg-emerald-700 transition-colors font-medium"
-                  >
-                    Voir le panier complet
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsCartOpen(false);
-                      router.push("/checkout");
-                    }}
-                    className="w-full bg-gray-900 text-white py-3 px-4 rounded-lg hover:bg-gray-800 transition-colors font-medium"
-                  >
-                    Passer la commande
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setIsCartOpen(false)}
-                    className="w-full border border-gray-300 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-                  >
-                    Continuer mes achats
-                  </button>
-                </div>
+                <button
+                  onClick={() => {
+                    setIsCartOpen(false);
+                    router.push("/checkout");
+                  }}
+                  className="w-full bg-emerald-600 text-white py-3 rounded-lg hover:bg-emerald-700 transition-colors font-medium"
+                >
+                  Procéder au paiement
+                </button>
+                <button
+                  onClick={() => {
+                    setIsCartOpen(false);
+                    router.push("/products");
+                  }}
+                  className="w-full mt-2 border border-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                >
+                  Continuer mes achats
+                </button>
               </div>
             )}
           </motion.div>

@@ -1,5 +1,6 @@
 import Header from "@/components/Header";
 import { ToastProvider } from "@/components/ui/ToastContainer";
+import { CartProvider } from "@/contexts/CartContext";
 import type { Metadata } from "next";
 import { ViewTransitions } from "next-view-transitions";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -45,10 +46,12 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased h-full`}
         >
-          <ToastProvider>
-            <Header />
-            {children}
-          </ToastProvider>
+          <CartProvider>
+            <ToastProvider>
+              <Header />
+              {children}
+            </ToastProvider>
+          </CartProvider>
         </body>
       </html>
     </ViewTransitions>
