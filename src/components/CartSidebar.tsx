@@ -102,7 +102,7 @@ export default function CartSidebar() {
                 exit={{ clipPath: "inset(0 0 0 100%)" }}
                 transition={{
                   duration: 0.7,
-                  ease: [0.76, 0, 0.24, 1],
+                  ease: [0.76, 0, 0.24, 1] as const,
                 }}
                 className="fixed right-0 top-0 bg-white shadow-2xl flex flex-col z-[9999] border-l border-emerald-300"
                 style={{

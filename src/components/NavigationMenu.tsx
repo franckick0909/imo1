@@ -118,7 +118,7 @@ export default function NavigationMenu() {
             <motion.div
               className="flex flex-col"
               animate={{ y: "25%" }}
-              transition={{ duration: 0.3, ease: [0.76, 0, 0.24, 1] }}
+              transition={{ duration: 0.3, ease: [0.76, 0, 0.24, 1] as const }}
             >
               <span className="h-8 sm:h-9 md:h-10 w-16 sm:w-20 md:w-24 flex items-center justify-center text-black font-medium rounded-full bg-zinc-100 text-xs sm:text-sm md:text-base hover:bg-zinc-200 transition-colors duration-300">
                 Menu
