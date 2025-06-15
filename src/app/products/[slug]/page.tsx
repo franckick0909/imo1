@@ -1,4 +1,5 @@
 import AddToCartButton from "@/components/AddToCartButton";
+import ProductAccordion from "@/components/ProductAccordion";
 import ProductImageGallery from "@/components/ProductImageGallery";
 import prisma from "@/lib/prisma";
 import { Link } from "next-view-transitions";
@@ -114,49 +115,57 @@ export default async function ProductDetailPage({ params }: PageProps) {
   const isLowStock = product.stock < 10;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 pt-24">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Breadcrumb */}
-        <nav className="flex mb-8 overflow-hidden" aria-label="Breadcrumb">
-          <ol className="flex items-center space-x-1 sm:space-x-2 text-xs sm:text-sm min-w-0 w-full">
-            <li className="flex-shrink-0">
-              <Link href="/" className="text-gray-500 hover:text-gray-700">
-                Accueil
-              </Link>
-            </li>
-            <li className="text-gray-400 flex-shrink-0">/</li>
-            <li className="flex-shrink-0">
-              <Link
-                href="/products"
-                className="text-gray-500 hover:text-gray-700"
-              >
-                Produits
-              </Link>
-            </li>
-            <li className="text-gray-400 flex-shrink-0">/</li>
-            <li className="min-w-0 flex-shrink">
-              <Link
-                href={`/products?category=${product.category.slug}`}
-                className="text-gray-500 hover:text-gray-700 truncate block"
-                title={product.category.name}
-              >
-                {product.category.name}
-              </Link>
-            </li>
-            <li className="text-gray-400 flex-shrink-0">/</li>
-            <li className="text-gray-900 font-medium min-w-0 flex-1">
-              <span className="truncate block" title={product.name}>
-                {product.name}
-              </span>
-            </li>
-          </ol>
-        </nav>
+    <div className="min-h-screen bg-gray-50">
+      {/* Breadcrumb */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <nav className="flex overflow-hidden" aria-label="Breadcrumb">
+            <ol className="flex items-center space-x-2 text-sm min-w-0 w-full">
+              <li className="flex-shrink-0">
+                <Link
+                  href="/"
+                  className="text-gray-500 hover:text-emerald-600 transition-colors"
+                >
+                  Accueil
+                </Link>
+              </li>
+              <li className="text-gray-300 flex-shrink-0">/</li>
+              <li className="flex-shrink-0">
+                <Link
+                  href="/products"
+                  className="text-gray-500 hover:text-emerald-600 transition-colors"
+                >
+                  Produits
+                </Link>
+              </li>
+              <li className="text-gray-300 flex-shrink-0">/</li>
+              <li className="min-w-0 flex-shrink">
+                <Link
+                  href={`/products?category=${product.category.slug}`}
+                  className="text-gray-500 hover:text-emerald-600 transition-colors truncate block"
+                  title={product.category.name}
+                >
+                  {product.category.name}
+                </Link>
+              </li>
+              <li className="text-gray-300 flex-shrink-0">/</li>
+              <li className="text-gray-900 font-medium min-w-0 flex-1">
+                <span className="truncate block" title={product.name}>
+                  {product.name}
+                </span>
+              </li>
+            </ol>
+          </nav>
+        </div>
+      </div>
 
-        {/* Contenu principal */}
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden mb-12">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 p-8">
+      {/* Contenu principal */}
+      <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Section produit principale */}
+        <div className="bg-white rounded-3xl shadow-sm overflow-hidden mb-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2">
             {/* Galerie d'images */}
-            <div className="space-y-4">
+            <div className="p-8 lg:p-12">
               <ProductImageGallery
                 images={product.images}
                 productName={product.name}
@@ -164,88 +173,304 @@ export default async function ProductDetailPage({ params }: PageProps) {
             </div>
 
             {/* Informations produit */}
-            <div className="space-y-6">
-              {/* Badges */}
-              <div className="flex gap-2">
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+            <div className="p-8 lg:p-12 bg-gray-50 flex flex-col justify-center">
+              {/* Badges et catégorie */}
+              <div className="flex flex-wrap gap-2 mb-6">
+                <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-emerald-100 text-emerald-700 border border-emerald-200">
                   {product.category.name}
                 </span>
                 {hasPromo && (
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                    Promotion
+                  <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-lg">
+                    -
+                    {Math.round(
+                      ((product.comparePrice! - product.price) /
+                        product.comparePrice!) *
+                        100
+                    )}
+                    % OFF
                   </span>
                 )}
                 {isLowStock && (
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                  <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-orange-100 text-orange-700 border border-orange-200">
                     Stock limité
                   </span>
                 )}
               </div>
 
-              {/* Titre et description courte */}
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-4">
-                  {product.name}
-                </h1>
-                <p className="text-lg text-gray-600">
-                  {product.description || "Aucune description disponible"}
-                </p>
+              {/* Titre */}
+              <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+                {product.name}
+              </h1>
+
+              {/* Étoiles de notation */}
+              <div className="flex items-center gap-4 mb-6">
+                <div className="flex items-center space-x-1">
+                  {[...Array(5)].map((_, i) => (
+                    <svg
+                      key={i}
+                      className={`w-5 h-5 ${i < 4 ? "text-yellow-400" : "text-gray-200"}`}
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
+                </div>
+                <span className="text-gray-600 text-sm">(4.0) • 127 avis</span>
               </div>
 
               {/* Prix */}
-              <div className="flex items-center gap-4">
-                <span className="text-4xl font-bold text-gray-900">
-                  €{product.price.toFixed(2)}
-                </span>
-                {product.comparePrice && (
-                  <>
-                    <span className="text-2xl text-gray-500 line-through">
+              <div className="mb-8">
+                <div className="flex items-baseline gap-4 mb-2">
+                  <span className="text-5xl font-bold text-gray-900">
+                    €{product.price.toFixed(2)}
+                  </span>
+                  {product.comparePrice && (
+                    <span className="text-2xl text-gray-400 line-through">
                       €{product.comparePrice.toFixed(2)}
                     </span>
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
-                      -
-                      {Math.round(
-                        ((product.comparePrice - product.price) /
-                          product.comparePrice) *
-                          100
-                      )}
-                      %
-                    </span>
-                  </>
-                )}
+                  )}
+                </div>
+                <p className="text-gray-600">
+                  TVA incluse • Livraison gratuite dès 50€
+                </p>
               </div>
 
-              {/* Stock */}
-              <div className="flex items-center gap-3">
-                <div
-                  className={`w-3 h-3 rounded-full ${
-                    product.stock > 10
-                      ? "bg-green-500"
-                      : product.stock > 5
-                        ? "bg-orange-500"
-                        : "bg-red-500"
-                  }`}
-                />
-                <span className="text-gray-600">
-                  {product.stock > 0
-                    ? `En stock (${product.stock} unités)`
-                    : "Rupture de stock"}
-                </span>
+              {/* Indicateurs de stock et qualité */}
+              <div className="grid grid-cols-2 gap-4 mb-8">
+                <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200">
+                  <div
+                    className={`w-3 h-3 rounded-full ${product.stock > 10 ? "bg-green-500" : product.stock > 5 ? "bg-orange-500" : "bg-red-500"}`}
+                  />
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">Stock</p>
+                    <p className="text-xs text-gray-600">
+                      {product.stock > 0
+                        ? `${product.stock} unités`
+                        : "Rupture"}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200">
+                  <svg
+                    className="w-6 h-6 text-emerald-500"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">
+                      Bio & Naturel
+                    </p>
+                    <p className="text-xs text-gray-600">Certifié</p>
+                  </div>
+                </div>
               </div>
 
               {/* Actions */}
-              <div className="flex gap-4 pt-4">
+              <div className="space-y-4">
                 <AddToCartButton
                   product={product}
-                  className="text-lg px-8 py-4"
+                  className="w-full text-lg px-8 py-4 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
                 />
-                <button
-                  className="px-6 py-4 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                  title="Ajouter aux favoris"
-                  aria-label="Ajouter aux favoris"
-                >
+
+                <div className="flex gap-3">
+                  <button
+                    className="flex-1 px-6 py-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                    title="Ajouter aux favoris"
+                    aria-label="Ajouter aux favoris"
+                  >
+                    <svg
+                      className="w-5 h-5 text-gray-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                      />
+                    </svg>
+                    <span className="text-sm font-medium text-gray-700">
+                      Favoris
+                    </span>
+                  </button>
+
+                  <button
+                    className="flex-1 px-6 py-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                    title="Partager"
+                    aria-label="Partager"
+                  >
+                    <svg
+                      className="w-5 h-5 text-gray-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
+                      />
+                    </svg>
+                    <span className="text-sm font-medium text-gray-700">
+                      Partager
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Garanties */}
+              <div className="mt-8 pt-8 border-t border-gray-200">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <svg
+                      className="w-4 h-4 text-emerald-500"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span className="text-gray-700">Livraison 2-3 jours</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <svg
+                      className="w-4 h-4 text-emerald-500"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span className="text-gray-700">Retours 30 jours</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <svg
+                      className="w-4 h-4 text-emerald-500"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span className="text-gray-700">
+                      Satisfait ou remboursé
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <svg
+                      className="w-4 h-4 text-emerald-500"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    <span className="text-gray-700">Support 7j/7</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Sections d'informations avec accordéon */}
+        <div className="mb-12">
+          <ProductAccordion
+            items={[
+              {
+                id: "description",
+                title: "Description",
+                content:
+                  product.description ||
+                  "Soin naturel premium pour une peau éclatante et nourrie en profondeur. Formulé avec des ingrédients biologiques certifiés pour respecter votre peau et l'environnement.",
+                icon: (
                   <svg
-                    className="w-6 h-6 text-gray-600"
+                    className="w-5 h-5 text-gray-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                ),
+              },
+              {
+                id: "ingredients",
+                title: "Ingrédients Naturels",
+                content:
+                  "Formulé avec des ingrédients biologiques certifiés :\n\n• Huile d'argan bio - Nourrit et régénère\n• Beurre de karité - Hydrate en profondeur\n• Aloe vera - Apaise et rafraîchit\n• Extraits botaniques - Antioxydants naturels\n• Vitamine E - Protection anti-âge\n\nTous nos ingrédients sont issus de l'agriculture biologique et du commerce équitable.",
+                icon: (
+                  <svg
+                    className="w-5 h-5 text-emerald-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+                    />
+                  </svg>
+                ),
+              },
+              {
+                id: "usage",
+                title: "Mode d'emploi",
+                content:
+                  "Application recommandée :\n\n1. Nettoyez votre peau avec un démaquillant doux\n2. Appliquez une petite quantité sur peau propre et sèche\n3. Massez délicatement du centre vers l'extérieur du visage\n4. Évitez le contour des yeux\n5. Utilisez matin et/ou soir selon vos besoins\n\nPour de meilleurs résultats, utilisez quotidiennement pendant au moins 4 semaines.",
+                icon: (
+                  <svg
+                    className="w-5 h-5 text-blue-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                ),
+              },
+              {
+                id: "benefits",
+                title: "Bienfaits",
+                content:
+                  "Les bienfaits de ce soin :\n\n• Hydratation intense et durable\n• Nutrition en profondeur\n• Apaisement des irritations\n• Révélation de l'éclat naturel\n• Protection contre les agressions extérieures\n• Amélioration de l'élasticité de la peau\n• Réduction des signes de fatigue\n\nRésultats visibles dès les premières applications.",
+                icon: (
+                  <svg
+                    className="w-5 h-5 text-pink-600"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -257,45 +482,19 @@ export default async function ProductDetailPage({ params }: PageProps) {
                       d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                     />
                   </svg>
-                </button>
-              </div>
-
-              {/* Informations supplémentaires */}
-              <div className="border-t pt-6">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="font-medium text-gray-900">
-                      Livraison:
-                    </span>
-                    <span className="text-gray-600 ml-2">2-3 jours ouvrés</span>
-                  </div>
-                  <div>
-                    <span className="font-medium text-gray-900">Retours:</span>
-                    <span className="text-gray-600 ml-2">30 jours</span>
-                  </div>
-                  <div>
-                    <span className="font-medium text-gray-900">Garantie:</span>
-                    <span className="text-gray-600 ml-2">
-                      Satisfait ou remboursé
-                    </span>
-                  </div>
-                  <div>
-                    <span className="font-medium text-gray-900">Support:</span>
-                    <span className="text-gray-600 ml-2">7j/7</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+                ),
+              },
+            ]}
+          />
         </div>
 
-        {/* Description longue */}
+        {/* Description longue si elle existe */}
         {product.longDescription && (
-          <div className="bg-white rounded-2xl shadow-lg p-8 mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          <div className="bg-white rounded-2xl shadow-sm p-8 mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
               Description détaillée
             </h2>
-            <div className="prose max-w-none text-gray-600">
+            <div className="prose max-w-none text-gray-700 text-lg leading-relaxed">
               <p>{product.longDescription}</p>
             </div>
           </div>
@@ -303,57 +502,55 @@ export default async function ProductDetailPage({ params }: PageProps) {
 
         {/* Produits similaires */}
         {similarProducts.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-lg p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-8">
-              Produits similaires
+          <div className="bg-white rounded-2xl shadow-sm p-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+              Vous pourriez aussi aimer
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {similarProducts.map((similar) => (
                 <Link
                   key={similar.id}
                   href={`/products/${similar.slug}`}
-                  className="group"
+                  className="group bg-gray-50 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300"
                 >
-                  <div className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                    <div className="aspect-square bg-gray-200 relative">
-                      {similar.images[0] ? (
-                        <Image
-                          src={similar.images[0].url}
-                          alt={similar.images[0].alt || similar.name}
-                          width={300}
-                          height={300}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-400">
-                          <svg
-                            className="w-12 h-12"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M4 3a2 2 0 000 4h12a2 2 0 000-4H4zm0 6a2 2 0 000 4h12a2 2 0 000-4H4zm0 6a2 2 0 000 4h12a2 2 0 000-4H4z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-4">
-                      <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
-                        {similar.name}
-                      </h3>
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg font-bold text-gray-900">
-                          €{similar.price.toFixed(2)}
-                        </span>
-                        {similar.comparePrice && (
-                          <span className="text-sm text-gray-500 line-through">
-                            €{similar.comparePrice.toFixed(2)}
-                          </span>
-                        )}
+                  <div className="aspect-square bg-white relative overflow-hidden">
+                    {similar.images[0] ? (
+                      <Image
+                        src={similar.images[0].url}
+                        alt={similar.images[0].alt || similar.name}
+                        width={300}
+                        height={300}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-300">
+                        <svg
+                          className="w-16 h-16"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M4 3a2 2 0 000 4h12a2 2 0 000-4H4zm0 6a2 2 0 000 4h12a2 2 0 000-4H4zm0 6a2 2 0 000 4h12a2 2 0 000-4H4z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
                       </div>
+                    )}
+                  </div>
+                  <div className="p-6">
+                    <h3 className="font-semibold text-gray-900 mb-3 line-clamp-2 group-hover:text-emerald-600 transition-colors">
+                      {similar.name}
+                    </h3>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl font-bold text-gray-900">
+                        €{similar.price.toFixed(2)}
+                      </span>
+                      {similar.comparePrice && (
+                        <span className="text-sm text-gray-400 line-through">
+                          €{similar.comparePrice.toFixed(2)}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </Link>
