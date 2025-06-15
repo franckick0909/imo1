@@ -272,7 +272,7 @@ export default function AuthModals({
           onResponse: (ctx) => {
             if (ctx.response.ok) {
               success(
-                "Compte créé avec succès ! Un code de vérification à 6 chiffres a été envoyé à votre email. Vérifiez votre boîte de réception (et vos spams) pour vous connecter.",
+                "Compte créé avec succès ! Vérifiez votre email pour vous connecter.",
                 {
                   persistent: true,
                 }

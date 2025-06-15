@@ -3,12 +3,18 @@
 import AuthModals from "@/components/AuthModals";
 import { useSession } from "@/lib/auth-client";
 import { Link } from "next-view-transitions";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function HomeClient() {
   const { data: session, isPending } = useSession();
   const [showSignIn, setShowSignIn] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  // Éviter les problèmes d'hydratation
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleOpenSignIn = () => {
     setShowSignIn(true);
@@ -30,7 +36,8 @@ export default function HomeClient() {
     }
   };
 
-  if (isPending) {
+  // Affichage de chargement pendant l'hydratation ou la vérification de session
+  if (!isClient || isPending) {
     return (
       <div className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-emerald-600 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10 transition duration-200">
         Chargement...
@@ -52,7 +59,7 @@ export default function HomeClient() {
           href="/dashboard"
           className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-emerald-600 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10 transition duration-200"
         >
-          Mon compte
+          Mon dashboard
         </Link>
       )}
 

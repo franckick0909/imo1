@@ -121,9 +121,9 @@ export default async function ProductDetailPage({ params }: PageProps) {
   const isLowStock = product.stock < 10;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pt-20">
       {/* Breadcrumb */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-gradient-to-b from-emerald-50 to-gray-50">
         <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <nav className="flex overflow-hidden" aria-label="Breadcrumb">
             <ol className="flex items-center space-x-2 text-sm min-w-0 w-full">

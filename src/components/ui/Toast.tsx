@@ -30,19 +30,19 @@ const Toast = ({
     }
   }, [isVisible, duration, onClose]);
 
-  // Styles selon le type avec glassmorphism
+  // Styles selon le type avec des couleurs plus modernes
   const getToastStyles = () => {
     switch (type) {
       case "success":
-        return "bg-green-500 text-white border border-green-400";
+        return "bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-emerald-100/50";
       case "error":
-        return "bg-rose-500 text-white border border-rose-400";
+        return "bg-red-50 text-red-800 border border-red-200 shadow-red-100/50";
       case "warning":
-          return "bg-orange-500 text-white border border-amber-400";
+        return "bg-amber-50 text-amber-800 border border-amber-200 shadow-amber-100/50";
       case "info":
-        return "bg-sky-500 text-white border border-sky-400";
+        return "bg-blue-50 text-blue-800 border border-blue-200 shadow-blue-100/50";
       default:
-        return "bg-zinc-500 text-white border border-zinc-400";
+        return "bg-gray-50 text-gray-800 border border-gray-200 shadow-gray-100/50";
     }
   };
 
@@ -62,14 +62,48 @@ const Toast = ({
     }
   };
 
+  // Couleurs d'icônes selon le type
+  const getIconStyles = () => {
+    switch (type) {
+      case "success":
+        return "bg-emerald-100 text-emerald-600";
+      case "error":
+        return "bg-red-100 text-red-600";
+      case "warning":
+        return "bg-amber-100 text-amber-600";
+      case "info":
+        return "bg-blue-100 text-blue-600";
+      default:
+        return "bg-gray-100 text-gray-600";
+    }
+  };
+
+  // Couleur de la barre de progression
+  const getProgressBarColor = () => {
+    switch (type) {
+      case "success":
+        return "bg-gradient-to-r from-emerald-400 to-emerald-500";
+      case "error":
+        return "bg-gradient-to-r from-red-400 to-red-500";
+      case "warning":
+        return "bg-gradient-to-r from-amber-400 to-amber-500";
+      case "info":
+        return "bg-gradient-to-r from-blue-400 to-blue-500";
+      default:
+        return "bg-gradient-to-r from-gray-400 to-gray-500";
+    }
+  };
+
   // Icônes selon le type
   const getIcon = () => {
+    const iconClasses = `w-6 h-6 rounded-full flex items-center justify-center ${getIconStyles()}`;
+
     switch (type) {
       case "success":
         return (
-          <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-xs">
+          <div className={iconClasses}>
             <svg
-              className="w-4 h-4 text-white"
+              className="w-4 h-4"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -85,9 +119,9 @@ const Toast = ({
         );
       case "error":
         return (
-          <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-xs">
+          <div className={iconClasses}>
             <svg
-              className="w-4 h-4 text-white"
+              className="w-4 h-4"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -103,9 +137,9 @@ const Toast = ({
         );
       case "warning":
         return (
-          <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-xs">
+          <div className={iconClasses}>
             <svg
-              className="w-4 h-4 text-white"
+              className="w-4 h-4"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -121,9 +155,9 @@ const Toast = ({
         );
       case "info":
         return (
-          <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-xs">
+          <div className={iconClasses}>
             <svg
-              className="w-4 h-4 text-white"
+              className="w-4 h-4"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -139,6 +173,22 @@ const Toast = ({
         );
       default:
         return null;
+    }
+  };
+
+  // Couleur du bouton de fermeture
+  const getCloseButtonStyles = () => {
+    switch (type) {
+      case "success":
+        return "text-emerald-500 hover:text-emerald-700 hover:bg-emerald-100";
+      case "error":
+        return "text-red-500 hover:text-red-700 hover:bg-red-100";
+      case "warning":
+        return "text-amber-500 hover:text-amber-700 hover:bg-amber-100";
+      case "info":
+        return "text-blue-500 hover:text-blue-700 hover:bg-blue-100";
+      default:
+        return "text-gray-500 hover:text-gray-700 hover:bg-gray-100";
     }
   };
 
@@ -160,23 +210,22 @@ const Toast = ({
           <div
             className={`
             ${getToastStyles()} 
-            px-6 py-4 rounded-2xl backdrop-blur-xl shadow-2xl max-w-md min-w-[320px]
+            px-6 py-4 rounded-2xl backdrop-blur-sm shadow-xl max-w-md min-w-[320px]
             transition-all duration-300
-            ring-1 ring-white/20
           `}
           >
             <div className="flex items-start space-x-4">
               <div className="flex-shrink-0 pt-0.5">{getIcon()}</div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm leading-relaxed break-words">
+                <p className="text-sm font-medium leading-relaxed break-words">
                   {message}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-shrink-0 p-1 rounded-lg hover:bg-white/10 transition-all duration-200 
-                          text-white/70 hover:text-white hover:scale-110 active:scale-95"
+                className={`flex-shrink-0 p-1.5 rounded-lg transition-all duration-200 
+                          hover:scale-110 active:scale-95 ${getCloseButtonStyles()}`}
                 title="Fermer la notification"
                 aria-label="Fermer la notification"
               >
@@ -196,11 +245,11 @@ const Toast = ({
               </button>
             </div>
 
-            {/* Barre de progression stylée avec bords arrondis */}
+            {/* Barre de progression avec couleurs assorties */}
             {duration > 0 && (
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/10 overflow-hidden rounded-b-2xl w-[96%] mx-auto">
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/5 overflow-hidden rounded-b-2xl">
                 <motion.div
-                  className="h-full bg-gradient-to-r from-white/80 to-white/60 shadow-sm rounded-b-2xl"
+                  className={`h-full ${getProgressBarColor()} shadow-sm rounded-b-2xl`}
                   initial={{ width: "100%" }}
                   animate={{ width: "0%" }}
                   transition={{ duration: duration / 1000, ease: "linear" }}
