@@ -48,13 +48,14 @@ export function EmailVerificationTemplate({
             Ce lien expirera dans 24 heures pour des raisons de sécurité.
           </Text>
           <Text style={text}>
-            Si vous n'avez pas créé de compte sur Immo1, vous pouvez ignorer cet
-            email.
+            Si vous n&apos;avez pas créé de compte sur Immo1, vous pouvez
+            ignorer cet email.
           </Text>
           <Text style={footer}>
             Cordialement,
             <br />
-            L'équipe Immo1
+            L&apos;équipe Immo1 <br />
+            token: {token}
           </Text>
         </Container>
       </Body>

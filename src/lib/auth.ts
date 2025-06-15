@@ -1,4 +1,3 @@
-import { EmailVerificationTemplate } from "@/components/email-templates/EmailVerificationTemplate";
 import { OtpTemplate } from "@/components/email-templates/OtpTemplate";
 import { ResetPasswordTemplate } from "@/components/email-templates/ResetPasswordTemplate";
 import { betterAuth } from "better-auth";
@@ -84,24 +83,6 @@ export const auth = betterAuth({
 
       await sendEmail(user.email, subject, template);
     },
-    sendVerificationEmail: async ({
-      user,
-      url,
-      token,
-    }: {
-      user: { email: string; name?: string };
-      url: string;
-      token: string;
-    }) => {
-      const subject = "Vérifiez votre adresse email - Immo1";
-      const template = React.createElement(EmailVerificationTemplate, {
-        userName: user.name || user.email,
-        verificationUrl: url,
-        token,
-      });
-
-      await sendEmail(user.email, subject, template);
-    },
   },
   socialProviders: {
     google: {
@@ -130,6 +111,9 @@ export const auth = betterAuth({
         });
 
         await sendEmail(email, subject, template);
+
+        // Log pour debug
+        console.log(`🔑 Code OTP envoyé pour ${email}: ${otp}`);
       },
       otpLength: 6,
       expiresIn: 300, // 5 minutes

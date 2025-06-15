@@ -272,13 +272,15 @@ export default function AuthModals({
           onResponse: (ctx) => {
             if (ctx.response.ok) {
               success(
-                "Compte créé avec succès ! Un code de vérification à 6 chiffres a été envoyé à votre email. Vérifiez votre boîte de réception (et vos spams) pour vous connecter.",
+                "Compte créé avec succès ! Un code de vérification à 6 chiffres a été envoyé à votre email.",
                 {
                   persistent: true,
                 }
               );
-              // Fermeture immédiate
+              // Fermeture immédiate et redirection vers la page de vérification
               handleClose();
+              // Redirection vers la page de vérification avec l'email
+              window.location.href = `/verify-email?email=${encodeURIComponent(data.email)}`;
             }
           },
           onError: (ctx) => {
