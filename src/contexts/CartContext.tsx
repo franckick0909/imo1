@@ -1,5 +1,6 @@
 "use client";
 
+import { useSession } from "@/lib/auth-client";
 import React, {
   createContext,
   useContext,
@@ -30,6 +31,14 @@ type CartAction =
   | { type: "UPDATE_QUANTITY"; payload: { id: string; quantity: number } }
   | { type: "CLEAR_CART" }
   | { type: "LOAD_CART"; payload: CartItem[] };
+
+interface CartContextType extends CartState {
+  addItem: (item: Omit<CartItem, "quantity">) => void;
+  removeItem: (id: string) => void;
+  updateQuantity: (id: string, quantity: number) => void;
+  clearCart: () => void;
+  isHydrated: boolean;
+}
 
 const initialState: CartState = {
   items: [],
@@ -76,24 +85,16 @@ function cartReducer(state: CartState, action: CartAction): CartState {
     }
 
     case "UPDATE_QUANTITY": {
-      const { id, quantity } = action.payload;
-
-      if (quantity <= 0) {
-        const newItems = state.items.filter((item) => item.id !== id);
-        const total = newItems.reduce(
-          (sum, item) => sum + item.price * item.quantity,
-          0
-        );
-        const itemCount = newItems.reduce(
-          (sum, item) => sum + item.quantity,
-          0
-        );
-        return { items: newItems, total, itemCount };
+      if (action.payload.quantity <= 0) {
+        return cartReducer(state, {
+          type: "REMOVE_ITEM",
+          payload: action.payload.id,
+        });
       }
 
       const newItems = state.items.map((item) =>
-        item.id === id
-          ? { ...item, quantity: Math.min(quantity, item.stock) }
+        item.id === action.payload.id
+          ? { ...item, quantity: Math.min(action.payload.quantity, item.stock) }
           : item
       );
 
@@ -106,8 +107,9 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       return { items: newItems, total, itemCount };
     }
 
-    case "CLEAR_CART":
-      return initialState;
+    case "CLEAR_CART": {
+      return { items: [], total: 0, itemCount: 0 };
+    }
 
     case "LOAD_CART": {
       const items = action.payload;
@@ -125,36 +127,61 @@ function cartReducer(state: CartState, action: CartAction): CartState {
   }
 }
 
-interface CartContextType extends CartState {
-  addItem: (item: Omit<CartItem, "quantity">) => void;
-  removeItem: (id: string) => void;
-  updateQuantity: (id: string, quantity: number) => void;
-  clearCart: () => void;
-  isHydrated: boolean;
-}
-
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(cartReducer, initialState);
   const [isHydrated, setIsHydrated] = useState(false);
+  const [lastUserId, setLastUserId] = useState<string | null>(null);
+
+  // Surveiller la session utilisateur
+  const { data: session } = useSession();
 
   useEffect(() => {
     try {
       const savedCart = localStorage.getItem("cart");
+      const savedUserId = localStorage.getItem("cartUserId");
+
       if (savedCart) {
         const cartItems = JSON.parse(savedCart);
         if (Array.isArray(cartItems)) {
           dispatch({ type: "LOAD_CART", payload: cartItems });
         }
       }
+
+      if (savedUserId) {
+        setLastUserId(savedUserId);
+      }
     } catch (error) {
       console.error("Erreur lors du chargement du panier:", error);
       localStorage.removeItem("cart");
+      localStorage.removeItem("cartUserId");
     } finally {
       setIsHydrated(true);
     }
   }, []);
+
+  // Vider le panier lors du changement d'utilisateur ou déconnexion
+  useEffect(() => {
+    if (!isHydrated) return;
+
+    const currentUserId = session?.user?.id || null;
+
+    // Si l'utilisateur change ou se déconnecte, vider le panier
+    if (lastUserId && lastUserId !== currentUserId) {
+      dispatch({ type: "CLEAR_CART" });
+      localStorage.removeItem("cart");
+    }
+
+    // Mettre à jour l'ID utilisateur stocké
+    if (currentUserId) {
+      localStorage.setItem("cartUserId", currentUserId);
+      setLastUserId(currentUserId);
+    } else {
+      localStorage.removeItem("cartUserId");
+      setLastUserId(null);
+    }
+  }, [session?.user?.id, lastUserId, isHydrated]);
 
   useEffect(() => {
     if (isHydrated) {

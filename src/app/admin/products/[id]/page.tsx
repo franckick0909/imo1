@@ -23,6 +23,12 @@ interface Product {
   name: string;
   description: string;
   longDescription: string | null;
+
+  // Nouveaux champs pour les détails produits
+  ingredients: string | null;
+  usage: string | null;
+  benefits: string | null;
+
   price: number;
   comparePrice: number | null;
   sku: string;
@@ -33,11 +39,14 @@ interface Product {
   weight: number | null;
   dimensions: string | null;
   categoryId: string;
+
+  // SEO
+  slug: string;
   metaTitle: string | null;
   metaDescription: string | null;
+
   isActive: boolean;
   isFeatured: boolean;
-  slug: string;
   category: Category;
   images: ProductImage[];
 }
@@ -55,11 +64,17 @@ export default function EditProductPage({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  // Form state
+  // Form state étendu
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     longDescription: "",
+
+    // Nouveaux champs pour les détails produits
+    ingredients: "",
+    usage: "",
+    benefits: "",
+
     price: 0,
     comparePrice: 0,
     sku: "",
@@ -70,13 +85,57 @@ export default function EditProductPage({
     weight: 0,
     dimensions: "",
     categoryId: "",
+
+    // SEO
+    slug: "",
     metaTitle: "",
     metaDescription: "",
+
     isActive: true,
     isFeatured: false,
   });
 
   const [images, setImages] = useState<string[]>([]);
+
+  // Fonction utilitaire pour la génération de slug
+  const generateSlug = (name: string) => {
+    return name
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
+      .trim();
+  };
+
+  // Auto-génération du slug quand le nom change
+  useEffect(() => {
+    if (formData.name && !formData.slug) {
+      const slug = generateSlug(formData.name);
+      setFormData((prev) => ({ ...prev, slug }));
+    }
+  }, [formData.name, formData.slug]);
+
+  // Auto-génération du titre SEO
+  useEffect(() => {
+    if (formData.name && !formData.metaTitle) {
+      setFormData((prev) => ({
+        ...prev,
+        metaTitle: `${formData.name} - Cosmétiques Bio Premium`,
+      }));
+    }
+  }, [formData.name, formData.metaTitle]);
+
+  // Auto-génération de la description SEO
+  useEffect(() => {
+    if (formData.name && !formData.metaDescription) {
+      setFormData((prev) => ({
+        ...prev,
+        metaDescription: `Découvrez ${formData.name}, un soin bio premium formulé avec des ingrédients naturels. Livraison gratuite dès 50€.`,
+      }));
+    }
+  }, [formData.name, formData.metaDescription]);
 
   // Résoudre les params
   useEffect(() => {
@@ -106,6 +165,9 @@ export default function EditProductPage({
           name: foundProduct.name || "",
           description: foundProduct.description || "",
           longDescription: foundProduct.longDescription || "",
+          ingredients: foundProduct.ingredients || "",
+          usage: foundProduct.usage || "",
+          benefits: foundProduct.benefits || "",
           price: Number(foundProduct.price) || 0,
           comparePrice: Number(foundProduct.comparePrice) || 0,
           sku: foundProduct.sku || "",
@@ -116,6 +178,7 @@ export default function EditProductPage({
           weight: Number(foundProduct.weight) || 0,
           dimensions: foundProduct.dimensions || "",
           categoryId: foundProduct.categoryId || "",
+          slug: foundProduct.slug || "",
           metaTitle: foundProduct.metaTitle || "",
           metaDescription: foundProduct.metaDescription || "",
           isActive: foundProduct.isActive ?? true,
@@ -336,6 +399,149 @@ export default function EditProductPage({
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 placeholder="Description détaillée du produit..."
               />
+            </div>
+          </div>
+
+          {/* Détails produit pour l'accordéon */}
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+              Détails produit (pour l&apos;accordéon)
+            </h2>
+
+            <div className="space-y-6 text-zinc-700">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Ingrédients
+                </label>
+                <textarea
+                  name="ingredients"
+                  value={formData.ingredients}
+                  onChange={handleInputChange}
+                  rows={4}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  placeholder="Ex: Formulé avec des ingrédients biologiques certifiés :&#10;&#10;• Huile d'argan bio - Nourrit et régénère&#10;• Beurre de karité - Hydrate en profondeur&#10;• Aloe vera - Apaise et rafraîchit"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Mode d&apos;emploi
+                </label>
+                <textarea
+                  name="usage"
+                  value={formData.usage}
+                  onChange={handleInputChange}
+                  rows={4}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  placeholder="Ex: Application recommandée :&#10;&#10;1. Nettoyez votre peau avec un démaquillant doux&#10;2. Appliquez une petite quantité sur peau propre et sèche&#10;3. Massez délicatement du centre vers l'extérieur du visage"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Bienfaits
+                </label>
+                <textarea
+                  name="benefits"
+                  value={formData.benefits}
+                  onChange={handleInputChange}
+                  rows={4}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  placeholder="Ex: Les bienfaits de ce soin :&#10;&#10;• Hydratation intense et durable&#10;• Nutrition en profondeur&#10;• Apaisement des irritations&#10;• Révélation de l'éclat naturel"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* SEO amélioré */}
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+              SEO et référencement
+            </h2>
+
+            <div className="space-y-6 text-zinc-700">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  URL du produit (slug) *
+                </label>
+                <div className="flex">
+                  <span className="inline-flex items-center px-3 py-2 border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm rounded-l-lg">
+                    /products/
+                  </span>
+                  <input
+                    type="text"
+                    name="slug"
+                    value={formData.slug}
+                    onChange={handleInputChange}
+                    className="flex-1 border border-gray-300 rounded-r-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    placeholder="url-du-produit"
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Se génère automatiquement à partir du nom du produit
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Titre SEO
+                  <span className="text-xs text-gray-500 ml-2">
+                    ({formData.metaTitle?.length || 0}/60 caractères)
+                  </span>
+                </label>
+                <input
+                  type="text"
+                  name="metaTitle"
+                  value={formData.metaTitle}
+                  onChange={handleInputChange}
+                  maxLength={60}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  placeholder="Titre pour les moteurs de recherche"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Se génère automatiquement. Optimal : 50-60 caractères
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Description SEO
+                  <span className="text-xs text-gray-500 ml-2">
+                    ({formData.metaDescription?.length || 0}/160 caractères)
+                  </span>
+                </label>
+                <textarea
+                  name="metaDescription"
+                  value={formData.metaDescription}
+                  onChange={handleInputChange}
+                  rows={3}
+                  maxLength={160}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  placeholder="Description pour les moteurs de recherche"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Se génère automatiquement. Optimal : 150-160 caractères
+                </p>
+              </div>
+
+              {/* Aperçu SEO */}
+              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <h4 className="text-sm font-medium text-gray-700 mb-3">
+                  Aperçu dans les résultats de recherche
+                </h4>
+                <div className="space-y-1">
+                  <div className="text-blue-600 text-lg font-medium line-clamp-1">
+                    {formData.metaTitle || formData.name || "Titre du produit"}
+                  </div>
+                  <div className="text-green-700 text-sm">
+                    votresite.com/products/{formData.slug || "url-produit"}
+                  </div>
+                  <div className="text-gray-600 text-sm line-clamp-2">
+                    {formData.metaDescription ||
+                      "Description du produit qui apparaîtra dans les résultats de recherche Google."}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 

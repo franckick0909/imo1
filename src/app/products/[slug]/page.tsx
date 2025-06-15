@@ -11,6 +11,12 @@ interface Product {
   name: string;
   description: string | null;
   longDescription?: string | null;
+
+  // Nouveaux champs pour les détails produits
+  ingredients?: string | null;
+  usage?: string | null;
+  benefits?: string | null;
+
   price: number;
   comparePrice?: number;
   stock: number;
@@ -403,6 +409,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                 id: "description",
                 title: "Description",
                 content:
+                  product.longDescription ||
                   product.description ||
                   "Soin naturel premium pour une peau éclatante et nourrie en profondeur. Formulé avec des ingrédients biologiques certifiés pour respecter votre peau et l'environnement.",
                 icon: (
@@ -425,6 +432,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                 id: "ingredients",
                 title: "Ingrédients Naturels",
                 content:
+                  product.ingredients ||
                   "Formulé avec des ingrédients biologiques certifiés :\n\n• Huile d'argan bio - Nourrit et régénère\n• Beurre de karité - Hydrate en profondeur\n• Aloe vera - Apaise et rafraîchit\n• Extraits botaniques - Antioxydants naturels\n• Vitamine E - Protection anti-âge\n\nTous nos ingrédients sont issus de l'agriculture biologique et du commerce équitable.",
                 icon: (
                   <svg
@@ -446,6 +454,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                 id: "usage",
                 title: "Mode d'emploi",
                 content:
+                  product.usage ||
                   "Application recommandée :\n\n1. Nettoyez votre peau avec un démaquillant doux\n2. Appliquez une petite quantité sur peau propre et sèche\n3. Massez délicatement du centre vers l'extérieur du visage\n4. Évitez le contour des yeux\n5. Utilisez matin et/ou soir selon vos besoins\n\nPour de meilleurs résultats, utilisez quotidiennement pendant au moins 4 semaines.",
                 icon: (
                   <svg
@@ -467,6 +476,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                 id: "benefits",
                 title: "Bienfaits",
                 content:
+                  product.benefits ||
                   "Les bienfaits de ce soin :\n\n• Hydratation intense et durable\n• Nutrition en profondeur\n• Apaisement des irritations\n• Révélation de l'éclat naturel\n• Protection contre les agressions extérieures\n• Amélioration de l'élasticité de la peau\n• Réduction des signes de fatigue\n\nRésultats visibles dès les premières applications.",
                 icon: (
                   <svg

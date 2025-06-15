@@ -34,7 +34,7 @@ const backdropVariants = {
   },
   visible: {
     opacity: 1,
-    backdropFilter: "blur(2px)",
+    backdropFilter: "blur(1px)",
     transition: {
       duration: 0.3,
       ease: customEasing,
@@ -523,7 +523,7 @@ export default function AuthModals({
         {showSignIn && (
           <motion.div
             key="signin-modal"
-            className="fixed inset-0 z-50 p-4 bg-black/50"
+            className="fixed inset-0 z-50 p-4 bg-black/30"
             variants={backdropVariants}
             initial="hidden"
             animate="visible"
@@ -534,9 +534,9 @@ export default function AuthModals({
               <motion.div
                 className="bg-white rounded-xl shadow-2xl max-w-md w-full relative my-6"
                 //        variants={modalVariants}
-                initial={{ opacity: 0, y: "100%" }}
-                animate={{ opacity: 1, y: "0%" }}
-                exit={{ opacity: 0, x: "100%" }}
+                initial={{ opacity: 0, y: 200 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, x: 200 }}
                 transition={{
                   duration: 0.8,
                   ease: customEasing,
@@ -657,7 +657,7 @@ export default function AuthModals({
         {showSignUp && (
           <motion.div
             key="signup-modal"
-            className="fixed inset-0 z-50 p-4 bg-black/50"
+            className="fixed inset-0 z-50 p-4 bg-black/30"
             variants={backdropVariants}
             initial="hidden"
             animate="visible"
@@ -667,9 +667,9 @@ export default function AuthModals({
             <div className="flex items-center justify-center min-h-screen">
               <motion.div
                 className="bg-white rounded-xl shadow-2xl max-w-md w-full relative my-8"
-                initial={{ opacity: 0, y: "100%" }}
-                animate={{ opacity: 1, y: "0%" }}
-                exit={{ opacity: 0, x: "100%" }}
+                initial={{ opacity: 0, y: 200 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, x: 200 }}
                 transition={{
                   duration: 0.8,
                   ease: customEasing,

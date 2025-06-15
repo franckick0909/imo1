@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import prisma from "@/lib/prisma";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 // Schema de validation pour créer un produit
@@ -10,6 +10,12 @@ const createProductSchema = z.object({
     .string()
     .min(10, "La description doit contenir au moins 10 caractères"),
   longDescription: z.string().optional(),
+
+  // Nouveaux champs pour les détails produits
+  ingredients: z.string().optional(),
+  usage: z.string().optional(),
+  benefits: z.string().optional(),
+
   price: z.number().min(0.01, "Le prix doit être supérieur à 0"),
   comparePrice: z.number().optional(),
   sku: z.string().optional(),
@@ -20,8 +26,12 @@ const createProductSchema = z.object({
   weight: z.number().optional(),
   dimensions: z.string().optional(),
   categoryId: z.string().min(1, "Veuillez sélectionner une catégorie"),
+
+  // SEO amélioré
+  slug: z.string().optional(),
   metaTitle: z.string().optional(),
   metaDescription: z.string().optional(),
+
   isActive: z.boolean().default(true),
   isFeatured: z.boolean().default(false),
   images: z.array(z.string().url()).optional(),
@@ -115,7 +125,7 @@ export async function POST(request: NextRequest) {
     const validatedData = createProductSchema.parse(body);
 
     // Générer un slug unique
-    const baseSlug = generateSlug(validatedData.name);
+    const baseSlug = validatedData.slug || generateSlug(validatedData.name);
     let slug = baseSlug;
     let counter = 1;
 
@@ -150,6 +160,12 @@ export async function POST(request: NextRequest) {
         name: validatedData.name,
         description: validatedData.description,
         longDescription: validatedData.longDescription,
+
+        // Nouveaux champs pour les détails produits
+        ingredients: validatedData.ingredients,
+        usage: validatedData.usage,
+        benefits: validatedData.benefits,
+
         price: validatedData.price,
         comparePrice: validatedData.comparePrice,
         sku: sku,

@@ -105,14 +105,20 @@ model Category {
 }
 
 model Product {
-  id              String   @id @default(cuid())
+  id              String  @id @default(cuid())
   name            String
   description     String?
   longDescription String?
-  price           Decimal
-  comparePrice    Decimal? // Prix barré pour les promotions
-  sku             String?  @unique
-  barcode         String?
+
+  // Nouveaux champs pour les détails produits (accordéon)
+  ingredients String? // Ingrédients du produit
+  usage       String? // Mode d'emploi
+  benefits    String? // Bienfaits
+
+  price        Decimal
+  comparePrice Decimal? // Prix barré pour les promotions
+  sku          String?  @unique
+  barcode      String?
 
   // Stock management
   stock             Int     @default(0)

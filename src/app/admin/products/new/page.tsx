@@ -7,13 +7,19 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-// Schema de validation
+// Schema de validation étendu
 const productSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
   description: z
     .string()
     .min(10, "La description doit contenir au moins 10 caractères"),
   longDescription: z.string().optional(),
+
+  // Nouveaux champs pour les détails produits
+  ingredients: z.string().optional(),
+  usage: z.string().optional(),
+  benefits: z.string().optional(),
+
   price: z.number().min(0.01, "Le prix doit être supérieur à 0"),
   comparePrice: z.number().optional(),
   sku: z.string().optional(),
@@ -24,8 +30,12 @@ const productSchema = z.object({
   weight: z.number().optional(),
   dimensions: z.string().optional(),
   categoryId: z.string().min(1, "Veuillez sélectionner une catégorie"),
+
+  // SEO amélioré
+  slug: z.string().optional(),
   metaTitle: z.string().optional(),
   metaDescription: z.string().optional(),
+
   isActive: z.boolean(),
   isFeatured: z.boolean(),
 });
@@ -48,6 +58,7 @@ export default function NewProductPage() {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
@@ -60,8 +71,11 @@ export default function NewProductPage() {
     },
   });
 
+  const watchName = watch("name");
   const watchPrice = watch("price");
   const watchComparePrice = watch("comparePrice");
+  const watchMetaTitle = watch("metaTitle");
+  const watchMetaDescription = watch("metaDescription");
 
   // Charger les catégories
   useEffect(() => {
@@ -78,17 +92,40 @@ export default function NewProductPage() {
     fetchCategories();
   }, []);
 
-  // Fonction utilitaire pour la génération de slug (pour future utilisation)
-  // const generateSlug = (name: string) => {
-  //   return name
-  //     .toLowerCase()
-  //     .normalize("NFD")
-  //     .replace(/[\u0300-\u036f]/g, "")
-  //     .replace(/[^a-z0-9\s-]/g, "")
-  //     .replace(/\s+/g, "-")
-  //     .replace(/-+/g, "-")
-  //     .trim();
-  // };
+  // Génération automatique du slug
+  const generateSlug = (name: string) => {
+    return name
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
+      .trim();
+  };
+
+  // Auto-génération du slug quand le nom change
+  useEffect(() => {
+    if (watchName) {
+      const slug = generateSlug(watchName);
+      setValue("slug", slug);
+
+      // Auto-génération du titre SEO si vide
+      if (!watchMetaTitle) {
+        setValue("metaTitle", `${watchName} - Cosmétiques Bio Premium`);
+      }
+    }
+  }, [watchName, setValue, watchMetaTitle]);
+
+  // Auto-génération de la description SEO
+  useEffect(() => {
+    if (watchName && !watchMetaDescription) {
+      setValue(
+        "metaDescription",
+        `Découvrez ${watchName}, un soin bio premium formulé avec des ingrédients naturels. Livraison gratuite dès 50€.`
+      );
+    }
+  }, [watchName, setValue, watchMetaDescription]);
 
   const onSubmit = async (data: ProductFormData) => {
     setIsSubmitting(true);
@@ -265,6 +302,51 @@ export default function NewProductPage() {
             </div>
           </div>
 
+          {/* Détails produit pour l'accordéon */}
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+              Détails produit (pour l&apos;accordéon)
+            </h2>
+
+            <div className="space-y-6 text-zinc-700">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Ingrédients
+                </label>
+                <textarea
+                  {...register("ingredients")}
+                  rows={4}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none placeholder:text-gray-400"
+                  placeholder="Ex: Formulé avec des ingrédients biologiques certifiés :&#10;&#10;• Huile d'argan bio - Nourrit et régénère&#10;• Beurre de karité - Hydrate en profondeur&#10;• Aloe vera - Apaise et rafraîchit"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Mode d&apos;emploi
+                </label>
+                <textarea
+                  {...register("usage")}
+                  rows={4}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none placeholder:text-gray-400"
+                  placeholder="Ex: Application recommandée :&#10;&#10;1. Nettoyez votre peau avec un démaquillant doux&#10;2. Appliquez une petite quantité sur peau propre et sèche&#10;3. Massez délicatement du centre vers l'extérieur du visage"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Bienfaits
+                </label>
+                <textarea
+                  {...register("benefits")}
+                  rows={4}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none placeholder:text-gray-400"
+                  placeholder="Ex: Les bienfaits de ce soin :&#10;&#10;• Hydratation intense et durable&#10;• Nutrition en profondeur&#10;• Apaisement des irritations&#10;• Révélation de l'éclat naturel"
+                />
+              </div>
+            </div>
+          </div>
+
           {/* Prix et stock */}
           <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 text-zinc-700">
             <h2 className="text-xl font-semibold text-gray-900 mb-6">
@@ -429,35 +511,88 @@ export default function NewProductPage() {
             />
           </div>
 
-          {/* SEO */}
+          {/* SEO amélioré */}
           <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 text-zinc-700">
             <h2 className="text-xl font-semibold text-gray-900 mb-6">
               SEO et référencement
             </h2>
 
-            <div className="space-y-4">
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  URL du produit (slug) *
+                </label>
+                <div className="flex">
+                  <span className="inline-flex items-center px-3 py-2 border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm rounded-l-lg">
+                    /products/
+                  </span>
+                  <input
+                    {...register("slug")}
+                    type="text"
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-r-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none placeholder:text-gray-400"
+                    placeholder="url-du-produit"
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Se génère automatiquement à partir du nom du produit
+                </p>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Titre SEO
+                  <span className="text-xs text-gray-500 ml-2">
+                    ({watchMetaTitle?.length || 0}/60 caractères)
+                  </span>
                 </label>
                 <input
                   {...register("metaTitle")}
                   type="text"
+                  maxLength={60}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none placeholder:text-gray-400"
                   placeholder="Titre pour les moteurs de recherche"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Se génère automatiquement. Optimal : 50-60 caractères
+                </p>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Description SEO
+                  <span className="text-xs text-gray-500 ml-2">
+                    ({watchMetaDescription?.length || 0}/160 caractères)
+                  </span>
                 </label>
                 <textarea
                   {...register("metaDescription")}
                   rows={3}
+                  maxLength={160}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none placeholder:text-gray-400"
-                  placeholder="Description pour les moteurs de recherche (160 caractères max)"
+                  placeholder="Description pour les moteurs de recherche"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Se génère automatiquement. Optimal : 150-160 caractères
+                </p>
+              </div>
+
+              {/* Aperçu SEO */}
+              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <h4 className="text-sm font-medium text-gray-700 mb-3">
+                  Aperçu dans les résultats de recherche
+                </h4>
+                <div className="space-y-1">
+                  <div className="text-blue-600 text-lg font-medium line-clamp-1">
+                    {watchMetaTitle || watchName || "Titre du produit"}
+                  </div>
+                  <div className="text-green-700 text-sm">
+                    votresite.com/products/{watch("slug") || "url-produit"}
+                  </div>
+                  <div className="text-gray-600 text-sm line-clamp-2">
+                    {watchMetaDescription ||
+                      "Description du produit qui apparaîtra dans les résultats de recherche Google."}
+                  </div>
+                </div>
               </div>
             </div>
           </div>

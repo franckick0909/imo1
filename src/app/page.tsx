@@ -32,7 +32,7 @@ async function getFeaturedProducts(): Promise<Product[]> {
   const products = await prisma.product.findMany({
     where: {
       isActive: true,
-      // Pour l'instant, on prend les derniers produits créés
+      isFeatured: true, // Filtrer uniquement les produits en vedette
     },
     include: {
       category: {
