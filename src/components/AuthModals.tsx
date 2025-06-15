@@ -1,7 +1,7 @@
 "use client";
 
-import { useToast } from "@/components/ui/ToastContainer";
 import Input from "@/components/ui/Input";
+import { useToast } from "@/components/ui/ToastContainer";
 import { signIn, signUp } from "@/lib/auth-client";
 import {
   signInSchema,
@@ -23,8 +23,8 @@ interface AuthModalsProps {
 }
 
 // Courbes de Bézier personnalisées
-const customEasing = [0.16, 1, 0.3, 1];
-const exitEasing = [0.7, 0, 0.84, 0];
+const customEasing = [0.16, 1, 0.3, 1] as const;
+const exitEasing = [0.7, 0, 0.84, 0] as const;
 
 // Variants pour le backdrop
 const backdropVariants = {
