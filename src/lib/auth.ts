@@ -1,3 +1,4 @@
+import { EmailVerificationTemplate } from "@/components/email-templates/EmailVerificationTemplate";
 import { OtpTemplate } from "@/components/email-templates/OtpTemplate";
 import { ResetPasswordTemplate } from "@/components/email-templates/ResetPasswordTemplate";
 import { betterAuth } from "better-auth";
@@ -61,15 +62,41 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: false,
-    autoSignIn: true,
+    requireEmailVerification: true,
+    autoSignIn: false, // Désactivé car il faut vérifier l'email d'abord
     minPasswordLength: 8,
     maxPasswordLength: 20,
-    sendResetPassword: async ({ user, url, token }) => {
+    sendResetPassword: async ({
+      user,
+      url,
+      token,
+    }: {
+      user: { email: string; name?: string };
+      url: string;
+      token: string;
+    }) => {
       const subject = "Réinitialisation de votre mot de passe - Immo1";
       const template = React.createElement(ResetPasswordTemplate, {
         userName: user.name || user.email,
         resetUrl: url,
+        token,
+      });
+
+      await sendEmail(user.email, subject, template);
+    },
+    sendVerificationEmail: async ({
+      user,
+      url,
+      token,
+    }: {
+      user: { email: string; name?: string };
+      url: string;
+      token: string;
+    }) => {
+      const subject = "Vérifiez votre adresse email - Immo1";
+      const template = React.createElement(EmailVerificationTemplate, {
+        userName: user.name || user.email,
+        verificationUrl: url,
         token,
       });
 
@@ -84,6 +111,12 @@ export const auth = betterAuth({
     github: {
       clientId: process.env.GITHUB_CLIENT_ID!,
       clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+    },
+  },
+  account: {
+    accountLinking: {
+      enabled: true,
+      trustedProviders: ["google", "github"],
     },
   },
   plugins: [

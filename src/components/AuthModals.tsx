@@ -224,6 +224,12 @@ export default function AuthModals({
                 errorMessage = "Mot de passe incorrect";
               } else if (errorMessage.includes("Invalid")) {
                 errorMessage = "Email ou mot de passe incorrect";
+              } else if (
+                errorMessage.includes("email not verified") ||
+                errorMessage.includes("Email not verified")
+              ) {
+                errorMessage =
+                  "Veuillez vérifier votre email avant de vous connecter";
               }
             }
 
@@ -260,10 +266,13 @@ export default function AuthModals({
           },
           onResponse: (ctx) => {
             if (ctx.response.ok) {
-              success("Compte créé avec succès ! Bienvenue !", {
-                persistent: true,
-              });
-              // Fermeture immédiate pour laisser la redirection se faire
+              success(
+                "Compte créé avec succès ! Vérifiez votre email pour vous connecter.",
+                {
+                  persistent: true,
+                }
+              );
+              // Fermeture immédiate
               handleClose();
             }
           },
