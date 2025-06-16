@@ -192,7 +192,7 @@ export default function UserMenu() {
                   <p className="font-medium text-gray-900 text-sm sm:text-base">
                     {user.name || user.email}
                   </p>
-                  <p className="text-xs sm:text-sm text-gray-500">
+                  <p className="text-xs sm:text-sm text-gray-500 truncate w-38  md:w-42">
                     {user.email}
                   </p>
                 </div>

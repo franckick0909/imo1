@@ -207,7 +207,7 @@ export default function DashboardLayout({
       </motion.div>
 
       {/* Desktop Sidebar - Always visible */}
-      <div className="hidden lg:block fixed inset-y-20 left-0 z-40 w-72 bg-white border-r border-gray-200">
+      <div className="hidden lg:block fixed inset-0 top-0 left-0 z-10 w-72 bg-white border-r border-gray-200 pt-20">
         <div className="flex flex-col h-full">
           <SidebarContent />
         </div>

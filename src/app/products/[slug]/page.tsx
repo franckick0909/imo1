@@ -193,7 +193,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                         product.comparePrice!) *
                         100
                     )}
-                    % OFF
+                    %
                   </span>
                 )}
                 {isLowStock && (
