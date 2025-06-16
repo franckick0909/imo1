@@ -10,56 +10,89 @@ import {
   Github,
   Key,
   Mail,
+  Monitor,
   Plus,
   Shield,
+  Smartphone,
+  Trash2,
   User,
   X,
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+interface Account {
+  id: string;
+  providerId: string;
+  accountId: string;
+}
+
+interface Session {
+  id: string;
+  ipAddress: string | null;
+  userAgent: string | null;
+  createdAt: string;
+  expiresAt: string;
+  isCurrent: boolean;
+}
+
 export default function ProfilePage() {
   const { data: session } = useSession();
   const { success, error } = useToast();
   const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [showSessions, setShowSessions] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [hasPassword, setHasPassword] = useState(false);
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [loadingSessions, setLoadingSessions] = useState(false);
   const [passwordData, setPasswordData] = useState({
     password: "",
     confirmPassword: "",
   });
 
-  // Vérifier si l'utilisateur a un mot de passe configuré
-  const checkPasswordStatus = async () => {
+  // Charger les comptes et sessions
+  const loadAccountsAndSessions = async () => {
     try {
-      const response = await fetch("/api/auth/list-accounts", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (response.ok) {
-        const accounts = await response.json();
-        const hasCredentialAccount = accounts.some(
-          (account: { providerId: string }) =>
-            account.providerId === "credential"
-        );
-        setHasPassword(hasCredentialAccount);
+      // Charger les comptes
+      const accountsResponse = await fetch("/api/auth/list-accounts");
+      if (accountsResponse.ok) {
+        const accountsData = await accountsResponse.json();
+        setAccounts(accountsData);
       }
     } catch (error) {
-      console.error(
-        "Erreur lors de la vérification du statut du mot de passe:",
-        error
-      );
+      console.error("Erreur lors du chargement des comptes:", error);
+    }
+  };
+
+  const loadSessions = async () => {
+    if (!showSessions) return;
+
+    setLoadingSessions(true);
+    try {
+      const response = await fetch("/api/auth/list-sessions");
+      if (response.ok) {
+        const sessionsData = await response.json();
+        setSessions(sessionsData);
+      } else {
+        error("Erreur lors du chargement des sessions");
+      }
+    } catch (err) {
+      console.error("Erreur lors du chargement des sessions:", err);
+      error("Erreur lors du chargement des sessions");
+    } finally {
+      setLoadingSessions(false);
     }
   };
 
   useEffect(() => {
     if (session) {
-      checkPasswordStatus();
+      loadAccountsAndSessions();
     }
   }, [session]);
+
+  useEffect(() => {
+    loadSessions();
+  }, [showSessions]);
 
   const handleAddPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,7 +126,7 @@ export default function ProfilePage() {
         );
         setPasswordData({ password: "", confirmPassword: "" });
         setShowPasswordForm(false);
-        checkPasswordStatus();
+        loadAccountsAndSessions();
       } else {
         const errorData = await response.json();
         error(errorData.message || "Erreur lors de l'ajout du mot de passe");
@@ -105,6 +138,78 @@ export default function ProfilePage() {
       setIsSubmitting(false);
     }
   };
+
+  const handleRevokeSession = async (sessionId: string) => {
+    try {
+      const response = await fetch("/api/auth/revoke-session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ sessionId }),
+      });
+
+      if (response.ok) {
+        success("Session révoquée avec succès");
+        loadSessions();
+      } else {
+        const errorData = await response.json();
+        error(
+          errorData.message || "Erreur lors de la révocation de la session"
+        );
+      }
+    } catch (err) {
+      console.error("Erreur lors de la révocation de la session:", err);
+      error("Erreur lors de la révocation de la session");
+    }
+  };
+
+  // Fonction pour parser le User-Agent
+  const parseUserAgent = (userAgent: string | null) => {
+    if (!userAgent) return { device: "Appareil inconnu", browser: "", os: "" };
+
+    // Simple parsing - on pourrait utiliser une lib plus sophistiquée
+    const isMobile = /Mobile|Android|iPhone|iPad/i.test(userAgent);
+    const isChrome = /Chrome/i.test(userAgent);
+    const isFirefox = /Firefox/i.test(userAgent);
+    const isSafari = /Safari/i.test(userAgent) && !isChrome;
+    const isEdge = /Edge/i.test(userAgent);
+
+    let browser = "Navigateur inconnu";
+    if (isChrome) browser = "Chrome";
+    else if (isFirefox) browser = "Firefox";
+    else if (isSafari) browser = "Safari";
+    else if (isEdge) browser = "Edge";
+
+    return {
+      device: isMobile ? "Mobile" : "Ordinateur",
+      browser,
+      os: userAgent.includes("Windows")
+        ? "Windows"
+        : userAgent.includes("Mac")
+          ? "macOS"
+          : userAgent.includes("Linux")
+            ? "Linux"
+            : "Système inconnu",
+    };
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString("fr-FR", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  // Vérifier les méthodes de connexion disponibles
+  const hasGoogle = accounts.some((account) => account.providerId === "google");
+  const hasGithub = accounts.some((account) => account.providerId === "github");
+  const hasPassword = accounts.some(
+    (account) => account.providerId === "credential"
+  );
 
   if (!session) {
     return null;
@@ -218,12 +323,20 @@ export default function ProfilePage() {
               </div>
               <div>
                 <p className="font-medium text-gray-900">Google</p>
-                <p className="text-sm text-gray-500">Connecté avec Google</p>
+                <p className="text-sm text-gray-500">
+                  {hasGoogle ? "Connecté avec Google" : "Non configuré"}
+                </p>
               </div>
             </div>
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-              Actif
-            </span>
+            {hasGoogle ? (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                Actif
+              </span>
+            ) : (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                Non configuré
+              </span>
+            )}
           </div>
 
           {/* GitHub */}
@@ -234,12 +347,20 @@ export default function ProfilePage() {
               </div>
               <div>
                 <p className="font-medium text-gray-900">GitHub</p>
-                <p className="text-sm text-gray-500">Connecté avec GitHub</p>
+                <p className="text-sm text-gray-500">
+                  {hasGithub ? "Connecté avec GitHub" : "Non configuré"}
+                </p>
               </div>
             </div>
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-              Actif
-            </span>
+            {hasGithub ? (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                Actif
+              </span>
+            ) : (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                Non configuré
+              </span>
+            )}
           </div>
 
           {/* Email/Mot de passe */}
@@ -348,45 +469,110 @@ export default function ProfilePage() {
         </motion.div>
       )}
 
-      {/* Sécurité */}
+      {/* Sessions actives */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
         className="bg-white rounded-xl p-6 shadow-sm border border-gray-100"
       >
-        <h2 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
-          <Shield className="h-5 w-5 text-emerald-600 mr-2" />
-          Sécurité
-        </h2>
-
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-            <div>
-              <h3 className="font-medium text-gray-900">
-                Authentification à deux facteurs
-              </h3>
-              <p className="text-sm text-gray-500">
-                Sécurisez votre compte avec une authentification supplémentaire
-              </p>
-            </div>
-            <button className="px-4 py-2 text-emerald-600 hover:text-emerald-700 font-medium">
-              Configurer
-            </button>
-          </div>
-
-          <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-            <div>
-              <h3 className="font-medium text-gray-900">Sessions actives</h3>
-              <p className="text-sm text-gray-500">
-                Gérez vos sessions de connexion sur différents appareils
-              </p>
-            </div>
-            <button className="px-4 py-2 text-emerald-600 hover:text-emerald-700 font-medium">
-              Voir tout
-            </button>
-          </div>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-semibold text-gray-900 flex items-center">
+            <Monitor className="h-5 w-5 text-emerald-600 mr-2" />
+            Sessions actives
+          </h2>
+          <button
+            onClick={() => setShowSessions(!showSessions)}
+            className="px-4 py-2 text-emerald-600 hover:text-emerald-700 font-medium border border-emerald-200 rounded-lg hover:bg-emerald-50 transition-colors"
+          >
+            {showSessions ? "Masquer" : "Voir tout"}
+          </button>
         </div>
+
+        {showSessions && (
+          <div className="space-y-4">
+            {loadingSessions ? (
+              <div className="flex justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+              </div>
+            ) : sessions.length > 0 ? (
+              sessions.map((sessionItem) => {
+                const userAgent = parseUserAgent(sessionItem.userAgent);
+                const DeviceIcon =
+                  userAgent.device === "Mobile" ? Smartphone : Monitor;
+
+                return (
+                  <div
+                    key={sessionItem.id}
+                    className={`flex items-center justify-between p-4 border rounded-lg ${
+                      sessionItem.isCurrent
+                        ? "border-emerald-200 bg-emerald-50"
+                        : "border-gray-200"
+                    }`}
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div
+                        className={`h-10 w-10 rounded-full flex items-center justify-center ${
+                          sessionItem.isCurrent
+                            ? "bg-emerald-100"
+                            : "bg-gray-100"
+                        }`}
+                      >
+                        <DeviceIcon
+                          className={`w-5 h-5 ${
+                            sessionItem.isCurrent
+                              ? "text-emerald-600"
+                              : "text-gray-600"
+                          }`}
+                        />
+                      </div>
+                      <div>
+                        <div className="flex items-center space-x-2">
+                          <p className="font-medium text-gray-900">
+                            {userAgent.browser} sur {userAgent.os}
+                          </p>
+                          {sessionItem.isCurrent && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                              Session actuelle
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-500">
+                          {sessionItem.ipAddress &&
+                            `IP: ${sessionItem.ipAddress} • `}
+                          Connecté le {formatDate(sessionItem.createdAt)}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          Expire le {formatDate(sessionItem.expiresAt)}
+                        </p>
+                      </div>
+                    </div>
+
+                    {!sessionItem.isCurrent && (
+                      <button
+                        onClick={() => handleRevokeSession(sessionItem.id)}
+                        className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Révoquer cette session"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                );
+              })
+            ) : (
+              <p className="text-center text-gray-500 py-8">
+                Aucune session active trouvée
+              </p>
+            )}
+          </div>
+        )}
+
+        {!showSessions && (
+          <p className="text-gray-500">
+            Gérez vos sessions de connexion sur différents appareils
+          </p>
+        )}
       </motion.div>
     </div>
   );

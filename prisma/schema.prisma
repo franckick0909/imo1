@@ -32,6 +32,30 @@ model User {
   banReason  String?
   banExpires DateTime?
 
+  // Profil utilisateur étendu
+  phone String?
+
+  // Adresse de livraison
+  shippingStreet     String?
+  shippingCity       String?
+  shippingPostalCode String?
+  shippingCountry    String? @default("France")
+
+  // Adresse de facturation
+  billingStreet     String?
+  billingCity       String?
+  billingPostalCode String?
+  billingCountry    String?
+  useSameAddress    Boolean @default(true) // Utiliser la même adresse pour facturation et livraison
+
+  // Préférences beauté
+  skinType     String? // "dry", "oily", "combination", "sensitive", "normal"
+  skinConcerns String? // JSON array des préoccupations beauté
+
+  // Préférences de notification
+  newsletter Boolean @default(true)
+  promotions Boolean @default(true)
+
   // E-commerce relations
   orders    Order[]
   cartItems CartItem[]

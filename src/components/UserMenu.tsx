@@ -220,7 +220,7 @@ export default function UserMenu() {
                 <button
                   type="button"
                   aria-label="Mon profil"
-                  onClick={() => handleNavigation("/profile")}
+                  onClick={() => handleNavigation("/dashboard/profile")}
                   className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
                 >
                   <svg
@@ -242,7 +242,7 @@ export default function UserMenu() {
                 <button
                   type="button"
                   aria-label="Mes commandes"
-                  onClick={() => handleNavigation("/orders")}
+                  onClick={() => handleNavigation("/dashboard/orders")}
                   className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
                 >
                   <FiPackage className="w-4 h-4" />

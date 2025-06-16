@@ -4,16 +4,16 @@ import { signOut, useSession } from "@/lib/auth-client";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Bell,
+  ChevronLeft,
+  ChevronRight,
   Edit,
   Heart,
   Home,
   LogOut,
-  Menu,
   Package,
   Search,
   Settings,
   User,
-  X,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -115,16 +115,6 @@ export default function DashboardLayout({
             </p>
           </div>
         </div>
-
-        {/* Close button - mobile only */}
-        <button
-          onClick={() => setSidebarOpen(false)}
-          title="Fermer le menu"
-          aria-label="Fermer le menu de navigation"
-          className="lg:hidden p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
-        >
-          <X className="h-5 w-5" />
-        </button>
       </div>
 
       {/* Navigation */}
@@ -156,6 +146,7 @@ export default function DashboardLayout({
       {/* Footer */}
       <div className="p-4 border-t border-gray-200">
         <button
+          type="button"
           onClick={handleSignOut}
           className="flex items-center space-x-3 w-full px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
         >
@@ -168,17 +159,28 @@ export default function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-gray-50 pt-20">
-      {/* Mobile menu button */}
-      <div className="lg:hidden fixed top-20 left-4 z-50">
-        <button
-          onClick={() => setSidebarOpen(true)}
-          title="Ouvrir le menu"
-          aria-label="Ouvrir le menu de navigation"
-          className="p-2 rounded-lg bg-white shadow-lg text-gray-600 hover:text-gray-900 transition-colors"
-        >
-          <Menu className="h-6 w-6" />
-        </button>
-      </div>
+      {/* Sidebar Toggle Button - Languette */}
+      <motion.button
+        type="button"
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        title={sidebarOpen ? "Fermer le menu" : "Ouvrir le menu"}
+        aria-label={
+          sidebarOpen
+            ? "Fermer le menu de navigation"
+            : "Ouvrir le menu de navigation"
+        }
+        className="lg:hidden fixed top-32 z-50 bg-emerald-50/50 shadow-lg border border-emerald-300 rounded-r-lg p-2 transition-all duration-300 hover:bg-gray-50"
+        animate={{
+          left: sidebarOpen ? "288px" : "0px", // 72*4 = 288px (width du sidebar)
+        }}
+        transition={{ duration: 0.15, ease: "easeInOut" }}
+      >
+        {sidebarOpen ? (
+          <ChevronLeft className="h-5 w-5 text-gray-600" />
+        ) : (
+          <ChevronRight className="h-5 w-5 text-gray-600" />
+        )}
+      </motion.button>
 
       {/* Mobile sidebar overlay */}
       <AnimatePresence>
@@ -187,7 +189,7 @@ export default function DashboardLayout({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="lg:hidden fixed inset-0 z-50 bg-black bg-opacity-50"
+            className="lg:hidden fixed inset-0 z-40 bg-black/30 bg-opacity-50"
             onClick={() => setSidebarOpen(false)}
           />
         )}
@@ -199,9 +201,10 @@ export default function DashboardLayout({
         animate={{
           x: sidebarOpen ? 0 : "-100%",
         }}
+        transition={{ type: "spring", damping: 30, stiffness: 200 }}
         className="lg:hidden fixed inset-y-0 left-0 z-50 w-72 bg-white shadow-xl"
       >
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full pt-20">
           <SidebarContent />
         </div>
       </motion.div>
@@ -225,6 +228,7 @@ export default function DashboardLayout({
             <div className="flex items-center space-x-4">
               {/* Search button */}
               <button
+                type="button"
                 title="Rechercher"
                 aria-label="Rechercher"
                 className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
@@ -234,6 +238,7 @@ export default function DashboardLayout({
 
               {/* Notifications */}
               <button
+                type="button"
                 title="Notifications"
                 aria-label="Voir les notifications"
                 className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors relative"

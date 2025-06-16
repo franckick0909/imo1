@@ -568,7 +568,7 @@ export default function AuthModals({
                 <motion.div className="p-6" variants={itemVariants}>
                   <form
                     onSubmit={signInForm.handleSubmit(handleSignIn)}
-                    className="space-y-2"
+                    className="space-y-3"
                   >
                     {/* Email */}
                     <motion.div variants={itemVariants}>
@@ -701,7 +701,7 @@ export default function AuthModals({
                 <motion.div className="p-6" variants={itemVariants}>
                   <form
                     onSubmit={signUpForm.handleSubmit(handleSignUp)}
-                    className="space-y-2"
+                    className="space-y-3"
                   >
                     {/* Nom */}
                     <motion.div variants={itemVariants}>
@@ -729,7 +729,7 @@ export default function AuthModals({
                         type="password"
                         label="Mot de passe"
                         {...signUpForm.register("password")}
-                        placeholder="Minimum 8 caractères, 1 majuscule, 1 chiffre, 1 caractère spécial"
+                        placeholder="Min 8 caractères, 1 maj, 1 chiffre, 1 caractère spécial"
                         error={signUpForm.formState.errors.password?.message}
                       />
                     </motion.div>

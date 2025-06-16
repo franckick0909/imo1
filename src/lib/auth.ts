@@ -122,7 +122,7 @@ export const auth = betterAuth({
       defaultRole: "user",
       adminRoles: ["admin"],
       // Vous définir comme administrateur principal
-      adminUserIds: ["13PWg3s3uKUdHKRwpdC0WeOY9cacK4oL"], // ID de franckick2@gmail.com
+      adminUserIds: ["uw7ZV8JeYviR6aCTy0KyDXACV2exFEnX"], // ID de franckick2@gmail.com
       impersonationSessionDuration: 60 * 60, // 1 heure
       defaultBanReason: "Violation des conditions d'utilisation",
       defaultBanExpiresIn: undefined, // Ban permanent par défaut

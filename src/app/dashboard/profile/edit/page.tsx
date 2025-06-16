@@ -3,42 +3,65 @@
 import { useToast } from "@/components/ui/ToastContainer";
 import { useSession } from "@/lib/auth-client";
 import { motion } from "framer-motion";
-import { ArrowLeft, Bell, Heart, MapPin, Save, User } from "lucide-react";
+import { ArrowLeft, Bell, Copy, Heart, MapPin, Save, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+
+interface ProfileData {
+  name: string;
+  email: string;
+  phone: string;
+  shippingAddress: {
+    street: string;
+    city: string;
+    postalCode: string;
+    country: string;
+  };
+  billingAddress: {
+    street: string;
+    city: string;
+    postalCode: string;
+    country: string;
+  };
+  useSameAddress: boolean;
+  preferences: {
+    skinType: string;
+    concerns: string[];
+    newsletter: boolean;
+    promotions: boolean;
+  };
+}
 
 export default function EditProfilePage() {
   const { data: session } = useSession();
   const router = useRouter();
   const { success, error } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [profileData, setProfileData] = useState({
+  const [isLoading, setIsLoading] = useState(true);
+  const [profileData, setProfileData] = useState<ProfileData>({
     name: "",
     email: "",
     phone: "",
-    address: {
+    shippingAddress: {
       street: "",
       city: "",
       postalCode: "",
       country: "France",
     },
+    billingAddress: {
+      street: "",
+      city: "",
+      postalCode: "",
+      country: "France",
+    },
+    useSameAddress: true,
     preferences: {
+      skinType: "",
+      concerns: [],
       newsletter: true,
       promotions: true,
-      skinType: "",
-      concerns: [] as string[],
     },
   });
-
-  useEffect(() => {
-    if (session) {
-      setProfileData((prev) => ({
-        ...prev,
-        name: session.user.name || "",
-        email: session.user.email || "",
-      }));
-    }
-  }, [session]);
 
   const skinTypes = [
     { value: "dry", label: "Peau sèche" },
@@ -59,17 +82,52 @@ export default function EditProfilePage() {
     "Éclat du teint",
   ];
 
+  // Charger le profil complet
+  const loadProfile = async () => {
+    try {
+      const response = await fetch("/api/auth/get-profile-complete");
+      if (response.ok) {
+        const data = await response.json();
+        setProfileData(data);
+      } else {
+        error("Erreur lors du chargement du profil");
+      }
+    } catch (err) {
+      console.error("Erreur lors du chargement du profil:", err);
+      error("Erreur lors du chargement du profil");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (session) {
+      loadProfile();
+    }
+  }, [session]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
-      // Simulation d'une API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const response = await fetch("/api/auth/update-profile-complete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(profileData),
+      });
 
-      success("Profil mis à jour avec succès !");
-      router.push("/dashboard/profile");
-    } catch {
+      if (response.ok) {
+        success("Profil mis à jour avec succès !");
+        router.push("/dashboard/profile");
+      } else {
+        const errorData = await response.json();
+        error(errorData.message || "Erreur lors de la mise à jour du profil");
+      }
+    } catch (err) {
+      console.error("Erreur lors de la mise à jour:", err);
       error("Erreur lors de la mise à jour du profil");
     } finally {
       setIsSubmitting(false);
@@ -88,8 +146,22 @@ export default function EditProfilePage() {
     }));
   };
 
-  if (!session) {
-    return null;
+  const copyShippingToBilling = () => {
+    setProfileData((prev) => ({
+      ...prev,
+      billingAddress: { ...prev.shippingAddress },
+    }));
+  };
+
+  if (!session || isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex items-center space-x-2">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+          <span className="text-lg text-gray-600">Chargement du profil...</span>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -202,7 +274,7 @@ export default function EditProfilePage() {
           </div>
         </motion.div>
 
-        {/* Adresse */}
+        {/* Adresse de livraison */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -221,11 +293,14 @@ export default function EditProfilePage() {
               </label>
               <input
                 type="text"
-                value={profileData.address.street}
+                value={profileData.shippingAddress.street}
                 onChange={(e) =>
                   setProfileData((prev) => ({
                     ...prev,
-                    address: { ...prev.address, street: e.target.value },
+                    shippingAddress: {
+                      ...prev.shippingAddress,
+                      street: e.target.value,
+                    },
                   }))
                 }
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
@@ -240,11 +315,14 @@ export default function EditProfilePage() {
                 </label>
                 <input
                   type="text"
-                  value={profileData.address.city}
+                  value={profileData.shippingAddress.city}
                   onChange={(e) =>
                     setProfileData((prev) => ({
                       ...prev,
-                      address: { ...prev.address, city: e.target.value },
+                      shippingAddress: {
+                        ...prev.shippingAddress,
+                        city: e.target.value,
+                      },
                     }))
                   }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
@@ -258,11 +336,14 @@ export default function EditProfilePage() {
                 </label>
                 <input
                   type="text"
-                  value={profileData.address.postalCode}
+                  value={profileData.shippingAddress.postalCode}
                   onChange={(e) =>
                     setProfileData((prev) => ({
                       ...prev,
-                      address: { ...prev.address, postalCode: e.target.value },
+                      shippingAddress: {
+                        ...prev.shippingAddress,
+                        postalCode: e.target.value,
+                      },
                     }))
                   }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
@@ -277,11 +358,14 @@ export default function EditProfilePage() {
                 <select
                   title="Pays"
                   aria-label="Pays de livraison"
-                  value={profileData.address.country}
+                  value={profileData.shippingAddress.country}
                   onChange={(e) =>
                     setProfileData((prev) => ({
                       ...prev,
-                      address: { ...prev.address, country: e.target.value },
+                      shippingAddress: {
+                        ...prev.shippingAddress,
+                        country: e.target.value,
+                      },
                     }))
                   }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
@@ -293,6 +377,150 @@ export default function EditProfilePage() {
                 </select>
               </div>
             </div>
+          </div>
+        </motion.div>
+
+        {/* Adresse de facturation */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+          className="bg-white rounded-xl p-6 shadow-sm border border-gray-100"
+        >
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-gray-900 flex items-center">
+              <MapPin className="h-5 w-5 text-emerald-600 mr-2" />
+              Adresse de facturation
+            </h2>
+
+            {!profileData.useSameAddress && (
+              <button
+                type="button"
+                onClick={copyShippingToBilling}
+                className="flex items-center space-x-1 px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors"
+              >
+                <Copy className="h-3 w-3" />
+                <span>Copier depuis livraison</span>
+              </button>
+            )}
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="useSameAddress"
+                checked={profileData.useSameAddress}
+                onChange={(e) =>
+                  setProfileData((prev) => ({
+                    ...prev,
+                    useSameAddress: e.target.checked,
+                  }))
+                }
+                className="w-4 h-4 text-emerald-600 bg-gray-100 border-gray-300 rounded focus:ring-emerald-500 focus:ring-2"
+              />
+              <label
+                htmlFor="useSameAddress"
+                className="text-sm font-medium text-gray-700"
+              >
+                Utiliser la même adresse que pour la livraison
+              </label>
+            </div>
+
+            {!profileData.useSameAddress && (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Adresse
+                  </label>
+                  <input
+                    type="text"
+                    value={profileData.billingAddress.street}
+                    onChange={(e) =>
+                      setProfileData((prev) => ({
+                        ...prev,
+                        billingAddress: {
+                          ...prev.billingAddress,
+                          street: e.target.value,
+                        },
+                      }))
+                    }
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
+                    placeholder="123 rue de la Paix"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Ville
+                    </label>
+                    <input
+                      type="text"
+                      value={profileData.billingAddress.city}
+                      onChange={(e) =>
+                        setProfileData((prev) => ({
+                          ...prev,
+                          billingAddress: {
+                            ...prev.billingAddress,
+                            city: e.target.value,
+                          },
+                        }))
+                      }
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
+                      placeholder="Paris"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Code postal
+                    </label>
+                    <input
+                      type="text"
+                      value={profileData.billingAddress.postalCode}
+                      onChange={(e) =>
+                        setProfileData((prev) => ({
+                          ...prev,
+                          billingAddress: {
+                            ...prev.billingAddress,
+                            postalCode: e.target.value,
+                          },
+                        }))
+                      }
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
+                      placeholder="75001"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Pays
+                    </label>
+                    <select
+                      title="Pays"
+                      aria-label="Pays de facturation"
+                      value={profileData.billingAddress.country}
+                      onChange={(e) =>
+                        setProfileData((prev) => ({
+                          ...prev,
+                          billingAddress: {
+                            ...prev.billingAddress,
+                            country: e.target.value,
+                          },
+                        }))
+                      }
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-colors"
+                    >
+                      <option value="France">France</option>
+                      <option value="Belgique">Belgique</option>
+                      <option value="Suisse">Suisse</option>
+                      <option value="Canada">Canada</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </motion.div>
 
