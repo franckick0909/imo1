@@ -372,11 +372,11 @@ export default function AuthModals({
   // Composants réutilisables
   const ModalHeader = ({ title }: { title: string }) => (
     <motion.div
-      className="flex justify-between items-center p-6"
+      className="flex justify-between items-center px-6 py-3"
       variants={itemVariants}
     >
       <motion.h2
-        className="text-xl font-semibold text-gray-900"
+        className="text-xl font-light text-zinc-900 uppercase"
         variants={titleVariants}
       >
         {title}

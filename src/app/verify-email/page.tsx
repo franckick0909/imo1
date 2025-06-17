@@ -179,6 +179,7 @@ function VerifyEmailContent() {
           </div>
 
           <motion.button
+            type="button"
             onClick={handleVerify}
             disabled={isVerifying || otp.join("").length !== 6}
             className="w-full bg-emerald-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-emerald-700 focus:ring-4 focus:ring-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
@@ -201,6 +202,7 @@ function VerifyEmailContent() {
             </p>
 
             <button
+              type="button"
               onClick={handleResendCode}
               disabled={isResending}
               className="text-emerald-600 hover:text-emerald-700 font-medium text-sm transition-colors disabled:opacity-50"

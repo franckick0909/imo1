@@ -3,7 +3,7 @@ import { ToastProvider } from "@/components/ui/ToastContainer";
 import { CartProvider } from "@/contexts/CartContext";
 import type { Metadata } from "next";
 import { ViewTransitions } from "next-view-transitions";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Inter, Playfair_Display } from "next/font/google";
 import "../styles/responsive.css";
 import "./globals.css";
 
@@ -30,6 +30,16 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+});
+
+const playfairDisplay = Playfair_Display({
+  variable: "--font-playfair-display",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
   title: "Immo1 - Plateforme Immobilière",
   description: "Plateforme immobilière moderne avec authentification sécurisée",
@@ -44,7 +54,7 @@ export default function RootLayout({
     <ViewTransitions>
       <html lang="fr" className="h-full">
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased h-full`}
+          className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${playfairDisplay.variable} antialiased h-full font-inter`}
         >
           <CartProvider>
             <ToastProvider>

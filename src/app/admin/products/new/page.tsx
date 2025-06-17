@@ -81,11 +81,27 @@ export default function NewProductPage() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
+        console.log("🔄 Chargement des catégories...");
         const response = await fetch("/api/categories");
+        console.log("📡 Réponse API:", response.status, response.statusText);
+
+        if (!response.ok) {
+          throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+
         const data = await response.json();
-        setCategories(Array.isArray(data) ? data : []);
+        console.log("📋 Catégories reçues:", data);
+
+        if (Array.isArray(data)) {
+          setCategories(data);
+          console.log("✅ Catégories chargées:", data.length, "catégories");
+        } else {
+          console.warn("⚠️ Format de données inattendu:", typeof data);
+          setCategories([]);
+        }
       } catch (error) {
-        console.error("Erreur lors du chargement des catégories:", error);
+        console.error("❌ Erreur lors du chargement des catégories:", error);
+        setCategories([]);
       }
     };
 
@@ -268,18 +284,27 @@ export default function NewProductPage() {
                 </label>
                 <select
                   {...register("categoryId")}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none placeholder:text-gray-400 text-gray-400"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none placeholder:text-gray-400 text-zinc-700"
                 >
-                  <option value="" title="Sélectionner une catégorie">
-                    Sélectionner une catégorie
+                  <option
+                    value=""
+                    title="Sélectionner une catégorie"
+                  >
+                    {categories.length === 0
+                      ? "Chargement des catégories..."
+                      : "Sélectionner une catégorie"}
                   </option>
-                  {categories &&
-                    Array.isArray(categories) &&
+                  {categories.length > 0 ? (
                     categories.map((category) => (
                       <option key={category.id} value={category.id}>
                         {category.name}
                       </option>
-                    ))}
+                    ))
+                  ) : (
+                    <option disabled value="">
+                      Aucune catégorie disponible
+                    </option>
+                  )}
                 </select>
                 {errors.categoryId && (
                   <p className="text-red-500 text-sm mt-1">

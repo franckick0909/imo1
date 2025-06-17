@@ -49,6 +49,8 @@ export default function Header() {
   const headerVariants = {
     visible: {
       y: 0,
+
+  //   backdropFilter: "blur(10px)",
       transition: {
         duration: 0.5,
         ease: [0.25, 0.46, 0.45, 0.94] as const,
@@ -56,6 +58,7 @@ export default function Header() {
     },
     hidden: {
       y: "-100%",
+      //   backdropFilter: "none",
       transition: {
         duration: 0.4,
         ease: [0.25, 0.46, 0.45, 0.94] as const,
@@ -65,7 +68,7 @@ export default function Header() {
 
   return (
     <motion.div
-      className="fixed top-0 left-0 right-0 z-30 bg-white/80 backdrop-blur-md border-b border-emerald-300"
+      className="fixed top-0 left-0 right-0 z-30"
       variants={headerVariants}
       animate={isVisible ? "visible" : "hidden"}
       initial="visible"
@@ -80,7 +83,7 @@ export default function Header() {
         <div className="flex-1 flex justify-center">
           <Link
             href="/"
-            className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-emerald-800 transition-all duration-300 cursor-pointer"
+            className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white transition-all duration-300 cursor-pointer"
           >
             BioCrème
           </Link>
