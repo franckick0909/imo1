@@ -1,9 +1,17 @@
+import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import { ToastProvider } from "@/components/ui/ToastContainer";
 import { CartProvider } from "@/contexts/CartContext";
 import type { Metadata } from "next";
 import { ViewTransitions } from "next-view-transitions";
-import { Geist, Geist_Mono, Inter, Playfair_Display } from "next/font/google";
+import {
+  Archivo_Black,
+  Geist,
+  Geist_Mono,
+  Inter,
+  Pinyon_Script,
+  Playfair_Display,
+} from "next/font/google";
 import "../styles/responsive.css";
 import "./globals.css";
 
@@ -40,6 +48,18 @@ const playfairDisplay = Playfair_Display({
   subsets: ["latin"],
 });
 
+const pinyonScript = Pinyon_Script({
+  variable: "--font-pinyon-script",
+  subsets: ["latin"],
+  weight: "400",
+});
+
+const archivoBlack = Archivo_Black({
+  variable: "--font-archivo-black",
+  subsets: ["latin"],
+  weight: "400",
+});
+
 export const metadata: Metadata = {
   title: "Immo1 - Plateforme Immobilière",
   description: "Plateforme immobilière moderne avec authentification sécurisée",
@@ -54,12 +74,13 @@ export default function RootLayout({
     <ViewTransitions>
       <html lang="fr" className="h-full">
         <body
-          className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${playfairDisplay.variable} antialiased h-full font-inter`}
+          className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${playfairDisplay.variable} ${pinyonScript.variable} ${archivoBlack.variable} antialiased h-full font-inter`}
         >
           <CartProvider>
             <ToastProvider>
               <Header />
               {children}
+              <Footer />
             </ToastProvider>
           </CartProvider>
         </body>

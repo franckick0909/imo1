@@ -2,6 +2,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useRef } from "react";
+import SophisticatedTitle from "./ui/SophisticatedTitle";
 
 const features = [
   {
@@ -151,10 +152,13 @@ export default function FeatureSection() {
           viewport={{ once: true }}
           className="text-center mb-20"
         >
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-gray-900 mb-6">
-            Propre, Conscient,{" "}
-            <span className="italic font-playfair">Performance</span>
-          </h2>
+          <SophisticatedTitle
+            level="h2"
+            variant="section"
+            className="text-gray-900 mb-6"
+          >
+            Propre Conscient Performance
+          </SophisticatedTitle>
           <p className="text-xl text-gray-600 font-light max-w-4xl mx-auto leading-relaxed">
             Des produits véritablement honnêtes qui fonctionnent, respectueux de
             la peau et de la planète – sans exception !

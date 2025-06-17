@@ -10,18 +10,25 @@ import UserMenu from "./UserMenu";
 export default function Header() {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [isAtTop, setIsAtTop] = useState(true);
+  const [hasScrolledUp, setHasScrolledUp] = useState(false);
 
   useEffect(() => {
     const controlHeader = () => {
       const currentScrollY = window.scrollY;
 
+      // Détecter si on est en haut de page
+      setIsAtTop(currentScrollY <= 50);
+
       // Si on scroll vers le bas et qu'on a dépassé 100px, cacher le header
       if (currentScrollY > lastScrollY && currentScrollY > 100) {
         setIsVisible(false);
+        setHasScrolledUp(false);
       }
       // Si on scroll vers le haut, montrer le header
       else if (currentScrollY < lastScrollY) {
         setIsVisible(true);
+        setHasScrolledUp(currentScrollY > 50); // Marquer qu'on a scrollé vers le haut depuis le bas
       }
 
       setLastScrollY(currentScrollY);
@@ -49,8 +56,6 @@ export default function Header() {
   const headerVariants = {
     visible: {
       y: 0,
-
-  //   backdropFilter: "blur(10px)",
       transition: {
         duration: 0.5,
         ease: [0.25, 0.46, 0.45, 0.94] as const,
@@ -58,7 +63,6 @@ export default function Header() {
     },
     hidden: {
       y: "-100%",
-      //   backdropFilter: "none",
       transition: {
         duration: 0.4,
         ease: [0.25, 0.46, 0.45, 0.94] as const,
@@ -66,9 +70,31 @@ export default function Header() {
     },
   };
 
+  // Déterminer le style du header selon l'état
+  const getHeaderStyle = () => {
+    if (isAtTop) {
+      // Transparent en haut de page
+      return "bg-transparent";
+    } else if (hasScrolledUp) {
+      // Fond blanc quand on remonte depuis le bas
+      return "bg-white/95 backdrop-blur-md shadow-sm";
+    }
+    return "bg-transparent";
+  };
+
+  // Déterminer la couleur du logo
+  const getLogoColor = () => {
+    if (isAtTop) {
+      return "text-white";
+    } else if (hasScrolledUp) {
+      return "text-zinc-700";
+    }
+    return "text-white";
+  };
+
   return (
     <motion.div
-      className="fixed top-0 left-0 right-0 z-30"
+      className={`fixed top-0 left-0 right-0 z-[60] transition-all duration-300 ${getHeaderStyle()}`}
       variants={headerVariants}
       animate={isVisible ? "visible" : "hidden"}
       initial="visible"
@@ -83,7 +109,7 @@ export default function Header() {
         <div className="flex-1 flex justify-center">
           <Link
             href="/"
-            className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white transition-all duration-300 cursor-pointer"
+            className={`font-pinyon text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light transition-all duration-300 cursor-pointer ${getLogoColor()}`}
           >
             BioCrème
           </Link>

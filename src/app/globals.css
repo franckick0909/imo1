@@ -25,7 +25,69 @@ body {
   font-family: var(--font-inter);
 }
 
+/* Nouvelles classes de fonts pour typographie mixte */
+.font-pinyon {
+  font-family: var(--font-pinyon-script);
+}
 
+.font-archivo {
+  font-family: var(--font-archivo-black);
+}
+
+/* Styles pour titres sophistiqués */
+.title-mixed {
+  line-height: 1;
+  letter-spacing: -0.05em;
+  word-spacing: 0.5em;
+}
+
+.title-script {
+  font-family: var(--font-pinyon-script);
+  font-size: 1.2em;
+  position: relative;
+  display: inline-block;
+  margin-left: 0em;
+  margin-right: 0.5em;
+}
+
+.title-bold {
+  font-family: var(--font-archivo-black);
+  text-transform: uppercase;
+  letter-spacing: -0.05em;
+  font-weight: 400;
+  margin-right: 0.3em;
+}
+
+/* Éléments décoratifs */
+.title-ornament {
+  position: relative;
+  display: inline-block;
+}
+
+.title-ornament::after {
+  content: "✦";
+  position: absolute;
+  top: 0.8em;
+  right: -1.4em;
+  font-size: 0.4em;
+  opacity: 0.6;
+  color: currentColor;
+}
+
+.title-plus {
+  position: relative;
+  display: inline-block;
+}
+
+.title-plus::before {
+  content: "+";
+  position: absolute;
+  top: 0.8em;
+  left: -1.4em;
+  font-size: 0.5em;
+  opacity: 0.4;
+  font-weight: 300;
+}
 
 /* Support pour l'API View Transitions */
 ::view-transition-old(root),

@@ -176,7 +176,7 @@ export default function NavigationMenu() {
               >
                 <div className="flex flex-col h-full justify-center p-4 sm:p-6 md:p-8">
                   <div className="mb-4 sm:mb-5 md:mb-6 border-b border-gray-200 pb-3 sm:pb-4">
-                    <h2 className="text-gray-700 text-xs sm:text-sm uppercase font-bold tracking-wider">
+                    <h2 className="text-gray-700 text-xs sm:text-sm uppercase font-bold tracking-wider pt-8">
                       Navigation
                     </h2>
                   </div>
@@ -201,7 +201,7 @@ export default function NavigationMenu() {
                           <Link
                             href={link.href}
                             onClick={() => setIsMenuOpen(false)}
-                            className="text-base sm:text-lg md:text-xl text-emerald-800 hover:text-emerald-900 transition-colors inline-block relative group font-semibold"
+                            className="text-base sm:text-lg md:text-xl text-zinc-700 hover:text-zinc-900 transition-colors inline-block relative group font-light"
                           >
                             {link.label}
                             <motion.span className="absolute bottom-0 left-0 w-full h-0.5 bg-emerald-900 transform origin-left transition-all duration-300 scale-x-0 group-hover:scale-x-100" />
@@ -213,7 +213,7 @@ export default function NavigationMenu() {
 
                   {/* Section promotionnelle */}
                   <div className="mt-4 sm:mt-6 md:mt-8 p-3 sm:p-4 bg-emerald-50 rounded-lg border border-emerald-300">
-                    <h3 className="text-emerald-800 font-semibold text-xs sm:text-sm mb-2">
+                    <h3 className="text-emerald-800 text-xs sm:text-sm mb-2">
                       ✨ Nouveauté
                     </h3>
                     <p className="text-emerald-700 text-xs mb-2 sm:mb-3">
@@ -222,7 +222,7 @@ export default function NavigationMenu() {
                     <Link
                       href="/products?category=anti-age"
                       onClick={() => setIsMenuOpen(false)}
-                      className="text-xs text-emerald-800 font-medium hover:text-emerald-900 underline"
+                      className="text-xs text-emerald-800 hover:text-emerald-900 underline"
                     >
                       Voir la collection →
                     </Link>

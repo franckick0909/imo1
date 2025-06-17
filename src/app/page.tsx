@@ -1,6 +1,7 @@
 "use client";
 
 import FeatureSection from "@/components/FeatureSection";
+import SophisticatedTitle from "@/components/ui/SophisticatedTitle";
 import { useToast } from "@/components/ui/ToastContainer";
 import { useCart } from "@/contexts/CartContext";
 import { motion } from "framer-motion";
@@ -274,18 +275,12 @@ export default function Home() {
 
         <div className="relative z-10 flex items-center justify-center h-full">
           <div className="text-center text-white px-4 max-w-5xl">
-            <motion.h1
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
-              className="text-5xl md:text-7xl lg:text-8xl font-light leading-tight mb-8"
-            >
-              Fidèle à soi-même
-              <br />
-              <span className="italic font-playfair">
-                Bienveillant envers la Nature
-              </span>
-            </motion.h1>
+            <SophisticatedTitle
+              level="h1"
+              variant="hero"
+              className="mb-8 text-white"
+            >Bienveillant envers la Nature
+            </SophisticatedTitle>
 
             <motion.p
               initial={{ opacity: 0, y: 30 }}
@@ -323,10 +318,13 @@ export default function Home() {
             viewport={{ once: true }}
             className="text-center max-w-5xl mx-auto"
           >
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-gray-900 leading-tight mb-8">
-              Une Mission : Simplifier{" "}
-              <span className="italic font-playfair">les Soins</span>
-            </h2>
+            <SophisticatedTitle
+              level="h2"
+              variant="section"
+              className="text-gray-900 leading-tight mb-8"
+            >
+              Une Mission Simplifier les Soins
+            </SophisticatedTitle>
             <p className="text-xl md:text-2xl text-gray-600 font-light leading-relaxed">
               Des formulations pures et efficaces pour révéler la beauté
               naturelle de votre peau, sans compromis sur la qualité ni
@@ -351,9 +349,13 @@ export default function Home() {
             viewport={{ once: true }}
             className="text-center mb-20"
           >
-            <h2 className="text-4xl md:text-5xl font-light text-gray-900 mb-6">
+            <SophisticatedTitle
+              level="h2"
+              variant="section"
+              className="text-gray-900 mb-6"
+            >
               Collection Printemps
-            </h2>
+            </SophisticatedTitle>
             <div className="flex justify-center space-x-12 text-sm font-medium text-gray-600 uppercase tracking-wider">
               <span className="border-b-2 border-gray-900 pb-2">
                 Bestsellers
@@ -428,12 +430,13 @@ export default function Home() {
               transition={{ duration: 0.8 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-light text-gray-900 leading-tight mb-8">
-                Hydratez Pendant
-                <span className="italic font-playfair block">
-                  Votre Sommeil
-                </span>
-              </h2>
+              <SophisticatedTitle
+                level="h2"
+                variant="section"
+                className="text-gray-900 leading-52 mb-8"
+              >
+                Hydratez-vous Pendant Votre Sommeil
+              </SophisticatedTitle>
               <p className="text-xl text-gray-600 font-light leading-relaxed mb-10">
                 Réveillez-vous avec des mains douces et souples grâce à ce
                 traitement nocturne recommandé par les dermatologues.
