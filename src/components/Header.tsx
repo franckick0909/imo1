@@ -94,7 +94,7 @@ export default function Header() {
 
   return (
     <motion.div
-      className={`fixed top-0 left-0 right-0 z-[60] transition-all duration-300 ${getHeaderStyle()}`}
+      className={`fixed top-0 left-0 right-0 z-[30] transition-all duration-300 ${getHeaderStyle()}`}
       variants={headerVariants}
       animate={isVisible ? "visible" : "hidden"}
       initial="visible"

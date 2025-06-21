@@ -1,13 +1,13 @@
 "use client";
 
-import FeatureSection from "@/components/FeatureSection";
+import FeatureSectionGSAP from "@/components/FeatureSectionGSAP";
 import SophisticatedTitle from "@/components/ui/SophisticatedTitle";
 import { useToast } from "@/components/ui/ToastContainer";
 import { useCart } from "@/contexts/CartContext";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { Link } from "next-view-transitions";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface Product {
   id: string;
@@ -257,29 +257,54 @@ function ProductCard({ product }: { product: Product }) {
 
 export default function Home() {
   const { products: featuredProducts, loading } = useFeaturedProducts();
+  const heroRef = useRef<HTMLElement>(null);
+
+  // Configuration du parallax
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"],
+  });
+
+  const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
+  const overlayOpacity = useTransform(
+    scrollYProgress,
+    [0, 0.5, 1],
+    [1, 0.8, 0.3]
+  );
+  const textOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0.2]);
 
   return (
     <div className="bg-white">
-      {/* Hero Section - Image plus claire et haute définition */}
-      <section className="relative h-screen w-full overflow-hidden">
-        <div className="absolute inset-0">
+      {/* Hero Section - Avec effet parallax */}
+      <section
+        ref={heroRef}
+        className="relative h-screen w-full overflow-hidden"
+      >
+        <motion.div className="absolute inset-0" style={{ y }}>
           <Image
             src="/images/hero.jpg"
             alt="Cosmétiques naturels de luxe"
             fill
-            className="object-cover"
+            className="object-cover scale-110"
             priority
           />
-          <div className="absolute inset-0 bg-black/25" />
-        </div>
+          <motion.div
+            className="absolute inset-0 bg-black/25"
+            style={{ opacity: overlayOpacity }}
+          />
+        </motion.div>
 
         <div className="relative z-10 flex items-center justify-center h-full">
-          <div className="text-center text-white px-4 max-w-5xl">
+          <motion.div
+            className="text-center text-white px-4 max-w-xl"
+            style={{ opacity: textOpacity }}
+          >
             <SophisticatedTitle
               level="h1"
               variant="hero"
               className="mb-8 text-white"
-            >Bienveillant envers la Nature
+            >
+              Bienveillant envers la Nature
             </SophisticatedTitle>
 
             <motion.p
@@ -304,7 +329,7 @@ export default function Home() {
                 Découvrir la Collection
               </Link>
             </motion.div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -336,7 +361,7 @@ export default function Home() {
       </section>
 
       {/* Section Certifications avec animations de scroll */}
-      <FeatureSection />
+      <FeatureSectionGSAP />
 
       {/* Section Featured Products - Plus grande */}
       <section className="py-24 bg-white">
@@ -422,8 +447,8 @@ export default function Home() {
 
       {/* Section Hero Secondary */}
       <section className="py-24 bg-gray-50">
-        <div className="w-full px-6 lg:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center max-w-7xl mx-auto">
+        <div className="w-full px-4 lg:px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center mx-auto max-w-full">
             <motion.div
               initial={{ opacity: 0, x: -50 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -454,13 +479,13 @@ export default function Home() {
               whileInView={{ opacity: 1, x: 0, scale: 1 }}
               transition={{ duration: 0.8, type: "spring", stiffness: 100 }}
               viewport={{ once: true }}
-              className="relative aspect-square"
+              className="relative aspect-square flex-1 w-full h-full"
             >
               <Image
                 src="/images/soir.jpg"
                 alt="Soin des mains naturel de nuit"
                 fill
-                className="object-cover rounded-2xl shadow-2xl"
+                className="object-cover "
               />
             </motion.div>
           </div>
