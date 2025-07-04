@@ -55,11 +55,11 @@ export default function CartSidebar() {
           aria-label="Panier"
           type="button"
           onClick={() => setIsCartOpen(true)}
-          className="relative bg-zinc-100 hover:bg-zinc-200 text-black p-1.5 sm:p-2 h-8 sm:h-9 md:h-10 w-8 sm:w-9 md:w-10 rounded-full transition-colors duration-300 cursor-pointer flex items-center justify-center"
+          className="relative bg-zinc-100 hover:bg-zinc-200 text-black p-1.5 sm:p-2 md:p-2.5 h-10 sm:h-10 md:h-11 lg:h-12 w-10 sm:w-10 md:w-11 lg:w-12 rounded-full transition-colors duration-300 cursor-pointer flex items-center justify-center"
         >
           {/* Icône panier */}
           <svg
-            className="w-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6"
+            className="w-4 sm:w-5 md:w-5 lg:w-6 h-4 sm:h-5 md:h-5 lg:h-6"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -73,7 +73,7 @@ export default function CartSidebar() {
           </svg>
           {/* Badge du nombre d'articles */}
           {displayItemCount > 0 && (
-            <span className="absolute -top-0.5 sm:-top-1 -right-0.5 sm:-right-1 bg-emerald-500 text-white text-xs rounded-full h-4 sm:h-5 w-4 sm:w-5 flex items-center justify-center font-medium">
+            <span className="absolute -top-1 sm:-top-1 -right-1 sm:-right-1 bg-emerald-500 text-white text-xs sm:text-sm rounded-full h-4 sm:h-5 md:h-5 w-4 sm:w-5 md:w-5 flex items-center justify-center font-medium">
               {displayItemCount}
             </span>
           )}
@@ -104,9 +104,8 @@ export default function CartSidebar() {
                   duration: 0.7,
                   ease: [0.76, 0, 0.24, 1] as const,
                 }}
-                className="fixed right-0 top-0 bg-white shadow-2xl flex flex-col z-[9999] border-l border-emerald-300"
+                className="fixed right-0 top-0 bg-white shadow-2xl flex flex-col z-[9999] border-l border-emerald-300 min-h-screen"
                 style={{
-                  height: "100vh",
                   width: "500px",
                   maxWidth: "90vw",
                 }}

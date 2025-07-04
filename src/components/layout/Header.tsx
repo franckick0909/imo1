@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { Link } from "next-view-transitions";
 import { useEffect, useState } from "react";
-import CartSidebar from "./CartSidebar";
+import CartSidebar from "../CartSidebar";
 import NavigationMenu from "./NavigationMenu";
 import UserMenu from "./UserMenu";
 
@@ -94,29 +94,29 @@ export default function Header() {
 
   return (
     <motion.div
-      className={`fixed top-0 left-0 right-0 z-[30] transition-all duration-300 ${getHeaderStyle()}`}
+      className={`fixed top-0 left-0 right-0 z-[45] transition-all duration-300 ${getHeaderStyle()}`}
       variants={headerVariants}
       animate={isVisible ? "visible" : "hidden"}
       initial="visible"
     >
-      <div className="flex justify-between items-center py-2 sm:py-3 md:py-4 px-3 sm:px-4 md:px-6">
+      <div className="flex justify-between items-center py-3 sm:py-3 md:py-4 lg:py-5 px-4 sm:px-5 md:px-6 lg:px-7">
         {/* Menu Navigation (gauche) */}
         <div className="flex-1 flex justify-start">
-          <NavigationMenu />
+          <NavigationMenu isHeaderWhite={hasScrolledUp} />
         </div>
 
         {/* Logo (centre) */}
         <div className="flex-1 flex justify-center">
           <Link
             href="/"
-            className={`font-pinyon text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light transition-all duration-300 cursor-pointer ${getLogoColor()}`}
+            className={`font-pinyon text-2xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-light transition-all duration-300 cursor-pointer ${getLogoColor()}`}
           >
             BioCrème
           </Link>
         </div>
 
         {/* Menus Utilisateur et Panier (droite) */}
-        <div className="flex-1 flex justify-end items-center gap-2 sm:gap-3 md:gap-4">
+        <div className="flex-1 flex justify-end items-center gap-2 sm:gap-3 md:gap-4 lg:gap-5">
           <CartSidebar />
           <UserMenu />
         </div>

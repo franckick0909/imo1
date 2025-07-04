@@ -1,7 +1,8 @@
-import Footer from "@/components/Footer";
-import Header from "@/components/Header";
+import Footer from "@/components/layout/Footer";
+import Header from "@/components/layout/Header";
 import { ToastProvider } from "@/components/ui/ToastContainer";
 import { CartProvider } from "@/contexts/CartContext";
+import { ReactLenis } from "@/utils/lenis";
 import type { Metadata } from "next";
 import { ViewTransitions } from "next-view-transitions";
 import {
@@ -73,17 +74,27 @@ export default function RootLayout({
   return (
     <ViewTransitions>
       <html lang="fr" className="h-full">
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${playfairDisplay.variable} ${pinyonScript.variable} ${archivoBlack.variable} antialiased h-full font-inter`}
+        <ReactLenis
+          root
+          options={{
+            duration: 1.2,
+            wheelMultiplier: 1,
+            touchMultiplier: 2,
+            infinite: false,
+          }}
         >
-          <CartProvider>
-            <ToastProvider>
-              <Header />
-              {children}
-              <Footer />
-            </ToastProvider>
-          </CartProvider>
-        </body>
+          <body
+            className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${playfairDisplay.variable} ${pinyonScript.variable} ${archivoBlack.variable} antialiased h-full font-inter`}
+          >
+            <CartProvider>
+              <ToastProvider>
+                <Header />
+                {children}
+                <Footer />
+              </ToastProvider>
+            </CartProvider>
+          </body>
+        </ReactLenis>
       </html>
     </ViewTransitions>
   );

@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Link } from "next-view-transitions";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import Portal from "./Portal";
+import Portal from "../Portal";
 
 // Liens de navigation commerce
 const navigationLinks = [
@@ -51,29 +51,31 @@ const linkVariants = {
 
 const containerVariants = {
   hidden: {
-    height: 10,
-    width: 30,
+    x: "-100%",
     transition: {
-      duration: 1,
-      ease: [0.87, 0, 0.13, 1] as [number, number, number, number],
+      duration: 0.5,
+      ease: [0.76, 0, 0.24, 1] as [number, number, number, number],
       when: "afterChildren" as const,
     },
   },
   visible: {
-    maxWidth: "94vw",
-    width: 400,
-    height: "60vh",
-    maxHeight: "60vh",
+    x: 0,
     transition: {
-      duration: 0.8,
-      ease: [0.87, 0, 0.13, 1] as [number, number, number, number],
+      duration: 0.6,
+      ease: [0.76, 0, 0.24, 1] as [number, number, number, number],
       when: "beforeChildren" as const,
-      delayChildren: 0.3,
+      delayChildren: 0.2,
     },
   },
 };
 
-export default function NavigationMenu() {
+interface NavigationMenuProps {
+  isHeaderWhite?: boolean;
+}
+
+export default function NavigationMenu({
+  isHeaderWhite = false,
+}: NavigationMenuProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
 
@@ -111,25 +113,63 @@ export default function NavigationMenu() {
         <motion.button
           type="button"
           aria-label="Menu navigation"
-          className="relative focus:outline-none cursor-pointer"
+          className="relative focus:outline-none cursor-pointer hidden sm:block"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
         >
-          <div className="w-16 sm:w-20 md:w-24 h-8 sm:h-9 md:h-10 flex flex-col justify-center items-center overflow-hidden">
+          <div className="w-14 sm:w-16 md:w-20 lg:w-24 h-7 sm:h-8 md:h-9 lg:h-10 flex flex-col justify-center items-center overflow-hidden">
             <motion.div
               className="flex flex-col"
               animate={{ y: "25%" }}
               transition={{ duration: 0.3, ease: [0.76, 0, 0.24, 1] as const }}
             >
-              <span className="h-8 sm:h-9 md:h-10 w-16 sm:w-20 md:w-24 flex items-center justify-center text-black font-medium rounded-full bg-zinc-100 text-xs sm:text-sm md:text-base hover:bg-zinc-200 transition-colors duration-300">
-                Menu
-              </span>
-              <span className="h-8 sm:h-9 md:h-10 w-16 sm:w-20 md:w-24 flex items-center justify-center font-medium rounded-full bg-black text-white text-xs sm:text-sm">
-                Fermer
-              </span>
+                              <span
+                  className="h-7 sm:h-8 md:h-9 lg:h-10 w-14 sm:w-16 md:w-20 lg:w-24 flex items-center justify-center font-normal rounded-full text-xs sm:text-sm md:text-base transition-all duration-300  text-black bg-zinc-100 hover:bg-zinc-200"
+                >
+                  Menu
+                </span>
+                <span
+                  className={`h-7 sm:h-8 md:h-9 lg:h-10 w-14 sm:w-16 md:w-20 lg:w-24 flex items-center justify-center font-medium rounded-full text-xs sm:text-sm md:text-base ${
+                    isHeaderWhite ? "bg-black text-white" : "bg-white text-black"
+                  }`}
+                >
+                  Fermer
+                </span>
             </motion.div>
           </div>
         </motion.button>
       )}
+
+      {/* Version mobile - Hamburger animé */}
+      <button
+        type="button"
+        aria-label={isMenuOpen ? "Fermer menu" : "Ouvrir menu"}
+        className="block sm:hidden relative focus:outline-none cursor-pointer"
+        onClick={() => setIsMenuOpen(!isMenuOpen)}
+      >
+        <div className="w-6 sm:w-7 md:w-8 h-6 sm:h-7 md:h-8 flex flex-col justify-center items-center space-y-1">
+          <motion.span
+            className={`block h-0.5 w-6 sm:w-7 md:w-8 rounded-full transition-colors duration-300 ${
+              isHeaderWhite ? "bg-gray-900" : "bg-white"
+            }`}
+            animate={isMenuOpen ? { rotate: 45, y: 6 } : { rotate: 0, y: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+          />
+          <motion.span
+            className={`block h-0.5 w-6 sm:w-7 md:w-8 rounded-full transition-colors duration-300 ${
+              isHeaderWhite ? "bg-gray-900" : "bg-white"
+            }`}
+            animate={isMenuOpen ? { opacity: 0 } : { opacity: 1 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+          />
+          <motion.span
+            className={`block h-0.5 w-6 sm:w-7 md:w-8 rounded-full transition-colors duration-300 ${
+              isHeaderWhite ? "bg-gray-900" : "bg-white"
+            }`}
+            animate={isMenuOpen ? { rotate: -45, y: -6 } : { rotate: 0, y: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+          />
+        </div>
+      </button>
 
       {/* Menu Navigation avec Portal pour l'overlay */}
       <Portal>
@@ -142,48 +182,52 @@ export default function NavigationMenu() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="fixed inset-0 bg-black/30 z-40"
+                className="fixed inset-0 bg-black/30 z-[9998]"
                 onClick={() => setIsMenuOpen(false)}
               />
 
-              {/* Bouton Fermer - dans le Portal avec z-index élevé, même position que le bouton Menu */}
-              <motion.button
-                type="button"
-                aria-label="Fermer menu"
-                className="fixed top-2 sm:top-3 md:top-4 left-3 sm:left-4 md:left-6 focus:outline-none cursor-pointer"
-                onClick={() => setIsMenuOpen(false)}
-                style={{ zIndex: 60 }}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                transition={{ duration: 0.3 }}
-              >
-                <div className="w-16 sm:w-20 md:w-24 h-8 sm:h-9 md:h-10 flex flex-col justify-center items-center overflow-hidden">
-                  <span className="h-8 sm:h-9 md:h-10 w-16 sm:w-20 md:w-24 flex items-center justify-center font-medium rounded-full bg-black text-white text-xs sm:text-sm hover:bg-gray-800 transition-colors duration-300">
-                    Fermer
-                  </span>
-                </div>
-              </motion.button>
-
               {/* Menu principal */}
               <motion.div
-                className="fixed top-2 sm:top-3 md:top-4 left-3 sm:left-4 md:left-6 bg-white z-45 flex flex-col rounded-2xl sm:rounded-3xl min-w-20 sm:min-w-24 min-h-8 sm:min-h-10 overflow-hidden border border-emerald-300"
+                className="fixed left-0 top-0 bg-white flex flex-col overflow-hidden border-r border-gray-100 shadow-xl rounded-br-2xl"
+                style={{
+                  zIndex: 9999,
+                  width: "min(320px, 90vw)",
+                }}
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
                 exit="hidden"
-                style={{ zIndex: 45 }}
               >
-                <div className="flex flex-col h-full justify-center p-4 sm:p-6 md:p-8">
-                  <div className="mb-4 sm:mb-5 md:mb-6 border-b border-gray-200 pb-3 sm:pb-4">
-                    <h2 className="text-gray-700 text-xs sm:text-sm uppercase font-bold tracking-wider pt-8">
-                      Navigation
-                    </h2>
-                  </div>
+                {/* Header avec bouton fermer */}
+                <div className="flex items-center justify-between p-4 sm:p-5 border-b border-gray-200">
+                  <h2 className="text-lg font-semibold text-gray-900">Menu</h2>
+                  <button
+                    type="button"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="p-1.5 rounded-full transition-all text-gray-700 cursor-pointer hover:rotate-180 duration-300"
+                    aria-label="Fermer le menu"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
 
+                {/* Contenu principal */}
+                <div className="p-4 sm:p-5">
                   {/* Navigation */}
                   <motion.nav
-                    className="flex flex-col space-y-2 sm:space-y-3 md:space-y-4 items-start"
+                    className="flex flex-col space-y-3 sm:space-y-4 items-start"
                     variants={staggerMenuItems}
                     initial="closed"
                     animate="open"
@@ -201,10 +245,10 @@ export default function NavigationMenu() {
                           <Link
                             href={link.href}
                             onClick={() => setIsMenuOpen(false)}
-                            className="text-base sm:text-lg md:text-xl text-zinc-700 hover:text-zinc-900 transition-colors inline-block relative group font-light"
+                            className="text-lg sm:text-xl text-zinc-700 hover:text-zinc-900 transition-colors inline-block relative group font-light"
                           >
                             {link.label}
-                            <motion.span className="absolute bottom-0 left-0 w-full h-0.5 bg-emerald-900 transform origin-left transition-all duration-300 scale-x-0 group-hover:scale-x-100" />
+                            <motion.span className="absolute bottom-0 left-0 w-full h-0.5 bg-gray-900 transform origin-left transition-all duration-300 scale-x-0 group-hover:scale-x-100" />
                           </Link>
                         </motion.div>
                       </div>
@@ -212,17 +256,17 @@ export default function NavigationMenu() {
                   </motion.nav>
 
                   {/* Section promotionnelle */}
-                  <div className="mt-4 sm:mt-6 md:mt-8 p-3 sm:p-4 bg-emerald-50 rounded-lg border border-emerald-300">
-                    <h3 className="text-emerald-800 text-xs sm:text-sm mb-2">
+                  <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <h3 className="text-gray-800 text-sm font-medium mb-2">
                       ✨ Nouveauté
                     </h3>
-                    <p className="text-emerald-700 text-xs mb-2 sm:mb-3">
+                    <p className="text-gray-700 text-sm mb-3 font-light">
                       Découvrez notre nouvelle gamme de crèmes anti-âge !
                     </p>
                     <Link
                       href="/products?category=anti-age"
                       onClick={() => setIsMenuOpen(false)}
-                      className="text-xs text-emerald-800 hover:text-emerald-900 underline"
+                      className="text-sm text-gray-800 hover:text-gray-900 underline font-medium"
                     >
                       Voir la collection →
                     </Link>

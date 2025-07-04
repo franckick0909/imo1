@@ -1,11 +1,12 @@
-# Guide d'intégration GSAP
+# Guide d'intégration GSAP + Lenis
 
 ## Vue d'ensemble
 
-Ce projet utilise maintenant **GSAP** (GreenSock Animation Platform) en complément de **Framer Motion**. Cette approche hybride vous permet de :
+Ce projet utilise maintenant **GSAP** (GreenSock Animation Platform) et **Lenis** (smooth scroll) en complément de **Framer Motion**. Cette approche hybride vous permet de :
 
 - Garder Framer Motion pour les animations simples d'interface
 - Utiliser GSAP pour les animations complexes et les effets de scroll avancés
+- Bénéficier d'un smooth scroll ultra-fluide avec Lenis
 
 ## Composants disponibles
 
@@ -132,6 +133,49 @@ GSAP gère automatiquement le redimensionnement avec `ScrollTrigger.refresh()`.
 - **ScrollTrigger** : Animations basées sur le scroll
 - **Core** : Animations de base (inclus par défaut)
 
+## Intégration Lenis (Smooth Scroll)
+
+### Installation et configuration
+
+Lenis est automatiquement configuré via le `LenisProvider` dans le layout principal :
+
+```tsx
+// layout.tsx
+import LenisProvider from "@/components/LenisProvider";
+
+export default function RootLayout({ children }) {
+  return <LenisProvider>{/* Votre contenu */}</LenisProvider>;
+}
+```
+
+### Fonctionnalités Lenis
+
+- **Smooth scroll fluide** : Transition naturelle entre les sections
+- **Intégration GSAP** : Synchronisation parfaite avec ScrollTrigger
+- **Responsive** : Adapté automatiquement aux différents écrans
+- **Performance** : Optimisé pour tous les navigateurs
+
+### Configuration personnalisée
+
+Le `LenisProvider` utilise ces paramètres optimisés :
+
+```tsx
+const lenis = new Lenis({
+  duration: 1.2, // Durée de l'animation de scroll
+  easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // Easing personnalisé
+  smooth: true, // Smooth scroll activé
+  smoothTouch: false, // Désactivé sur mobile pour éviter les conflits
+  touchMultiplier: 2, // Sensibilité tactile
+});
+```
+
+### Avantages du combo GSAP + Lenis
+
+✅ **Expérience ultra-fluide** : Scroll naturel et animations synchronisées
+✅ **Performance optimale** : Lenis gère le scroll, GSAP les animations
+✅ **Compatibilité** : Fonctionne parfaitement avec ScrollTrigger
+✅ **Responsive** : Adaptation automatique sur tous les appareils
+
 ## Migration progressive
 
 Vous pouvez migrer progressivement :
@@ -143,5 +187,7 @@ Vous pouvez migrer progressivement :
 ## Déploiement
 
 ✅ **Vercel** : Compatible, aucune configuration supplémentaire requise
-✅ **Bundle** : GSAP ajoute ~100KB (justifié pour les animations avancées)
-✅ **Performance** : Amélioration des performances d'animation sur mobile
+✅ **Bundle** : GSAP (~100KB) + Lenis (~15KB) justifiés pour l'expérience utilisateur
+✅ **Performance** : Amélioration significative des performances d'animation et de scroll
+✅ **UX** : Site ultra-fluide comparable aux meilleurs sites modernes
+ 

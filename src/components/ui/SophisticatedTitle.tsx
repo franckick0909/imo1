@@ -57,11 +57,11 @@ export default function SophisticatedTitle({
 
     switch (variant) {
       case "hero":
-        return `${base} text-5xl md:text-6xl lg:text-7xl font-light`;
-      case "section":
         return `${base} text-4xl md:text-5xl lg:text-6xl font-light`;
+      case "section":
+        return `${base} text-3xl md:text-5xl lg:text-6xl font-light`;
       case "feature":
-        return `${base} text-3xl md:text-4xl lg:text-5xl font-light`;
+        return `${base} text-2xl md:text-4xl lg:text-5xl font-light`;
       default:
         return base;
     }

@@ -1,13 +1,15 @@
 "use client";
 
-import FeatureSectionGSAP from "@/components/FeatureSectionGSAP";
+import FloatingCardsSection from "@/components/FloatingCardsSection";
+import HeroSection from "@/components/HeroSection";
+import ExploreButton from "@/components/ui/ExploreButton";
 import SophisticatedTitle from "@/components/ui/SophisticatedTitle";
 import { useToast } from "@/components/ui/ToastContainer";
 import { useCart } from "@/contexts/CartContext";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import { Link } from "next-view-transitions";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 interface Product {
   id: string;
@@ -144,13 +146,14 @@ function ProductCard({ product }: { product: Product }) {
       <div className="relative aspect-[3/4] overflow-hidden bg-gray-50 mb-6">
         <Link
           href={`/products/${product.slug}`}
-          className="block w-full h-full"
+          className="block w-full h-full relative"
         >
           {product.images && product.images.length > 0 ? (
             <Image
               src={product.images[0].url}
               alt={product.images[0].alt || product.name}
               fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
             />
           ) : (
@@ -203,6 +206,7 @@ function ProductCard({ product }: { product: Product }) {
 
           {/* Bouton Panier */}
           <button
+            type="button"
             onClick={handleAddToCart}
             disabled={isAdding || product.stock === 0}
             className="bg-white/90 hover:bg-white text-gray-900 p-2 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -232,12 +236,12 @@ function ProductCard({ product }: { product: Product }) {
       {/* Contenu produit - Style épuré */}
       <div className="space-y-2">
         {/* Catégorie et type */}
-        <p className="text-xs text-gray-500 uppercase tracking-widest font-medium">
+        <p className="text-xs sm:text-xs md:text-sm text-gray-500 uppercase tracking-widest font-medium">
           {product.category.name} • Hydratant • Crème
         </p>
 
         {/* Nom du produit */}
-        <h3 className="text-xl font-medium text-gray-900 leading-tight">
+        <h3 className="text-lg sm:text-xl md:text-2xl lg:text-xl font-medium text-gray-900 leading-tight">
           <Link
             href={`/products/${product.slug}`}
             className="hover:text-gray-600 transition-colors duration-200"
@@ -247,7 +251,7 @@ function ProductCard({ product }: { product: Product }) {
         </h3>
 
         {/* Prix */}
-        <p className="text-xl font-medium text-gray-900">
+        <p className="text-lg sm:text-xl md:text-2xl lg:text-xl font-medium text-gray-900">
           {product.price.toFixed(0)}€
         </p>
       </div>
@@ -257,114 +261,17 @@ function ProductCard({ product }: { product: Product }) {
 
 export default function Home() {
   const { products: featuredProducts, loading } = useFeaturedProducts();
-  const heroRef = useRef<HTMLElement>(null);
-
-  // Configuration du parallax
-  const { scrollYProgress } = useScroll({
-    target: heroRef,
-    offset: ["start start", "end start"],
-  });
-
-  const y = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
-  const overlayOpacity = useTransform(
-    scrollYProgress,
-    [0, 0.5, 1],
-    [1, 0.8, 0.3]
-  );
-  const textOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0.2]);
 
   return (
-    <div className="bg-white">
-      {/* Hero Section - Avec effet parallax */}
-      <section
-        ref={heroRef}
-        className="relative h-screen w-full overflow-hidden"
-      >
-        <motion.div className="absolute inset-0" style={{ y }}>
-          <Image
-            src="/images/hero.jpg"
-            alt="Cosmétiques naturels de luxe"
-            fill
-            className="object-cover scale-110"
-            priority
-          />
-          <motion.div
-            className="absolute inset-0 bg-black/25"
-            style={{ opacity: overlayOpacity }}
-          />
-        </motion.div>
+    <div className="min-h-screen">
+      {/* Hero Section avec parallax */}
+      <HeroSection />
 
-        <div className="relative z-10 flex items-center justify-center h-full">
-          <motion.div
-            className="text-center text-white px-4 max-w-xl"
-            style={{ opacity: textOpacity }}
-          >
-            <SophisticatedTitle
-              level="h1"
-              variant="hero"
-              className="mb-8 text-white"
-            >
-              Bienveillant envers la Nature
-            </SophisticatedTitle>
-
-            <motion.p
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: "easeOut", delay: 0.5 }}
-              className="text-xl md:text-2xl font-light leading-relaxed mb-10 max-w-3xl mx-auto"
-            >
-              Des produits authentiques qui révèlent votre beauté naturelle,
-              respectueux de votre peau et de notre planète.
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: "easeOut", delay: 0.8 }}
-            >
-              <Link
-                href="/products"
-                className="inline-block bg-white text-gray-900 px-10 py-5 text-lg font-medium uppercase tracking-wider hover:bg-gray-100 transition-colors duration-300 shadow-lg"
-              >
-                Découvrir la Collection
-              </Link>
-            </motion.div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Mission Statement */}
-      <section className="py-24 bg-white">
-        <div className="w-full px-6 lg:px-12">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="text-center max-w-5xl mx-auto"
-          >
-            <SophisticatedTitle
-              level="h2"
-              variant="section"
-              className="text-gray-900 leading-tight mb-8"
-            >
-              Une Mission Simplifier les Soins
-            </SophisticatedTitle>
-            <p className="text-xl md:text-2xl text-gray-600 font-light leading-relaxed">
-              Des formulations pures et efficaces pour révéler la beauté
-              naturelle de votre peau, sans compromis sur la qualité ni
-              l&apos;éthique. Chaque produit est conçu pour transformer votre
-              routine beauté en un moment de bien-être authentique.
-            </p>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Section Certifications avec animations de scroll */}
-      <FeatureSectionGSAP />
+      {/* Section FloatingCards - Notre Engagement */}
+      <FloatingCardsSection />
 
       {/* Section Featured Products - Plus grande */}
-      <section className="py-24 bg-white">
+      <section className="py-16 sm:py-20 lg:py-24 bg-white">
         <div className="w-full px-6 lg:px-12">
           {/* Header */}
           <motion.div
@@ -434,12 +341,9 @@ export default function Home() {
               viewport={{ once: true }}
               className="text-center mt-20"
             >
-              <Link
-                href="/products"
-                className="inline-block bg-gray-900 text-white px-16 py-5 text-lg font-medium uppercase tracking-wider hover:bg-gray-800 transition-colors duration-300 shadow-lg"
-              >
-                Voir Toute la Collection
-              </Link>
+              <ExploreButton href="/products">
+                Explore All Products
+              </ExploreButton>
             </motion.div>
           )}
         </div>
@@ -485,7 +389,8 @@ export default function Home() {
                 src="/images/soir.jpg"
                 alt="Soin des mains naturel de nuit"
                 fill
-                className="object-cover "
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover"
               />
             </motion.div>
           </div>
