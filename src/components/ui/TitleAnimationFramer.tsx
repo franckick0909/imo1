@@ -24,7 +24,7 @@ export default function TitleAnimationFramer({
   splitBy = "words",
   autoPlay = false,
 }: TitleAnimationFramerProps) {
-  // Split le texte selon le type choisi
+  // Split le texte selon le type choisi en préservant les espaces
   const splitText = splitBy === "words" ? text.split(" ") : text.split("");
 
   return (
@@ -54,8 +54,11 @@ export default function TitleAnimationFramer({
                 ease: "easeOut",
               }}
             >
-              {piece}
-              {splitBy === "words" ? "\u00A0" : ""}
+              {splitBy === "words"
+                ? piece + "\u00A0"
+                : piece === " "
+                  ? "\u00A0"
+                  : piece}
             </motion.span>
           </span>
         ))}
