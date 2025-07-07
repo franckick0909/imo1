@@ -8,7 +8,7 @@ import React, { useRef } from "react";
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
-interface TitleAnimationProps {
+interface TitleAnimationDebugProps {
   text: string;
   className?: string;
   delay?: number;
@@ -18,9 +18,10 @@ interface TitleAnimationProps {
   as?: React.ElementType;
   splitBy?: "words" | "chars";
   autoPlay?: boolean;
+  sectionName?: string;
 }
 
-export default function TitleAnimation({
+export default function TitleAnimationDebug({
   text,
   className = "",
   delay = 0,
@@ -30,19 +31,24 @@ export default function TitleAnimation({
   as: Component = "h1",
   splitBy = "words",
   autoPlay = false,
-}: TitleAnimationProps) {
+  sectionName = "unknown",
+}: TitleAnimationDebugProps) {
   const containerRef = useRef<HTMLElement>(null);
 
   // Créer un ID unique pour cette instance
   const uniqueId = useRef(
-    `title-anim-${Math.random().toString(36).substr(2, 9)}`
+    `title-anim-${sectionName}-${Math.random().toString(36).substr(2, 9)}`
   );
 
   useGSAP(
     () => {
-      if (!containerRef.current) return;
+      if (!containerRef.current) {
+        console.log(`❌ Pas de containerRef pour ${sectionName}`);
+        return;
+      }
 
       const element = containerRef.current;
+      console.log(`✅ Animation initialisée pour ${sectionName}:`, element);
 
       // Ajouter une classe unique à l'élément
       element.classList.add(uniqueId.current);
@@ -62,10 +68,12 @@ export default function TitleAnimation({
 
       // Récupérer tous les spans internes DANS CET ÉLÉMENT SPÉCIFIQUE
       const spans = element.querySelectorAll("span span");
+      console.log(`🔍 Spans trouvés pour ${sectionName}:`, spans.length);
 
       if (autoPlay) {
         // S'assurer que tous les éléments sont cachés initialement
         gsap.set(spans, { y: "100%" });
+        console.log(`🎬 Animation autoPlay pour ${sectionName}`);
 
         // Animation automatique au chargement
         gsap.to(spans, {
@@ -76,6 +84,10 @@ export default function TitleAnimation({
           delay: delay,
         });
       } else {
+        console.log(
+          `📜 Animation scroll pour ${sectionName} - trigger: ${triggerStart}`
+        );
+
         // Animation au scroll avec fromTo pour plus de contrôle
         gsap.fromTo(
           spans,
@@ -90,7 +102,16 @@ export default function TitleAnimation({
               trigger: element, // Utiliser l'élément spécifique comme trigger
               start: triggerStart,
               toggleActions: "play none none reverse",
-              // Plus de markers pour nettoyer
+              markers: true, // Activer les markers pour debug
+              id: `${sectionName}-title-animation`,
+              onEnter: () =>
+                console.log(`🎯 ScrollTrigger ENTER pour ${sectionName}`),
+              onLeave: () =>
+                console.log(`🎯 ScrollTrigger LEAVE pour ${sectionName}`),
+              onEnterBack: () =>
+                console.log(`🎯 ScrollTrigger ENTER_BACK pour ${sectionName}`),
+              onLeaveBack: () =>
+                console.log(`🎯 ScrollTrigger LEAVE_BACK pour ${sectionName}`),
             },
           }
         );

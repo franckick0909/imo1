@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import ImageAnimation from "./ui/ImageAnimation";
-import TitleAnimation from "./ui/TitleAnimation";
+import TitleAnimationFramer from "./ui/TitleAnimationFramer";
 
 export default function TransparentSection() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -17,31 +17,35 @@ export default function TransparentSection() {
         <div className="px-2 lg:px-4 xl:px-8 max-w-[100rem] mx-auto w-full h-full">
           {/* Première ligne - TRANSPARENCE */}
           <div className="title-line flex mb-1 lg:mb-2 text-center justify-center items-center">
-            <TitleAnimation
+            <TitleAnimationFramer
               text="TRANSPARENCE"
               className="font-medium text-gray-800 leading-[0.85] tracking-tighter break-keep whitespace-nowrap text-[clamp(3rem,12vw,20rem)]"
               delay={0}
-              triggerStart="top 75%"
+              duration={0.6}
+              stagger={0.1}
+              splitBy="words"
             />
           </div>
 
           {/* Deuxième ligne - RADICALE */}
           <div className="title-line flex items-center justify-center mb-1 lg:mb-2">
-            <TitleAnimation
+            <TitleAnimationFramer
               text="RADICALE."
               className="font-medium text-gray-800 leading-[0.85] tracking-tighter text-[clamp(3rem,12vw,20rem)]"
               delay={0.2}
-              triggerStart="top 75%"
+              duration={0.6}
+              stagger={0.1}
+              splitBy="words"
             />
           </div>
 
           {/* Troisième ligne avec première image - RIEN À */}
-          <div className="title-line flex items-center justify-end mb-1 lg:mb-2 gap-2 sm:gap-4 lg:gap-6 px-6 lg:px-12 w-full">
+          <div className="title-line flex justify-end items-center mb-1 lg:mb-2 gap-2 sm:gap-4 lg:gap-6 px-6 lg:px-12 w-full">
             {/* Image avant "RIEN À" */}
             <ImageAnimation
               src="/images/creme-rose.png"
-              alt="Crème rose"
-              className="flex-shrink-0 w-[clamp(4rem,8vw,12rem)] h-[clamp(4rem,8vw,12rem)]"
+              alt="Image clippath"
+              className="flex-shrink-0 mb-4 relative w-[clamp(4rem,8vw,12rem)] h-[clamp(4rem,6vw,12rem)] overflow-hidden"
               delay={0.4}
               duration={1}
               triggerStart="top 60%"
@@ -50,35 +54,41 @@ export default function TransparentSection() {
             />
 
             <div className="flex gap-4">
-              <TitleAnimation
+              <TitleAnimationFramer
                 text="RIEN"
-                className="text-gray-800 leading-[0.85] italic font-cormorant font-light text-[clamp(3rem,12vw,20rem)] overflow-visible whitespace-nowrap tracking-[0.13em]"
+                className="text-gray-800 leading-[1] italic font-cormorant font-light text-[clamp(3rem,12vw,20rem)] overflow-visible whitespace-nowrap tracking-tighter"
                 delay={0.4}
-                triggerStart="top 75%"
+                duration={0.6}
+                stagger={0.1}
+                splitBy="words"
               />
-              <TitleAnimation
+              <TitleAnimationFramer
                 text="À"
-                className="text-gray-800 leading-[0.85] tracking-wider italic font-cormorant font-light text-[clamp(3rem,12vw,20rem)] overflow-visible whitespace-nowrap"
+                className="text-gray-800 leading-[1] tracking-wider font-normal text-[clamp(3rem,12vw,20rem)] overflow-visible whitespace-nowrap"
                 delay={0.5}
-                triggerStart="top 75%"
+                duration={0.6}
+                stagger={0.1}
+                splitBy="words"
               />
             </div>
           </div>
 
           {/* Quatrième ligne avec deuxième image - CACHER */}
           <div className="title-line flex items-center justify-center gap-2 sm:gap-4 lg:gap-6">
-            <TitleAnimation
+            <TitleAnimationFramer
               text="CACHER."
               className="font-medium text-gray-800 leading-[0.85] tracking-tighter text-[clamp(3rem,12vw,20rem)]"
               delay={0.6}
-              triggerStart="top 75%"
+              duration={0.6}
+              stagger={0.1}
+              splitBy="words"
             />
 
             {/* Image après "CACHER" */}
             <ImageAnimation
               src="/images/creme-verte.png"
-              alt="Crème verte"
-              className="flex-shrink-0 w-[clamp(4rem,8vw,12rem)] h-[clamp(4rem,8vw,12rem)]"
+              alt="Image soir"
+              className="flex-shrink-0 relative w-[clamp(4rem,8vw,12rem)] h-[clamp(3rem,6vw,12rem)]  overflow-hidden"
               delay={0.6}
               duration={1}
               triggerStart="top 50%"

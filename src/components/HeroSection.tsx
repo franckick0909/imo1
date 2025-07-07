@@ -1,7 +1,7 @@
 "use client";
 
 import ExploreButton from "@/components/ui/ExploreButton";
-import TitleAnimation from "@/components/ui/TitleAnimation";
+import TitleAnimationFramer from "@/components/ui/TitleAnimationFramer";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
 import { useRef } from "react";
@@ -60,23 +60,23 @@ export default function HeroSection() {
             }}
           >
             <div className="max-w-4xl mx-auto flex flex-col items-center justify-center flex-wrap leading-[0.95]">
-              <TitleAnimation
+              <TitleAnimationFramer
                 text="Bienveillant"
                 className="text-white/50 text-[clamp(3rem,7vw,15rem)] font-semibold leading-tighter tracking-tighter text-center uppercase"
-                delay={0.3}
-                duration={0.8}
-                stagger={0.15}
-                triggerStart="top 80%"
-                splitBy="words"
+                delay={1}
+                duration={0.6}
+                stagger={0.05}
+                splitBy="chars"
+                autoPlay={true}
               />
-              <TitleAnimation
+              <TitleAnimationFramer
                 text="Envers la Nature"
                 className="mb-2 text-white/60 text-[clamp(3rem,6vw,15rem)] font-light leading-tighter tracking-tighter text-center font-cormorant flex gap-2 lg:gap-4"
-                delay={0.3}
-                duration={0.8}
-                stagger={0.15}
-                triggerStart="top 80%"
-                splitBy="words"
+                delay={1.5}
+                duration={0.6}
+                stagger={0.03}
+                splitBy="chars"
+                autoPlay={true}
               />
             </div>
           </motion.div>

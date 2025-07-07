@@ -7,16 +7,10 @@ import HydratationSection from "@/components/HydratationSection";
 import PurificationSection from "@/components/PurificationSection";
 import TransparentSection from "@/components/TransparentSection";
 import SophisticatedTitle from "@/components/ui/SophisticatedTitle";
-import { useGSAP } from "@gsap/react";
 import { motion } from "framer-motion";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Link } from "next-view-transitions";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-
-// Register GSAP plugins
-gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 interface Product {
   id: string;
