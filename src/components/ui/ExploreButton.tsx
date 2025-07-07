@@ -39,7 +39,7 @@ export default function ExploreButton({
       {/* Cercle avec flèches - plus gros */}
       <div className="relative w-14 h-14 rounded-full bg-zinc-700 flex items-center justify-center ml-4 overflow-hidden transition-all duration-300 ease-out group-hover:shadow-lg group-hover:shadow-zinc-800/50 group-hover:scale-105">
         {/* Background hover - effet de pulse */}
-        <div className="absolute inset-0 bg-zinc-800 rounded-full scale-0 group-hover:scale-100 transition-transform duration-300 ease-out"></div>
+        <div className="absolute inset-0 bg-zinc-700 rounded-full scale-0 group-hover:scale-100 transition-transform duration-300 ease-out"></div>
 
         {/* Flèche principale - sort vers la droite */}
         <svg

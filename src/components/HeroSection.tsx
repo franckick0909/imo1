@@ -1,7 +1,7 @@
 "use client";
 
 import ExploreButton from "@/components/ui/ExploreButton";
-import SophisticatedTitle from "@/components/ui/SophisticatedTitle";
+import TitleAnimation from "@/components/ui/TitleAnimation";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Image from "next/image";
 import { useRef } from "react";
@@ -59,27 +59,46 @@ export default function HeroSection() {
               scale: textScale,
             }}
           >
-            <div className="max-w-xl mx-auto">
-              <SophisticatedTitle
-                level="h1"
-                variant="hero"
-                className="mb-8 text-white"
-              >
-                Bienveillant envers la Nature
-              </SophisticatedTitle>
-
-              <motion.p
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, ease: "easeOut", delay: 0.5 }}
-                className="text-xl md:text-2xl font-light leading-relaxed"
-              >
-                Des produits authentiques qui révèlent votre beauté naturelle,
-                respectueux de votre peau et de notre planète.
-              </motion.p>
+            <div className="max-w-4xl mx-auto flex flex-col items-center justify-center flex-wrap leading-[0.95]">
+              <TitleAnimation
+                text="Bienveillant"
+                className="text-white/50 text-[clamp(3rem,7vw,15rem)] font-semibold leading-tighter tracking-tighter text-center uppercase"
+                delay={0.3}
+                duration={0.8}
+                stagger={0.15}
+                triggerStart="top 80%"
+                splitBy="words"
+              />
+              <TitleAnimation
+                text="Envers la Nature"
+                className="mb-2 text-white/60 text-[clamp(3rem,6vw,15rem)] font-light leading-tighter tracking-tighter text-center font-cormorant flex gap-2 lg:gap-4"
+                delay={0.3}
+                duration={0.8}
+                stagger={0.15}
+                triggerStart="top 80%"
+                splitBy="words"
+              />
             </div>
           </motion.div>
         </div>
+
+        {/* Texte descriptif en bas à gauche */}
+        <motion.div
+          className="absolute bottom-1/4 left-4 md:left-6 lg:left-8 max-w-sm"
+          style={{
+            opacity: textOpacity,
+            y: textY,
+            scale: textScale,
+          }}
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut", delay: 0.7 }}
+        >
+          <p className="text-white font-light leading-relaxed max-w-md text-[clamp(0.95rem,1vw,2rem)]">
+            Des produits authentiques qui révèlent votre beauté naturelle,
+            respectueux de votre peau et de notre planète.
+          </p>
+        </motion.div>
 
         {/* Bouton en bas */}
         <motion.div

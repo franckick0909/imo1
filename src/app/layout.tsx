@@ -11,7 +11,8 @@ import {
   Geist_Mono,
   Inter,
   Pinyon_Script,
-  Playfair_Display,
+  Luxurious_Roman,
+  Cormorant_Garamond,
 } from "next/font/google";
 import "../styles/responsive.css";
 import "./globals.css";
@@ -44,11 +45,6 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
-const playfairDisplay = Playfair_Display({
-  variable: "--font-playfair-display",
-  subsets: ["latin"],
-});
-
 const pinyonScript = Pinyon_Script({
   variable: "--font-pinyon-script",
   subsets: ["latin"],
@@ -57,6 +53,18 @@ const pinyonScript = Pinyon_Script({
 
 const archivoBlack = Archivo_Black({
   variable: "--font-archivo-black",
+  subsets: ["latin"],
+  weight: "400",
+});
+
+const luxuriousRoman = Luxurious_Roman({
+  variable: "--font-luxurious-roman",
+  subsets: ["latin"],
+  weight: "400",
+});
+
+const cormorantGaramond = Cormorant_Garamond({
+  variable: "--font-cormorant-garamond",
   subsets: ["latin"],
   weight: "400",
 });
@@ -84,7 +92,7 @@ export default function RootLayout({
           }}
         >
           <body
-            className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${playfairDisplay.variable} ${pinyonScript.variable} ${archivoBlack.variable} antialiased h-full font-inter`}
+            className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${pinyonScript.variable} ${archivoBlack.variable} ${luxuriousRoman.variable} ${cormorantGaramond.variable} antialiased h-full font-inter`}
           >
             <CartProvider>
               <ToastProvider>

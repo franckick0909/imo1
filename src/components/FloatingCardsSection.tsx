@@ -337,6 +337,11 @@ export default function FloatingCardsSection() {
         </motion.div>
       </div>
 
+      {/* Section Footer - Visible sur tous les formats */}
+      <div className="absolute bottom-0 left-0 right-0 z-50 inline-block w-[90%] mx-auto h-px bg-zinc-300">
+
+      </div>
+
       {/* Layout Mobile/Tablette md- - Structure flex verticale */}
       <div className="block lg:hidden relative z-30 h-full">
         <div className="flex flex-col h-full">

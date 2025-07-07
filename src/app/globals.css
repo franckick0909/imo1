@@ -35,6 +35,14 @@ body {
   font-family: var(--font-archivo-black);
 }
 
+.font-luxurious {
+  font-family: var(--font-luxurious-roman);
+}
+
+.font-cormorant {
+  font-family: var(--font-cormorant-garamond);
+}
+
 /*p {
   font-size: clamp(1rem, 1.5vw, 1.2rem);
 }*/
