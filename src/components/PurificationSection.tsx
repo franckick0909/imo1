@@ -117,7 +117,7 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
   return (
     <div
       ref={cardRef}
-      className="min-w-[240px] max-w-[280px] sm:min-w-[280px] sm:max-w-[320px] lg:min-w-[320px] lg:max-w-[380px] w-full max-h-[420px] sm:max-h-[480px] lg:max-h-[540px] h-full bg-emerald-500/20 rounded-2xl px-3 py-4 sm:px-4 sm:py-6 flex flex-col justify-between gap-3 sm:gap-4 cursor-grab active:cursor-grabbing select-none flex-shrink-0"
+      className="min-w-[240px] max-w-[280px] sm:min-w-[280px] sm:max-w-[320px] lg:min-w-[320px] lg:max-w-[380px] w-full max-h-[420px] sm:max-h-[480px] lg:max-h-[540px] h-full bg-green-500/30 rounded-2xl px-3 py-4 sm:px-4 sm:py-6 flex flex-col justify-between gap-3 sm:gap-4 cursor-grab active:cursor-grabbing select-none flex-shrink-0"
     >
       {/* Badge et bouton panier */}
       <div className="flex justify-between items-center">
@@ -425,6 +425,7 @@ export default function PurificationSection({
   return (
     <section
       ref={containerRef}
+      id="purification-section"
       className="relative overflow-hidden min-h-[100vh] max-h-[140vh] h-auto"
     >
       {/* Main Content - Slider gauche + Image droite (inversé) */}

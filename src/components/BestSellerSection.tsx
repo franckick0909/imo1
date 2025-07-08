@@ -180,17 +180,17 @@ function ProductCard({ product }: { product: Product }) {
           {product.category.name}
         </p>
         <div className="flex items-center justify-between gap-16">
-        <h3 className="text-base font-normal text-gray-700 leading-tight tracking-tight uppercase">
-          <Link
-            href={`/products/${product.slug}`}
-            className="hover:text-gray-600 transition-colors duration-200"
-          >
-            {product.name}
-          </Link>
-        </h3>
-        <p className="text-lg font-medium text-gray-800">
-          €{product.price.toFixed(0)}
-        </p>
+          <h3 className="text-base font-normal text-gray-700 leading-tight tracking-tight uppercase">
+            <Link
+              href={`/products/${product.slug}`}
+              className="hover:text-gray-600 transition-colors duration-200"
+            >
+              {product.name}
+            </Link>
+          </h3>
+          <p className="text-lg font-medium text-gray-800">
+            €{product.price.toFixed(0)}
+          </p>
         </div>
       </div>
     </motion.div>
@@ -202,7 +202,7 @@ export default function BestSellerSection({
   loading,
 }: BestSellerSectionProps) {
   return (
-    <section className="py-16 sm:py-20 lg:py-24">
+    <section id="bestseller-section" className="py-16 sm:py-20 lg:py-24">
       <div className="w-full px-6 lg:px-12">
         {/* Header */}
         <motion.div

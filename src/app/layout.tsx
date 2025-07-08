@@ -7,12 +7,11 @@ import type { Metadata } from "next";
 import { ViewTransitions } from "next-view-transitions";
 import {
   Archivo_Black,
+  Cormorant_Garamond,
   Geist,
   Geist_Mono,
   Inter,
-  Pinyon_Script,
   Luxurious_Roman,
-  Cormorant_Garamond,
 } from "next/font/google";
 import "../styles/responsive.css";
 import "./globals.css";
@@ -43,12 +42,6 @@ const geistMono = Geist_Mono({
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
-});
-
-const pinyonScript = Pinyon_Script({
-  variable: "--font-pinyon-script",
-  subsets: ["latin"],
-  weight: "400",
 });
 
 const archivoBlack = Archivo_Black({
@@ -85,14 +78,19 @@ export default function RootLayout({
         <ReactLenis
           root
           options={{
-            duration: 1.2,
-            wheelMultiplier: 1,
-            touchMultiplier: 2,
+            duration: 1.6, // Durée moyenne pour l'inertie
+            lerp: 0.04, // 🔑 INERTIE: 0.04=max, 0.06=balanced, 0.08=minimal
+            wheelMultiplier: 1.4, // Légèrement amplifié
+            touchMultiplier: 3, // Beaucoup d'inertie tactile
             infinite: false,
+            orientation: "vertical",
+            gestureOrientation: "vertical",
+            smoothWheel: true,
+            syncTouch: false, // Important pour l'inertie
           }}
         >
           <body
-            className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${pinyonScript.variable} ${archivoBlack.variable} ${luxuriousRoman.variable} ${cormorantGaramond.variable} antialiased h-full font-inter`}
+            className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${archivoBlack.variable} ${luxuriousRoman.variable} ${cormorantGaramond.variable} antialiased h-full font-inter`}
           >
             <CartProvider>
               <ToastProvider>

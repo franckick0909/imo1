@@ -93,7 +93,7 @@ function useFeaturedProducts() {
 
 export default function Home() {
   const { products: featuredProducts, loading } = useFeaturedProducts();
-  const sectionsContainerRef = useRef<HTMLDivElement>(null);
+  const sectionsContainerProductsRef = useRef<HTMLDivElement>(null);
 
   // Suppression du parallax global pour éviter le problème de collage avec BestSellerSection
   // useGSAP(() => {
@@ -119,14 +119,16 @@ export default function Home() {
       {/* Section FloatingCards - Notre Engagement */}
       <FloatingCardsSection />
 
+      {/* Section Transparence - Style TrueKind */}
+      <div className="relative">
+        <TransparentSection />
+      </div>
+
       {/* Sections collées - HydratationSection + PurificationSection */}
-      <div ref={sectionsContainerRef} className="relative">
+      <div ref={sectionsContainerProductsRef} className="relative">
         <HydratationSection products={featuredProducts} loading={loading} />
         <PurificationSection products={featuredProducts} loading={loading} />
       </div>
-
-      {/* Section Transparence - Style TrueKind */}
-      <TransparentSection />
 
       {/* Section Bestsellers */}
       <BestSellerSection products={featuredProducts} loading={loading} />

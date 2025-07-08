@@ -27,9 +27,6 @@ body {
 }
 
 /* Nouvelles classes de fonts pour typographie mixte */
-.font-pinyon {
-  font-family: var(--font-pinyon-script);
-}
 
 .font-archivo {
   font-family: var(--font-archivo-black);
@@ -59,7 +56,7 @@ body {
 }
 
 .title-script {
-  font-family: var(--font-pinyon-script);
+  font-family: var(--font-cormorant-garamond);
   font-size: 1.2em;
   position: relative;
   display: inline-block;

@@ -136,7 +136,7 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
   return (
     <div
       ref={cardRef}
-      className="min-w-[240px] max-w-[280px] sm:min-w-[280px] sm:max-w-[320px] lg:min-w-[320px] lg:max-w-[380px] w-full max-h-[420px] sm:max-h-[480px] lg:max-h-[540px] h-full bg-fuchsia-500/20 rounded-2xl px-3 py-4 sm:px-4 sm:py-6 flex flex-col justify-between gap-3 sm:gap-4 cursor-grab active:cursor-grabbing select-none flex-shrink-0"
+      className="min-w-[240px] max-w-[280px] sm:min-w-[280px] sm:max-w-[320px] lg:min-w-[320px] lg:max-w-[380px] w-full max-h-[420px] sm:max-h-[480px] lg:max-h-[540px] h-full bg-rose-500/30 rounded-2xl px-3 py-4 sm:px-4 sm:py-6 flex flex-col justify-between gap-3 sm:gap-4 cursor-grab active:cursor-grabbing select-none flex-shrink-0"
     >
       {/* Badge et bouton panier */}
       <div className="flex justify-between items-center">
@@ -445,11 +445,12 @@ export default function HydratationSection({
     );
   }
 
-  return (
-    <section
-      ref={containerRef}
-      className="relative overflow-hidden min-h-[100vh] max-h-[140vh] h-auto mt-16 lg:mt-20"
-    >
+      return (
+      <section
+        ref={containerRef}
+        id="hydratation-section"
+        className="relative overflow-hidden min-h-[100vh] max-h-[140vh] h-auto mt-16 lg:mt-20"
+      >
       {/* Header */}
       <div className="text-center my-16 px-6 lg:px-12">
         <motion.div

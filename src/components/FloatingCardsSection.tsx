@@ -124,6 +124,7 @@ export default function FloatingCardsSection() {
   return (
     <motion.section
       ref={containerRef}
+      id="floating-cards-section"
       className="relative min-h-[100vh] sm:min-h-[120vh] lg:min-h-[140vh] xl:min-h-[190vh] bg-white overflow-hidden pt-20"
       style={{ position: "relative" }}
     >
@@ -321,14 +322,14 @@ export default function FloatingCardsSection() {
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="text-left max-w-3xl"
+          className="text-left max-w-4xl"
         >
           <SophisticatedTitle
             level="h2"
             variant="hero"
             className="text-gray-900 leading-tight mb-8"
           >
-            Soins de la peau propres, responsables & performants.
+            Soins de la peau propres, Responsables & Performants.
           </SophisticatedTitle>
           <p className="text-sm md:text-base text-gray-800 font-light leading-relaxed max-w-md">
             Des produits honnêtes et sans réserve qui fonctionnent vraiment, qui
@@ -338,9 +339,7 @@ export default function FloatingCardsSection() {
       </div>
 
       {/* Section Footer - Visible sur tous les formats */}
-      <div className="absolute bottom-0 left-0 right-0 z-50 inline-block w-[90%] mx-auto h-px bg-zinc-300">
-
-      </div>
+      <div className="absolute bottom-0 left-0 right-0 z-50 inline-block w-[90%] mx-auto h-px bg-zinc-300"></div>
 
       {/* Layout Mobile/Tablette md- - Structure flex verticale */}
       <div className="block lg:hidden relative z-30 h-full">
