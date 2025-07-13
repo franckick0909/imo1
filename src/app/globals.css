@@ -121,13 +121,71 @@ html {
   scroll-behavior: smooth;
 }
 
-::view-transition-new(root) {
-  z-index: 10000;
-  animation-duration: 0.2s !important;
+/* =============================================
+   OPTIMISATIONS POUR SCROLL FLUIDE
+   ============================================= */
+
+/* Optimisations pour les éléments animés avec parallax */
+.parallax-optimized {
+  will-change: transform;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  perspective: 1000px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
-::view-transition-old(root) {
-  z-index: 1;
-  animation-duration: 0.2s !important;
+
+/* Optimisations pour les conteneurs d'animation */
+.animation-container {
+  contain: layout style paint;
+  will-change: transform;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+/* Optimisations pour les images dans les animations */
+.image-optimized {
+  will-change: transform;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  image-rendering: optimizeSpeed;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: optimize-contrast;
+}
+
+/* Optimisations pour les cartes flottantes */
+.card-optimized {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  contain: layout style paint;
+}
+
+/* Classe globale pour améliorer les performances de scroll */
+.scroll-smooth {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Optimisations pour les éléments avec clip-path */
+.clip-optimized {
+  will-change: transform;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  contain: layout style paint;
+}
+
+/* Désactiver les optimisations pour les utilisateurs préférant les animations réduites */
+@media (prefers-reduced-motion: reduce) {
+  .parallax-optimized,
+  .animation-container,
+  .image-optimized,
+  .card-optimized,
+  .clip-optimized {
+    will-change: auto;
+    transform: none;
+    -webkit-transform: none;
+  }
 }
 
 /* Fallback pour les transitions qui échouent */
@@ -162,4 +220,133 @@ html.lenis body {
 
 .lenis.lenis-smooth {
   pointer-events: none;
+}
+
+/* Classe simple pour les liens de texte responsive */
+.text-responsive {
+  font-size: clamp(1rem, 2.5vw, 1.25rem);
+}
+
+/* =============================================
+   CLASSES TYPOGRAPHIQUES RESPONSIVE
+   ============================================= */
+
+/* 
+   GUIDE D'UTILISATION :
+   
+   Titres de section :
+   - .heading-xl : pour les gros titres de page (h1)
+   - .heading-lg : pour les titres de section (h2)
+   - .heading-md : pour les sous-titres (h3)
+   - .heading-sm : pour les petits titres (h4)
+   
+   Paragraphes :
+   - .text-lg-responsive : pour les paragraphes introductifs 
+   - .text-base-responsive : pour les paragraphes normaux
+   - .text-sm-responsive : pour les petits textes
+   - .text-xs-responsive : pour les légendes, notes
+   
+   Textes spéciaux :
+   - .text-subtitle : pour les sous-titres décoratifs
+   - .text-caption : pour les légendes d'images
+   - .text-responsive : pour les liens de navigation
+   
+   IMPORTANT : Ne pas utiliser sur les gros titres animés qui ont déjà
+   des tailles clamp() personnalisées (ex: text-[clamp(3rem,7vw,15rem)])
+*/
+
+/* Titres de section (h2, h3, h4) */
+.heading-xl {
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.2;
+}
+
+.heading-lg {
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  line-height: 1.3;
+}
+
+.heading-md {
+  font-size: clamp(1.25rem, 2.5vw, 1.875rem);
+  line-height: 1.4;
+}
+
+.heading-sm {
+  font-size: clamp(1rem, 2vw, 1.5rem);
+  line-height: 1.5;
+}
+
+/* Paragraphes */
+.text-lg-responsive {
+  font-size: clamp(1.125rem, 2vw, 1.375rem);
+  line-height: 1.6;
+}
+
+.text-base-responsive {
+  font-size: clamp(1rem, 1.8vw, 1.125rem);
+  line-height: 1.7;
+}
+
+.text-sm-responsive {
+  font-size: clamp(0.875rem, 1.5vw, 1rem);
+  line-height: 1.6;
+}
+
+.text-xs-responsive {
+  font-size: clamp(0.75rem, 1.2vw, 0.875rem);
+  line-height: 1.5;
+}
+
+/* Textes spéciaux */
+.text-subtitle {
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  line-height: 1.4;
+}
+
+.text-caption {
+  font-size: clamp(0.875rem, 1.5vw, 1rem);
+  line-height: 1.5;
+}
+
+/* Responsive breakpoints pour ajustements fins */
+@media (max-width: 640px) {
+  .heading-xl {
+    font-size: clamp(1.75rem, 5vw, 2.5rem);
+  }
+
+  .heading-lg {
+    font-size: clamp(1.375rem, 4vw, 2rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  .text-lg-responsive {
+    font-size: clamp(1.125rem, 1.5vw, 1.375rem);
+  }
+
+  .text-base-responsive {
+    font-size: clamp(1rem, 1.2vw, 1.125rem);
+  }
+}
+
+/* Classes pour line-clamp */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }

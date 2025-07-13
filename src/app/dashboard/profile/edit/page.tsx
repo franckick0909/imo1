@@ -5,7 +5,7 @@ import { useSession } from "@/lib/auth-client";
 import { motion } from "framer-motion";
 import { ArrowLeft, Bell, Copy, Heart, MapPin, Save, User } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface ProfileData {
   name: string;
@@ -83,7 +83,7 @@ export default function EditProfilePage() {
   ];
 
   // Charger le profil complet
-  const loadProfile = async () => {
+  const loadProfile = useCallback(async () => {
     try {
       const response = await fetch("/api/auth/get-profile-complete");
       if (response.ok) {
@@ -98,13 +98,13 @@ export default function EditProfilePage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [error]);
 
   useEffect(() => {
     if (session) {
       loadProfile();
     }
-  }, [session]);
+  }, [session, loadProfile]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

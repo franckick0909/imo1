@@ -1,99 +1,40 @@
 "use client";
 
 import BestSellerSection from "@/components/BestSellerSection";
+import CacheStatus from "@/components/CacheStatus";
 import FloatingCardsSection from "@/components/FloatingCardsSection";
 import HeroSection from "@/components/HeroSection";
 import HydratationSection from "@/components/HydratationSection";
 import PurificationSection from "@/components/PurificationSection";
 import TransparentSection from "@/components/TransparentSection";
 import SophisticatedTitle from "@/components/ui/SophisticatedTitle";
+import {
+  useFeaturedProductsServer,
+  useServerActions,
+} from "@/hooks/useServerActions";
 import { motion } from "framer-motion";
 import { Link } from "next-view-transitions";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
-
-interface Product {
-  id: string;
-  name: string;
-  description: string | null;
-  price: number;
-  comparePrice?: number;
-  stock: number;
-  slug: string;
-  category: {
-    id: string;
-    name: string;
-    slug: string;
-  };
-  images: {
-    id: string;
-    url: string;
-    alt?: string | null;
-    position: number;
-  }[];
-}
-
-interface RawProduct {
-  id: string;
-  name: string;
-  description: string | null;
-  price: string;
-  comparePrice?: string;
-  stock: number;
-  slug: string;
-  category: {
-    id: string;
-    name: string;
-    slug: string;
-  };
-  images: {
-    id: string;
-    url: string;
-    alt?: string | null;
-    position: number;
-  }[];
-}
-
-function useFeaturedProducts() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await fetch(
-          "/api/products?isFeatured=true&isActive=true"
-        );
-        if (response.ok) {
-          const data = await response.json();
-          const formattedProducts = (data.products || []).slice(0, 6).map(
-            (product: RawProduct): Product => ({
-              ...product,
-              price: Number(product.price),
-              comparePrice: product.comparePrice
-                ? Number(product.comparePrice)
-                : undefined,
-            })
-          );
-          setProducts(formattedProducts);
-        }
-      } catch (error) {
-        console.error("Erreur lors du chargement des produits:", error);
-        setProducts([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, []);
-
-  return { products, loading };
-}
+import { useEffect, useRef } from "react";
 
 export default function Home() {
-  const { products: featuredProducts, loading } = useFeaturedProducts();
+  const { products: featuredProducts, loading } = useFeaturedProductsServer();
+  const { prefetchData } = useServerActions();
   const sectionsContainerProductsRef = useRef<HTMLDivElement>(null);
+
+  // Prefetch automatique des données avec Server Actions
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      prefetchData({
+        featured: true,
+        categories: true,
+        products: false,
+        delay: 50, // Très rapide pour la page d'accueil
+      });
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [prefetchData]);
 
   // Suppression du parallax global pour éviter le problème de collage avec BestSellerSection
   // useGSAP(() => {
@@ -112,11 +53,12 @@ export default function Home() {
   // }, { scope: sectionsContainerRef });
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white relative">
       {/* Hero Section avec parallax */}
       <HeroSection />
 
       {/* Section FloatingCards - Notre Engagement */}
+      
       <FloatingCardsSection />
 
       {/* Section Transparence - Style TrueKind */}
@@ -181,6 +123,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Composant de debug du cache (seulement en développement) */}
+      <CacheStatus />
     </div>
   );
 }

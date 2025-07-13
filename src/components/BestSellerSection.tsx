@@ -84,10 +84,10 @@ function ProductCard({ product }: { product: Product }) {
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6 }}
       viewport={{ once: true }}
-      className="group relative bg-white"
+      className="group relative bg-white w-full flex flex-col"
     >
       {/* Image container */}
-      <div className="relative aspect-[3/4] overflow-hidden">
+      <div className="relative aspect-[3/4] overflow-hidden w-full">
         <Link
           href={`/products/${product.slug}`}
           className="block w-full h-full relative"
@@ -97,13 +97,13 @@ function ProductCard({ product }: { product: Product }) {
               src={product.images[0].url}
               alt={product.images[0].alt || product.name}
               fill
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
               className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-300 bg-gray-100">
               <svg
-                className="w-16 h-16"
+                className="w-8 h-8 sm:w-12 sm:h-12 lg:w-16 lg:h-16"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -118,22 +118,22 @@ function ProductCard({ product }: { product: Product }) {
         </Link>
 
         {/* Badge Best Seller */}
-        <div className="absolute top-4 left-4">
-          <span className="bg-black text-white px-3 py-1.5 text-xs font-medium uppercase tracking-wider">
+        <div className="absolute top-1 left-1 sm:top-2 sm:left-2 md:top-4 md:left-4">
+          <span className="bg-black text-white px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 text-[10px] sm:text-xs font-medium uppercase tracking-wider">
             Bestseller
           </span>
         </div>
 
         {/* Actions */}
-        <div className="absolute top-4 right-4 flex flex-col gap-2">
+        <div className="absolute top-1 right-1 sm:top-2 sm:right-2 md:top-4 md:right-4 flex flex-col gap-1 sm:gap-2">
           <button
             type="button"
             onClick={handleToggleFavorite}
-            className="bg-white/90 hover:bg-white text-gray-900 p-2 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-all duration-300"
+            className="bg-white/90 hover:bg-white text-gray-900 p-1.5 sm:p-2 rounded-full shadow-md lg:opacity-0 group-hover:opacity-100 transition-all duration-300"
             title="Ajouter aux favoris"
           >
             <svg
-              className={`w-5 h-5 ${isFavorite ? "fill-red-500 text-red-500" : "fill-none"}`}
+              className={`w-4 h-4 sm:w-5 sm:h-5 ${isFavorite ? "fill-red-500 text-red-500" : "fill-none"}`}
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
@@ -150,14 +150,14 @@ function ProductCard({ product }: { product: Product }) {
             type="button"
             onClick={handleAddToCart}
             disabled={isAdding || product.stock === 0}
-            className="bg-white/90 hover:bg-white text-gray-900 p-2 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-all duration-300"
+            className="bg-white/90 hover:bg-white text-gray-900 p-1.5 sm:p-2 rounded-full shadow-md lg:opacity-0 group-hover:opacity-100 transition-all duration-300"
             title="Ajouter au panier"
           >
             {isAdding ? (
-              <div className="w-5 h-5 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
             ) : (
               <svg
-                className="w-5 h-5"
+                className="w-4 h-4 sm:w-5 sm:h-5"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -174,24 +174,24 @@ function ProductCard({ product }: { product: Product }) {
         </div>
       </div>
 
-      {/* Contenu produit */}
-      <div className="space-y-2 p-4">
-        <p className="text-xs text-gray-500 uppercase tracking-widest font-medium">
-          {product.category.name}
-        </p>
-        <div className="flex items-center justify-between gap-16">
-          <h3 className="text-base font-normal text-gray-700 leading-tight tracking-tight uppercase">
+      {/* Contenu produit - Hauteur fixe pour uniformité */}
+      <div className="flex-1 flex flex-col justify-between py-2 sm:py-3 md:py-4 min-h-[80px] sm:min-h-[90px] md:min-h-[100px]">
+        <div className="space-y-1 sm:space-y-2">
+          <p className="text-xs sm:text-xs-responsive text-gray-500 uppercase tracking-widest font-medium line-clamp-1">
+            {product.category.name}
+          </p>
+          <h3 className="text-sm sm:text-sm-responsive font-normal text-gray-700 leading-tight tracking-tight uppercase line-clamp-2 min-h-[32px] sm:min-h-[36px]">
             <Link
               href={`/products/${product.slug}`}
-              className="hover:text-gray-600 transition-colors duration-200"
+              className="hover:text-gray-600 transition-colors duration-200 block"
             >
               {product.name}
             </Link>
           </h3>
-          <p className="text-lg font-medium text-gray-800">
-            €{product.price.toFixed(0)}
-          </p>
         </div>
+        <p className="text-base sm:text-base-responsive font-semibold text-gray-900 mt-1 sm:mt-2">
+          €{Number(product.price).toFixed(0)}
+        </p>
       </div>
     </motion.div>
   );
@@ -203,7 +203,7 @@ export default function BestSellerSection({
 }: BestSellerSectionProps) {
   return (
     <section id="bestseller-section" className="py-16 sm:py-20 lg:py-24">
-      <div className="w-full px-6 lg:px-12">
+      <div className="w-full px-1 sm:px-2 md:px-6 lg:px-12">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -233,7 +233,7 @@ export default function BestSellerSection({
             </p>
           </div>
         ) : products.length > 0 ? (
-          <div className="grid [grid-template-columns:repeat(auto-fill,minmax(280px,1fr))] gap-8 items-center mx-auto max-w-full">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-4 lg:gap-8 mx-auto max-w-full">
             {products.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}

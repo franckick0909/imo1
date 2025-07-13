@@ -32,6 +32,7 @@ interface ImageAnimationGSAPProps {
   fill?: boolean;
   width?: number;
   height?: number;
+  priority?: boolean;
   markers?: boolean;
   customTrigger?: string;
 }
@@ -50,6 +51,7 @@ export default function ImageAnimationGSAP({
   fill = false,
   width,
   height,
+  priority = false,
   markers = false,
   customTrigger,
 }: ImageAnimationGSAPProps) {
@@ -182,6 +184,7 @@ export default function ImageAnimationGSAP({
         width={width}
         height={height}
         sizes={sizes}
+        priority={priority}
         className="object-cover w-full h-full"
         style={{
           clipPath: animationType.includes("clip")

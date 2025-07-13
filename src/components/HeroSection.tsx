@@ -17,7 +17,6 @@ export default function HeroSection() {
   const imageRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const textRef = useRef<HTMLParagraphElement>(null);
   const buttonRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -33,7 +32,6 @@ export default function HeroSection() {
     const image = imageRef.current;
     const overlay = overlayRef.current;
     const content = contentRef.current;
-    const text = textRef.current;
     const button = buttonRef.current;
 
     // Parallax de l'image de fond
@@ -74,38 +72,19 @@ export default function HeroSection() {
       },
     });
 
-    // Animation d'entrée du texte descriptif
-    if (text) {
-      gsap.fromTo(
-        text,
-        { opacity: 0, y: 30 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-          ease: "power2.out",
-          delay: 0.7,
-        }
-      );
-    }
-
     // Animation d'entrée du bouton
-    if (button) {
-      gsap.fromTo(
-        button,
-        { opacity: 0, scaleX: 0, autoAlpha: 0 },
-        {
-          opacity: 1,
-          scaleX: 1,
-          duration: 1,
-          ease: "power2.inOut",
-          delay: 1.5,
-          autoAlpha: 1,
-          transformOrigin: "center center",
-          yoyo: true,
-        },
-      );
-    }
+    gsap.to(button, {
+      opacity: 0.5,
+      y: -30,
+      scale: 0.9,
+      ease: "none",
+      scrollTrigger: {
+        trigger: hero,
+        start: "top top",
+        end: "60% top",
+        scrub: true,
+      },
+    });
 
     // Cleanup
     return () => {
@@ -157,7 +136,7 @@ export default function HeroSection() {
               />
               <TitleAnimationGSAP
                 text="Envers la Nature"
-                className="mb-2 text-rose-500 text-[clamp(3rem,3vw,15rem)] leading-tighter tracking-tighter text-center flex gap-2 lg:gap-4"
+                className="mb-2 text-rose-500 text-[clamp(2rem,3vw,15rem)] leading-tighter tracking-tighter text-center flex gap-2 lg:gap-4"
                 delay={1.5}
                 duration={0.9}
                 stagger={0.06}
@@ -173,8 +152,7 @@ export default function HeroSection() {
         {/* Texte descriptif en bas à gauche */}
         <div className="absolute bottom-1/4 left-4 md:left-6 lg:left-8 max-w-sm">
           <TitleAnimationGSAP
-            text="Des produits authentiques qui révèlent votre beauté naturelle,
-            respectueux de votre peau et de notre planète."
+            text="Des produits authentiques qui révèlent votre beauté naturelle, respectueux de votre peau et de notre planète."
             className="text-white font-light leading-relaxed max-w-md text-[clamp(0.95rem,1vw,2rem)]"
             delay={1.5}
             duration={0.8}

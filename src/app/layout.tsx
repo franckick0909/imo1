@@ -5,14 +5,7 @@ import { CartProvider } from "@/contexts/CartContext";
 import { ReactLenis } from "@/utils/lenis";
 import type { Metadata } from "next";
 import { ViewTransitions } from "next-view-transitions";
-import {
-  Archivo_Black,
-  Cormorant_Garamond,
-  Geist,
-  Geist_Mono,
-  Inter,
-  Luxurious_Roman,
-} from "next/font/google";
+import { Cormorant_Garamond, Inter, Luxurious_Roman } from "next/font/google";
 import "../styles/responsive.css";
 import "./globals.css";
 
@@ -29,37 +22,30 @@ if (typeof window !== "undefined") {
   });
 }
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
+// Police principale - optimisée pour le performance
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap", // Améliore les performances de chargement
+  preload: true,
 });
 
-const archivoBlack = Archivo_Black({
-  variable: "--font-archivo-black",
-  subsets: ["latin"],
-  weight: "400",
-});
-
+// Police décorative - chargement optimisé
 const luxuriousRoman = Luxurious_Roman({
   variable: "--font-luxurious-roman",
   subsets: ["latin"],
   weight: "400",
+  display: "swap",
+  preload: false, // Non critique, chargé après
 });
 
+// Police pour les titres - chargement optimisé
 const cormorantGaramond = Cormorant_Garamond({
   variable: "--font-cormorant-garamond",
   subsets: ["latin"],
-  weight: "400",
+  weight: ["400", "600"], // Poids multiples en une seule déclaration
+  display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -78,19 +64,19 @@ export default function RootLayout({
         <ReactLenis
           root
           options={{
-            duration: 1.6, // Durée moyenne pour l'inertie
-            lerp: 0.04, // 🔑 INERTIE: 0.04=max, 0.06=balanced, 0.08=minimal
-            wheelMultiplier: 1.4, // Légèrement amplifié
-            touchMultiplier: 3, // Beaucoup d'inertie tactile
+            duration: 1.2, // Réduit pour des transitions plus rapides
+            lerp: 0.06, // Plus équilibré pour la performance
+            wheelMultiplier: 1.2, // Réduit pour éviter les conflits
+            touchMultiplier: 2, // Réduit pour mobile
             infinite: false,
             orientation: "vertical",
             gestureOrientation: "vertical",
             smoothWheel: true,
-            syncTouch: false, // Important pour l'inertie
+            syncTouch: false,
           }}
         >
           <body
-            className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${archivoBlack.variable} ${luxuriousRoman.variable} ${cormorantGaramond.variable} antialiased h-full font-inter`}
+            className={`${inter.variable} ${luxuriousRoman.variable} ${cormorantGaramond.variable} antialiased h-full font-inter`}
           >
             <CartProvider>
               <ToastProvider>

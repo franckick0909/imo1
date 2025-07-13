@@ -207,7 +207,7 @@ function ProductCard({ product }: { product: Product }) {
         <div className="flex items-center justify-between pt-2">
           <div className="flex items-center space-x-2">
             <span className="text-xl font-bold text-gray-900">
-              €{product.price.toFixed(2)}
+              €{Number(product.price).toFixed(2)}
             </span>
             {product.comparePrice && (
               <span className="text-sm text-gray-400 line-through">
@@ -301,7 +301,7 @@ export default async function ProductsPage({
     : null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-emerald-50">
+    <div className="min-h-screen bg-rose-50/95 pt-20">
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* En-tête moderne */}
         <div className="text-center mb-16">

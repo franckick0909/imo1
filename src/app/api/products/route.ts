@@ -3,6 +3,10 @@ import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+// Cache simple en mémoire
+const cache = new Map<string, { data: unknown; timestamp: number }>();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
 // Schema de validation pour créer un produit
 const createProductSchema = z.object({
   name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
@@ -49,7 +53,21 @@ function generateSlug(name: string): string {
     .trim();
 }
 
-// GET: Lister tous les produits
+// Fonction pour vérifier et récupérer du cache
+function getCachedData(key: string) {
+  const cached = cache.get(key);
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    return cached.data;
+  }
+  return null;
+}
+
+// Fonction pour sauvegarder en cache
+function setCacheData(key: string, data: unknown) {
+  cache.set(key, { data, timestamp: Date.now() });
+}
+
+// GET: Lister tous les produits avec optimisations
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -57,6 +75,22 @@ export async function GET(request: NextRequest) {
     const isActive = searchParams.get("isActive");
     const isFeatured = searchParams.get("isFeatured");
     const slug = searchParams.get("slug");
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "10");
+    const fields = searchParams.get("fields")?.split(",") || [];
+
+    // Limiter à 50 items maximum par requête
+    const safeLimit = Math.min(limit, 50);
+    const offset = (page - 1) * safeLimit;
+
+    // Générer une clé de cache unique
+    const cacheKey = `products:${categoryId || "all"}:${isActive}:${isFeatured}:${slug}:${page}:${safeLimit}:${fields.join(",")}`;
+
+    // Vérifier le cache
+    const cachedResult = getCachedData(cacheKey);
+    if (cachedResult) {
+      return NextResponse.json(cachedResult);
+    }
 
     const where: {
       categoryId?: string;
@@ -70,28 +104,78 @@ export async function GET(request: NextRequest) {
     if (isFeatured !== null) where.isFeatured = isFeatured === "true";
     if (slug) where.slug = slug;
 
-    const products = await prisma.product.findMany({
-      where,
-      include: {
-        category: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-          },
-        },
-        images: {
-          orderBy: {
-            position: "asc",
-          },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+    // Optimiser la sélection des champs
+    const selectFields =
+      fields.length > 0 ? getSelectFields(fields) : undefined;
 
-    return NextResponse.json({ products });
+    // Requête parallèle pour compter et récupérer les produits
+    const [products, totalCount] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        select: selectFields || {
+          id: true,
+          name: true,
+          description: true,
+          price: true,
+          comparePrice: true,
+          stock: true,
+          slug: true,
+          isActive: true,
+          isFeatured: true,
+          createdAt: true,
+          category: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+            },
+          },
+          images: {
+            select: {
+              id: true,
+              url: true,
+              alt: true,
+              position: true,
+            },
+            orderBy: {
+              position: "asc",
+            },
+            take: 3, // Limiter à 3 images par produit
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        skip: offset,
+        take: safeLimit,
+      }),
+      prisma.product.count({ where }),
+    ]);
+
+    // Transformer les champs Decimal en nombres pour éviter les erreurs de sérialisation
+    const transformedProducts = products.map((product: any) => ({
+      ...product,
+      price: Number(product.price),
+      comparePrice: product.comparePrice ? Number(product.comparePrice) : null,
+      weight: product.weight ? Number(product.weight) : null,
+    }));
+
+    const result = {
+      products: transformedProducts,
+      pagination: {
+        page,
+        limit: safeLimit,
+        total: totalCount,
+        totalPages: Math.ceil(totalCount / safeLimit),
+        hasNext: page * safeLimit < totalCount,
+        hasPrev: page > 1,
+      },
+    };
+
+    // Sauvegarder en cache
+    setCacheData(cacheKey, result);
+
+    return NextResponse.json(result);
   } catch (error) {
     console.error("Erreur lors de la récupération des produits:", error);
     return NextResponse.json(
@@ -99,6 +183,53 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+// Fonction pour mapper les champs demandés
+function getSelectFields(fields: string[]) {
+  const selectObj: Record<string, unknown> = {};
+
+  fields.forEach((field) => {
+    switch (field) {
+      case "id":
+      case "name":
+      case "description":
+      case "price":
+      case "comparePrice":
+      case "stock":
+      case "slug":
+      case "isActive":
+      case "isFeatured":
+      case "createdAt":
+        selectObj[field] = true;
+        break;
+      case "category":
+        selectObj.category = {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        };
+        break;
+      case "images":
+        selectObj.images = {
+          select: {
+            id: true,
+            url: true,
+            alt: true,
+            position: true,
+          },
+          orderBy: {
+            position: "asc",
+          },
+          take: 3,
+        };
+        break;
+    }
+  });
+
+  return Object.keys(selectObj).length > 0 ? selectObj : undefined;
 }
 
 // POST: Créer un nouveau produit
@@ -112,14 +243,6 @@ export async function POST(request: NextRequest) {
     if (!session?.user) {
       return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
     }
-
-    // Vérifier si l'utilisateur est admin (ajustez selon votre système de rôles)
-    // if (session.user.role !== "admin") {
-    //   return NextResponse.json(
-    //     { error: "Permissions insuffisantes" },
-    //     { status: 403 }
-    //   );
-    // }
 
     const body = await request.json();
     const validatedData = createProductSchema.parse(body);
@@ -138,7 +261,6 @@ export async function POST(request: NextRequest) {
     // Générer un SKU unique si non fourni
     let sku = validatedData.sku;
     if (!sku) {
-      // Générer un SKU basé sur le nom du produit et un timestamp
       const baseSku = validatedData.name
         .toUpperCase()
         .replace(/[^A-Z0-9]/g, "")
@@ -160,12 +282,9 @@ export async function POST(request: NextRequest) {
         name: validatedData.name,
         description: validatedData.description,
         longDescription: validatedData.longDescription,
-
-        // Nouveaux champs pour les détails produits
         ingredients: validatedData.ingredients,
         usage: validatedData.usage,
         benefits: validatedData.benefits,
-
         price: validatedData.price,
         comparePrice: validatedData.comparePrice,
         sku: sku,
@@ -207,36 +326,19 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(
-      {
-        product,
-        message: "Produit créé avec succès",
-      },
-      { status: 201 }
-    );
-  } catch (error) {
-    console.error("Erreur lors de la création du produit:", error);
+    // Vider le cache après création
+    cache.clear();
 
+    return NextResponse.json({ product }, { status: 201 });
+  } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        {
-          error: "Données invalides",
-          details: error.errors,
-        },
+        { error: "Données invalides", details: error.errors },
         { status: 400 }
       );
     }
 
-    // Gestion spécifique des erreurs Prisma
-    if (error && typeof error === "object" && "code" in error) {
-      if (error.code === "P2002") {
-        return NextResponse.json(
-          { error: "Un produit avec ces données existe déjà" },
-          { status: 409 }
-        );
-      }
-    }
-
+    console.error("Erreur lors de la création du produit:", error);
     return NextResponse.json(
       { error: "Erreur lors de la création du produit" },
       { status: 500 }

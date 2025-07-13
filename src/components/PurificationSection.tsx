@@ -180,8 +180,8 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
         <h4 className="text-gray-600 font-normal text-sm sm:text-base uppercase tracking-tight">
           {product.name}
         </h4>
-        <p className="text-gray-700 font-normal text-base sm:text-lg">
-          €{product.price.toFixed(0)}
+        <p className="text-gray-700 font-normal text-base-responsive">
+          €{Number(product.price).toFixed(0)}
         </p>
       </div>
     </div>
@@ -458,7 +458,7 @@ export default function PurificationSection({
           <div className="h-32 flex justify-between items-center">
             {/* Texte descriptif */}
             <div className="px-8 lg:px-16 text-left">
-              <p className="text-gray-900 text-base font-light leading-relaxed max-w-xs uppercase">
+              <p className="text-gray-900 text-xs-responsive sm:text-sm-responsive md:text-base-responsive font-light leading-relaxed max-w-xs uppercase">
                 Purifiez votre peau en profondeur avec nos soins experts.
               </p>
             </div>

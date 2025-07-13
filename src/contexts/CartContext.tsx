@@ -65,7 +65,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       }
 
       const total = newItems.reduce(
-        (sum, item) => sum + item.price * item.quantity,
+        (sum, item) => sum + Number(item.price) * item.quantity,
         0
       );
       const itemCount = newItems.reduce((sum, item) => sum + item.quantity, 0);
@@ -76,7 +76,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
     case "REMOVE_ITEM": {
       const newItems = state.items.filter((item) => item.id !== action.payload);
       const total = newItems.reduce(
-        (sum, item) => sum + item.price * item.quantity,
+        (sum, item) => sum + Number(item.price) * item.quantity,
         0
       );
       const itemCount = newItems.reduce((sum, item) => sum + item.quantity, 0);
@@ -99,7 +99,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
       );
 
       const total = newItems.reduce(
-        (sum, item) => sum + item.price * item.quantity,
+        (sum, item) => sum + Number(item.price) * item.quantity,
         0
       );
       const itemCount = newItems.reduce((sum, item) => sum + item.quantity, 0);
@@ -114,7 +114,7 @@ function cartReducer(state: CartState, action: CartAction): CartState {
     case "LOAD_CART": {
       const items = action.payload;
       const total = items.reduce(
-        (sum, item) => sum + item.price * item.quantity,
+        (sum, item) => sum + Number(item.price) * item.quantity,
         0
       );
       const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);

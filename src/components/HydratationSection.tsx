@@ -204,7 +204,7 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
           {product.name}
         </h4>
         <p className="text-gray-700 font-normal text-base sm:text-lg">
-          €{product.price.toFixed(0)}
+          €{Number(product.price).toFixed(0)}
         </p>
       </div>
     </div>
@@ -437,7 +437,7 @@ export default function HydratationSection({
       <section className="py-16 sm:py-20 lg:py-24 bg-white">
         <div className="text-center">
           <div className="w-16 h-16 mx-auto mb-8 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-gray-600 font-light text-lg">
+          <p className="text-gray-600 font-light text-lg-responsive">
             Chargement des produits...
           </p>
         </div>
@@ -445,12 +445,12 @@ export default function HydratationSection({
     );
   }
 
-      return (
-      <section
-        ref={containerRef}
-        id="hydratation-section"
-        className="relative overflow-hidden min-h-[100vh] max-h-[140vh] h-auto mt-16 lg:mt-20"
-      >
+  return (
+    <section
+      ref={containerRef}
+      id="hydratation-section"
+      className="relative overflow-hidden min-h-[100vh] max-h-[140vh] h-auto mt-16 lg:mt-20"
+    >
       {/* Header */}
       <div className="text-center my-16 px-6 lg:px-12">
         <motion.div
@@ -462,11 +462,11 @@ export default function HydratationSection({
           <SophisticatedTitle
             level="h2"
             variant="section"
-            className="text-gray-900 mb-6"
+            className="text-gray-900 mb-6 text-4xl sm:text-5xl md:text-6xl lg:text-7xl"
           >
             Explorez la puissance pure
           </SophisticatedTitle>
-          <p className="text-lg text-gray-600 font-light max-w-2xl mx-auto">
+          <p className="text-lg-responsive text-gray-600 font-light max-w-2xl mx-auto">
             Des formules concentrées en actifs pour une efficacité maximale
           </p>
         </motion.div>
@@ -516,14 +516,14 @@ export default function HydratationSection({
           <div className="h-32 flex justify-between items-center">
             {/* Texte descriptif */}
             <div className="px-8 lg:px-16 text-left">
-              <p className="text-gray-900 text-base font-light leading-relaxed max-w-xs uppercase">
+              <p className="text-gray-900 text-xs-responsive sm:text-sm-responsive md:text-base-responsive font-light leading-relaxed max-w-xs uppercase">
                 Restez éclatant et en bonne santé sans avoir à y penser.
               </p>
             </div>
 
             {/* Indication de drag */}
             <div className="px-8 lg:px-16">
-              <p className="text-gray-600 text-xs uppercase">
+              <p className="text-gray-600 text-xs-responsive uppercase">
                 ← Faites glisser pour découvrir →
               </p>
             </div>

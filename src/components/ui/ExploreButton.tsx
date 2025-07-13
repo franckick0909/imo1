@@ -26,24 +26,24 @@ export default function ExploreButton({
           : "bg-white hover:bg-zinc-50 text-gray-800 shadow-sm"
       } ${className}`}
       style={{
-        padding: "9px 14px 9px 32px",
+        padding: "6px 10px 6px 20px",
       }}
     >
       {/* Texte centré avec soulignement */}
       <div className="flex-1 flex justify-center">
-        <span className="text-base font-normal uppercase tracking-tighter relative inline-block after:content-[''] after:absolute after:left-0 after:right-0 after:bottom-1 after:h-[1px] after:bg-gray-900 after:transform after:scale-x-100 after:origin-bottom-left hover:after:scale-x-0 after:transition-transform after:duration-300 after:ease-out hover:after:origin-bottom-right">
+        <span className="text-sm sm:text-base font-normal uppercase tracking-tighter relative inline-block after:content-[''] after:absolute after:left-0 after:right-0 after:bottom-1 after:h-[1px] after:bg-gray-900 after:transform after:scale-x-100 after:origin-bottom-left hover:after:scale-x-0 after:transition-transform after:duration-300 after:ease-out hover:after:origin-bottom-right">
           {children}
         </span>
       </div>
 
-      {/* Cercle avec flèches - plus gros */}
-      <div className="relative w-14 h-14 rounded-full bg-zinc-700 flex items-center justify-center ml-4 overflow-hidden transition-all duration-300 ease-out group-hover:shadow-lg group-hover:shadow-zinc-800/50 group-hover:scale-105">
+      {/* Cercle avec flèches - responsive */}
+      <div className="relative w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-full bg-zinc-700 flex items-center justify-center ml-3 sm:ml-4 overflow-hidden transition-all duration-300 ease-out group-hover:shadow-lg group-hover:shadow-zinc-800/50 group-hover:scale-105">
         {/* Background hover - effet de pulse */}
         <div className="absolute inset-0 bg-zinc-700 rounded-full scale-0 group-hover:scale-100 transition-transform duration-300 ease-out"></div>
 
         {/* Flèche principale - sort vers la droite */}
         <svg
-          className="w-6 h-6 text-white z-10 absolute transform transition-all duration-400 ease-out group-hover:translate-x-5 group-hover:opacity-0"
+          className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white z-10 absolute transform transition-all duration-400 ease-out group-hover:translate-x-5 group-hover:opacity-0"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -58,7 +58,7 @@ export default function ExploreButton({
 
         {/* Flèche qui arrive de la gauche */}
         <svg
-          className="w-6 h-6 text-white z-10 absolute transform -translate-x-full opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300 ease-out "
+          className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white z-10 absolute transform -translate-x-full opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300 ease-out "
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"

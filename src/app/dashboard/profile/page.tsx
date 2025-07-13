@@ -2,6 +2,12 @@
 
 import { useToast } from "@/components/ui/ToastContainer";
 import { useSession } from "@/lib/auth-client";
+import {
+  useDashboardStore,
+  useProfile,
+  useUserAccounts,
+  useUserSessions,
+} from "@/stores/dashboard-store";
 import { motion } from "framer-motion";
 import {
   Check,
@@ -9,6 +15,7 @@ import {
   Edit,
   Github,
   Key,
+  Loader2,
   Mail,
   Monitor,
   Plus,
@@ -20,21 +27,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-
-interface Account {
-  id: string;
-  providerId: string;
-  accountId: string;
-}
-
-interface Session {
-  id: string;
-  ipAddress: string | null;
-  userAgent: string | null;
-  createdAt: string;
-  expiresAt: string;
-  isCurrent: boolean;
-}
+import Image from "next/image";
 
 export default function ProfilePage() {
   const { data: session } = useSession();
@@ -42,57 +35,37 @@ export default function ProfilePage() {
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [showSessions, setShowSessions] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [sessions, setSessions] = useState<Session[]>([]);
-  const [loadingSessions, setLoadingSessions] = useState(false);
   const [passwordData, setPasswordData] = useState({
     password: "",
     confirmPassword: "",
   });
 
-  // Charger les comptes et sessions
-  const loadAccountsAndSessions = async () => {
-    try {
-      // Charger les comptes
-      const accountsResponse = await fetch("/api/auth/list-accounts");
-      if (accountsResponse.ok) {
-        const accountsData = await accountsResponse.json();
-        setAccounts(accountsData);
-      }
-    } catch (error) {
-      console.error("Erreur lors du chargement des comptes:", error);
-    }
-  };
+  // Utiliser les stores Zustand
+  const { profile, isLoadingProfile, loadProfile } = useProfile();
+  const {
+    sessions,
+    isLoadingSessions,
+    loadSessions,
+    revokeSession,
+    revokeAllSessions,
+  } = useUserSessions();
+  const { accounts, isLoadingAccounts, loadAccounts } = useUserAccounts();
+  const { addPassword } = useDashboardStore();
 
-  const loadSessions = async () => {
-    if (!showSessions) return;
-
-    setLoadingSessions(true);
-    try {
-      const response = await fetch("/api/auth/list-sessions");
-      if (response.ok) {
-        const sessionsData = await response.json();
-        setSessions(sessionsData);
-      } else {
-        error("Erreur lors du chargement des sessions");
-      }
-    } catch (err) {
-      console.error("Erreur lors du chargement des sessions:", err);
-      error("Erreur lors du chargement des sessions");
-    } finally {
-      setLoadingSessions(false);
-    }
-  };
-
+  // Charger les données au montage
   useEffect(() => {
     if (session) {
-      loadAccountsAndSessions();
+      loadProfile();
+      loadAccounts();
     }
-  }, [session]);
+  }, [session, loadProfile, loadAccounts]);
 
+  // Charger les sessions si l'onglet est ouvert
   useEffect(() => {
-    loadSessions();
-  }, [showSessions]);
+    if (showSessions) {
+      loadSessions();
+    }
+  }, [showSessions, loadSessions]);
 
   const handleAddPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,27 +83,14 @@ export default function ProfilePage() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/auth/add-password", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          password: passwordData.password,
-        }),
-      });
-
-      if (response.ok) {
-        success(
-          "Mot de passe ajouté avec succès ! Vous pouvez maintenant vous connecter avec votre email et mot de passe."
-        );
-        setPasswordData({ password: "", confirmPassword: "" });
-        setShowPasswordForm(false);
-        loadAccountsAndSessions();
-      } else {
-        const errorData = await response.json();
-        error(errorData.message || "Erreur lors de l'ajout du mot de passe");
-      }
+      await addPassword(passwordData.password);
+      success(
+        "Mot de passe ajouté avec succès ! Vous pouvez maintenant vous connecter avec votre email et mot de passe."
+      );
+      setPasswordData({ password: "", confirmPassword: "" });
+      setShowPasswordForm(false);
+      // Recharger les comptes pour voir le nouveau compte credential
+      loadAccounts();
     } catch (err) {
       console.error("Erreur lors de l'ajout du mot de passe:", err);
       error("Erreur lors de l'ajout du mot de passe");
@@ -141,26 +101,27 @@ export default function ProfilePage() {
 
   const handleRevokeSession = async (sessionId: string) => {
     try {
-      const response = await fetch("/api/auth/revoke-session", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ sessionId }),
-      });
-
-      if (response.ok) {
-        success("Session révoquée avec succès");
-        loadSessions();
-      } else {
-        const errorData = await response.json();
-        error(
-          errorData.message || "Erreur lors de la révocation de la session"
-        );
-      }
+      await revokeSession(sessionId);
+      success("Session révoquée avec succès");
     } catch (err) {
       console.error("Erreur lors de la révocation de la session:", err);
       error("Erreur lors de la révocation de la session");
+    }
+  };
+
+  const handleRevokeAllSessions = async () => {
+    if (
+      window.confirm(
+        "Êtes-vous sûr de vouloir révoquer toutes les autres sessions ?"
+      )
+    ) {
+      try {
+        await revokeAllSessions();
+        success("Toutes les sessions ont été révoquées");
+      } catch (err) {
+        console.error("Erreur lors de la révocation des sessions:", err);
+        error("Erreur lors de la révocation des sessions");
+      }
     }
   };
 
@@ -226,18 +187,31 @@ export default function ProfilePage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="h-16 w-16 bg-emerald-100 rounded-full flex items-center justify-center">
-              <span className="text-2xl font-bold text-emerald-600">
-                {session?.user?.name?.charAt(0) ||
-                  session?.user?.email?.charAt(0)}
-              </span>
+              {profile?.image ? (
+                <Image
+                  src={profile.image}
+                  alt={profile.name || "Profil"}
+                  className="h-full w-full rounded-full object-cover"
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                />
+              ) : (
+                <span className="text-2xl font-bold text-emerald-600">
+                  {profile?.name?.charAt(0) ||
+                    session?.user?.name?.charAt(0) ||
+                    session?.user?.email?.charAt(0)}
+                </span>
+              )}
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900">
-                {session?.user?.name || "Utilisateur"}
+                {profile?.name || session?.user?.name || "Utilisateur"}
               </h1>
-              <p className="text-gray-600">{session?.user?.email}</p>
+              <p className="text-gray-600">
+                {profile?.email || session?.user?.email}
+              </p>
               <div className="flex items-center space-x-2 mt-1">
-                {session?.user?.emailVerified ? (
+                {profile?.emailVerified || session?.user?.emailVerified ? (
                   <div className="flex items-center space-x-1 text-green-600">
                     <Check className="h-4 w-4" />
                     <span className="text-sm">Email vérifié</span>
@@ -274,32 +248,53 @@ export default function ProfilePage() {
           Informations du compte
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Nom complet
-            </label>
-            <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg">
-              <User className="h-4 w-4 text-gray-400" />
-              <span className="text-gray-900">
-                {session?.user?.name || "Non renseigné"}
-              </span>
-            </div>
+        {isLoadingProfile ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+            <span className="ml-2 text-gray-600">Chargement du profil...</span>
           </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Nom complet
+              </label>
+              <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg">
+                <User className="h-4 w-4 text-gray-400" />
+                <span className="text-gray-900">
+                  {profile?.name || session?.user?.name || "Non renseigné"}
+                </span>
+              </div>
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Adresse email
-            </label>
-            <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg">
-              <Mail className="h-4 w-4 text-gray-400" />
-              <span className="text-gray-900">{session?.user?.email}</span>
-              {session?.user?.emailVerified && (
-                <Check className="h-4 w-4 text-green-600" />
-              )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Adresse email
+              </label>
+              <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg">
+                <Mail className="h-4 w-4 text-gray-400" />
+                <span className="text-gray-900">
+                  {profile?.email || session?.user?.email}
+                </span>
+                {(profile?.emailVerified || session?.user?.emailVerified) && (
+                  <Check className="h-4 w-4 text-green-600" />
+                )}
+              </div>
             </div>
+
+            {profile?.phone && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Téléphone
+                </label>
+                <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg">
+                  <Smartphone className="h-4 w-4 text-gray-400" />
+                  <span className="text-gray-900">{profile.phone}</span>
+                </div>
+              </div>
+            )}
           </div>
-        </div>
+        )}
       </motion.div>
 
       {/* Méthodes de connexion */}
@@ -314,160 +309,170 @@ export default function ProfilePage() {
           Méthodes de connexion
         </h2>
 
-        <div className="space-y-4">
-          {/* Google */}
-          <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-            <div className="flex items-center space-x-3">
-              <div className="h-10 w-10 bg-red-100 rounded-full flex items-center justify-center">
-                <Chrome className="w-5 h-5 text-red-600" />
-              </div>
-              <div>
-                <p className="font-medium text-gray-900">Google</p>
-                <p className="text-sm text-gray-500">
-                  {hasGoogle ? "Connecté avec Google" : "Non configuré"}
-                </p>
-              </div>
-            </div>
-            {hasGoogle ? (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                Actif
-              </span>
-            ) : (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                Non configuré
-              </span>
-            )}
+        {isLoadingAccounts ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+            <span className="ml-2 text-gray-600">
+              Chargement des comptes...
+            </span>
           </div>
-
-          {/* GitHub */}
-          <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-            <div className="flex items-center space-x-3">
-              <div className="h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center">
-                <Github className="w-5 h-5 text-gray-600" />
+        ) : (
+          <div className="space-y-4">
+            {/* Google */}
+            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+              <div className="flex items-center space-x-3">
+                <div className="h-10 w-10 bg-red-100 rounded-full flex items-center justify-center">
+                  <Chrome className="w-5 h-5 text-red-600" />
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">Google</p>
+                  <p className="text-sm text-gray-500">
+                    {hasGoogle ? "Connecté avec Google" : "Non configuré"}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="font-medium text-gray-900">GitHub</p>
-                <p className="text-sm text-gray-500">
-                  {hasGithub ? "Connecté avec GitHub" : "Non configuré"}
-                </p>
-              </div>
-            </div>
-            {hasGithub ? (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                Actif
-              </span>
-            ) : (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                Non configuré
-              </span>
-            )}
-          </div>
-
-          {/* Email/Mot de passe */}
-          <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-            <div className="flex items-center space-x-3">
-              <div className="h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center">
-                <Key className="w-5 h-5 text-gray-600" />
-              </div>
-              <div>
-                <p className="font-medium text-gray-900">
-                  Email et mot de passe
-                </p>
-                <p className="text-sm text-gray-500">
-                  {hasPassword
-                    ? "Mot de passe configuré"
-                    : "Aucun mot de passe configuré"}
-                </p>
-              </div>
+              {hasGoogle ? (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  Actif
+                </span>
+              ) : (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                  Non configuré
+                </span>
+              )}
             </div>
 
-            {hasPassword ? (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                Configuré
-              </span>
-            ) : (
-              <button
-                onClick={() => setShowPasswordForm(true)}
-                className="flex items-center space-x-1 px-3 py-1 bg-emerald-100 text-emerald-700 rounded-md hover:bg-emerald-200 transition-colors text-sm"
-              >
-                <Plus className="h-3 w-3" />
-                <span>Ajouter</span>
-              </button>
-            )}
+            {/* GitHub */}
+            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+              <div className="flex items-center space-x-3">
+                <div className="h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center">
+                  <Github className="w-5 h-5 text-gray-600" />
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">GitHub</p>
+                  <p className="text-sm text-gray-500">
+                    {hasGithub ? "Connecté avec GitHub" : "Non configuré"}
+                  </p>
+                </div>
+              </div>
+              {hasGithub ? (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  Actif
+                </span>
+              ) : (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                  Non configuré
+                </span>
+              )}
+            </div>
+
+            {/* Mot de passe */}
+            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+              <div className="flex items-center space-x-3">
+                <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Key className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">Mot de passe</p>
+                  <p className="text-sm text-gray-500">
+                    {hasPassword ? "Configuré" : "Non configuré"}
+                  </p>
+                </div>
+              </div>
+              {hasPassword ? (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  Actif
+                </span>
+              ) : (
+                <button
+                  onClick={() => setShowPasswordForm(true)}
+                  className="flex items-center space-x-1 px-3 py-1 text-sm bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Ajouter</span>
+                </button>
+              )}
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Formulaire d'ajout de mot de passe */}
+        {showPasswordForm && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mt-6 p-4 bg-gray-50 rounded-lg"
+          >
+            <h3 className="font-medium text-gray-900 mb-4">
+              Ajouter un mot de passe
+            </h3>
+            <form onSubmit={handleAddPassword} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Mot de passe
+                </label>
+                <input
+                  type="password"
+                  value={passwordData.password}
+                  onChange={(e) =>
+                    setPasswordData({
+                      ...passwordData,
+                      password: e.target.value,
+                    })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  placeholder="Au moins 8 caractères"
+                  required
+                  minLength={8}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Confirmer le mot de passe
+                </label>
+                <input
+                  type="password"
+                  value={passwordData.confirmPassword}
+                  onChange={(e) =>
+                    setPasswordData({
+                      ...passwordData,
+                      confirmPassword: e.target.value,
+                    })
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  placeholder="Répétez le mot de passe"
+                  required
+                />
+              </div>
+              <div className="flex items-center space-x-3">
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors flex items-center space-x-2"
+                >
+                  {isSubmitting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Key className="h-4 w-4" />
+                  )}
+                  <span>{isSubmitting ? "Ajout..." : "Ajouter"}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPasswordForm(false);
+                    setPasswordData({ password: "", confirmPassword: "" });
+                  }}
+                  className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  Annuler
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        )}
       </motion.div>
-
-      {/* Formulaire d'ajout de mot de passe */}
-      {showPasswordForm && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-xl p-6 shadow-sm border border-gray-100"
-        >
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <Key className="h-5 w-5 text-emerald-600 mr-2" />
-            Ajouter un mot de passe
-          </h3>
-
-          <form onSubmit={handleAddPassword} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nouveau mot de passe
-              </label>
-              <input
-                type="password"
-                value={passwordData.password}
-                onChange={(e) =>
-                  setPasswordData((prev) => ({
-                    ...prev,
-                    password: e.target.value,
-                  }))
-                }
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                placeholder="Minimum 8 caractères"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Confirmer le mot de passe
-              </label>
-              <input
-                type="password"
-                value={passwordData.confirmPassword}
-                onChange={(e) =>
-                  setPasswordData((prev) => ({
-                    ...prev,
-                    confirmPassword: e.target.value,
-                  }))
-                }
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                placeholder="Confirmer le mot de passe"
-                required
-              />
-            </div>
-
-            <div className="flex space-x-3">
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="flex-1 bg-emerald-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-emerald-700 focus:ring-4 focus:ring-emerald-200 disabled:opacity-50 transition-colors"
-              >
-                {isSubmitting ? "Ajout en cours..." : "Ajouter le mot de passe"}
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowPasswordForm(false)}
-                className="px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Annuler
-              </button>
-            </div>
-          </form>
-        </motion.div>
-      )}
 
       {/* Sessions actives */}
       <motion.div
@@ -483,95 +488,90 @@ export default function ProfilePage() {
           </h2>
           <button
             onClick={() => setShowSessions(!showSessions)}
-            className="px-4 py-2 text-emerald-600 hover:text-emerald-700 font-medium border border-emerald-200 rounded-lg hover:bg-emerald-50 transition-colors"
+            className="px-4 py-2 text-emerald-600 hover:text-emerald-700 font-medium transition-colors"
           >
-            {showSessions ? "Masquer" : "Voir tout"}
+            {showSessions ? "Masquer" : "Afficher"}
           </button>
         </div>
 
         {showSessions && (
-          <div className="space-y-4">
-            {loadingSessions ? (
-              <div className="flex justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+          <>
+            {isLoadingSessions ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+                <span className="ml-2 text-gray-600">
+                  Chargement des sessions...
+                </span>
               </div>
-            ) : sessions.length > 0 ? (
-              sessions.map((sessionItem) => {
-                const userAgent = parseUserAgent(sessionItem.userAgent);
-                const DeviceIcon =
-                  userAgent.device === "Mobile" ? Smartphone : Monitor;
-
-                return (
-                  <div
-                    key={sessionItem.id}
-                    className={`flex items-center justify-between p-4 border rounded-lg ${
-                      sessionItem.isCurrent
-                        ? "border-emerald-200 bg-emerald-50"
-                        : "border-gray-200"
-                    }`}
-                  >
-                    <div className="flex items-center space-x-4">
-                      <div
-                        className={`h-10 w-10 rounded-full flex items-center justify-center ${
-                          sessionItem.isCurrent
-                            ? "bg-emerald-100"
-                            : "bg-gray-100"
-                        }`}
-                      >
-                        <DeviceIcon
-                          className={`w-5 h-5 ${
-                            sessionItem.isCurrent
-                              ? "text-emerald-600"
-                              : "text-gray-600"
-                          }`}
-                        />
-                      </div>
-                      <div>
-                        <div className="flex items-center space-x-2">
-                          <p className="font-medium text-gray-900">
-                            {userAgent.browser} sur {userAgent.os}
-                          </p>
-                          {sessionItem.isCurrent && (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
-                              Session actuelle
-                            </span>
-                          )}
+            ) : (
+              <div className="space-y-4">
+                {sessions.map((sessionItem) => {
+                  const deviceInfo = parseUserAgent(sessionItem.userAgent);
+                  return (
+                    <div
+                      key={sessionItem.id}
+                      className={`p-4 border rounded-lg ${
+                        sessionItem.isCurrent
+                          ? "border-emerald-200 bg-emerald-50"
+                          : "border-gray-200"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className="h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center">
+                            {deviceInfo.device === "Mobile" ? (
+                              <Smartphone className="h-5 w-5 text-gray-600" />
+                            ) : (
+                              <Monitor className="h-5 w-5 text-gray-600" />
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900">
+                              {deviceInfo.browser} sur {deviceInfo.os}
+                              {sessionItem.isCurrent && (
+                                <span className="ml-2 px-2 py-0.5 text-xs bg-emerald-100 text-emerald-800 rounded-full">
+                                  Session actuelle
+                                </span>
+                              )}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              IP: {sessionItem.ipAddress || "Non disponible"} •{" "}
+                              Connecté le {formatDate(sessionItem.createdAt)}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                              Expire le {formatDate(sessionItem.expiresAt)}
+                            </p>
+                          </div>
                         </div>
-                        <p className="text-sm text-gray-500">
-                          {sessionItem.ipAddress &&
-                            `IP: ${sessionItem.ipAddress} • `}
-                          Connecté le {formatDate(sessionItem.createdAt)}
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          Expire le {formatDate(sessionItem.expiresAt)}
-                        </p>
+                        {!sessionItem.isCurrent && (
+                          <button
+                            onClick={() => handleRevokeSession(sessionItem.id)}
+                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Révoquer cette session"
+                            aria-label="Révoquer cette session"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
                       </div>
                     </div>
+                  );
+                })}
 
-                    {!sessionItem.isCurrent && (
-                      <button
-                        onClick={() => handleRevokeSession(sessionItem.id)}
-                        className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Révoquer cette session"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    )}
+                {sessions.length > 1 && (
+                  <div className="pt-4 border-t border-gray-200">
+                    <button
+                      onClick={handleRevokeAllSessions}
+                      className="flex items-center space-x-2 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span>Révoquer toutes les autres sessions</span>
+                    </button>
                   </div>
-                );
-              })
-            ) : (
-              <p className="text-center text-gray-500 py-8">
-                Aucune session active trouvée
-              </p>
+                )}
+              </div>
             )}
-          </div>
-        )}
-
-        {!showSessions && (
-          <p className="text-gray-500">
-            Gérez vos sessions de connexion sur différents appareils
-          </p>
+          </>
         )}
       </motion.div>
     </div>

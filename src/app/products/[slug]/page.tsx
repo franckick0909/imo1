@@ -229,7 +229,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
               <div className="mb-8">
                 <div className="flex items-baseline gap-4 mb-2">
                   <span className="text-5xl font-bold text-gray-900">
-                    €{product.price.toFixed(2)}
+                    €{Number(product.price).toFixed(2)}
                   </span>
                   {product.comparePrice && (
                     <span className="text-2xl text-gray-400 line-through">
@@ -554,7 +554,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                     </h3>
                     <div className="flex items-center gap-2">
                       <span className="text-xl font-bold text-gray-900">
-                        €{similar.price.toFixed(2)}
+                        €{Number(similar.price).toFixed(2)}
                       </span>
                       {similar.comparePrice && (
                         <span className="text-sm text-gray-400 line-through">

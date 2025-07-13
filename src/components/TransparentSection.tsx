@@ -53,7 +53,8 @@ export default function TransparentSection() {
               src="/images/creme-rose.png"
               alt="Crème rose"
               fill={true}
-              className="flex-shrink-0 mb-4 relative w-[clamp(4rem,8vw,12rem)] h-[clamp(4rem,6vw,12rem)]"
+              priority={true}
+              className="flex-shrink-0 mb-4 !relative w-[clamp(4rem,8vw,12rem)] h-[clamp(4rem,6vw,12rem)]"
               delay={0.5}
               duration={1.2}
               triggerStart="top 70%"
@@ -107,7 +108,7 @@ export default function TransparentSection() {
               src="/images/creme-verte.png"
               alt="Crème verte"
               fill={true}
-              className="flex-shrink-0 relative w-[clamp(4rem,8vw,12rem)] h-[clamp(3rem,6vw,12rem)]"
+              className="flex-shrink-0 !relative w-[clamp(4rem,8vw,12rem)] h-[clamp(3rem,6vw,12rem)]"
               delay={1.2}
               duration={1.3}
               triggerStart="top 50%"

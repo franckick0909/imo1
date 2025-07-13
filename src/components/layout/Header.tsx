@@ -1,17 +1,24 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useGSAP } from "@gsap/react";
+import { gsap } from "gsap";
 import { Link } from "next-view-transitions";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CartSidebar from "../CartSidebar";
 import NavigationMenu from "./NavigationMenu";
 import UserMenu from "./UserMenu";
+
+// Enregistrer les plugins GSAP
+gsap.registerPlugin(useGSAP);
 
 export default function Header() {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isAtTop, setIsAtTop] = useState(true);
   const [hasScrolledUp, setHasScrolledUp] = useState(false);
+
+  // Ref pour l'animation GSAP
+  const headerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const controlHeader = () => {
@@ -53,22 +60,16 @@ export default function Header() {
     };
   }, [lastScrollY]);
 
-  const headerVariants = {
-    visible: {
-      y: 0,
-      transition: {
-        duration: 0.5,
-        ease: [0.25, 0.46, 0.45, 0.94] as const,
-      },
-    },
-    hidden: {
-      y: "-100%",
-      transition: {
+  // Animation GSAP pour l'apparition/disparition
+  useGSAP(() => {
+    if (headerRef.current) {
+      gsap.to(headerRef.current, {
+        y: isVisible ? 0 : "-100%",
         duration: 0.4,
-        ease: [0.25, 0.46, 0.45, 0.94] as const,
-      },
-    },
-  };
+        ease: isVisible ? "power3.out" : "power3.in",
+      });
+    }
+  }, [isVisible]);
 
   // Déterminer le style du header selon l'état
   const getHeaderStyle = () => {
@@ -93,11 +94,9 @@ export default function Header() {
   };
 
   return (
-    <motion.div
+    <div
+      ref={headerRef}
       className={`fixed top-0 left-0 right-0 z-[45] transition-all duration-300 ${getHeaderStyle()}`}
-      variants={headerVariants}
-      animate={isVisible ? "visible" : "hidden"}
-      initial="visible"
     >
       <div className="flex justify-between items-center py-3 sm:py-3 md:py-4 lg:py-5 px-4 sm:px-5 md:px-6 lg:px-7">
         {/* Menu Navigation (gauche) */}
@@ -121,6 +120,6 @@ export default function Header() {
           <UserMenu />
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

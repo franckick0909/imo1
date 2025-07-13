@@ -21,9 +21,6 @@ export default function Footer() {
       title: "Navigation",
       links: [
         { label: "Accueil", href: "/" },
-        { label: "Acheter", href: "/immo/achat" },
-        { label: "Louer", href: "/immo/location" },
-        { label: "Vendre", href: "/immo/vente" },
         { label: "Produits", href: "/products" },
       ],
     },
@@ -43,8 +40,6 @@ export default function Footer() {
         { label: "Centre d'aide", href: "/help" },
         { label: "Contact", href: "/contact" },
         { label: "FAQ", href: "/faq" },
-        { label: "Guides", href: "/guides" },
-        { label: "Blog", href: "/blog" },
       ],
     },
   ];
@@ -75,7 +70,7 @@ export default function Footer() {
               >
                 Bio<span className="text-emerald-400">Crème</span>
               </Link>
-              <p className="text-zinc-300 text-sm sm:text-base leading-relaxed mb-6 max-w-md">
+              <p className="text-zinc-300 text-base-responsive leading-relaxed mb-6 max-w-md">
                 Votre partenaire de confiance pour tous vos projets immobiliers.
                 Nous vous accompagnons dans l&apos;achat, la vente et la
                 location de biens d&apos;exception avec un service personnalisé.
@@ -109,7 +104,7 @@ export default function Footer() {
               viewport={{ once: true }}
               className="sm:col-span-1"
             >
-              <h3 className="text-white font-semibold text-base sm:text-lg mb-4">
+              <h3 className="text-white font-semibold heading-sm mb-4">
                 {section.title}
               </h3>
               <ul className="space-y-2 sm:space-y-3">
@@ -139,7 +134,7 @@ export default function Footer() {
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8">
             {/* Réseaux sociaux */}
             <div className="w-full lg:w-auto">
-              <h4 className="text-white font-medium text-base sm:text-lg mb-4">
+              <h4 className="text-white font-medium heading-sm mb-4">
                 Suivez-nous
               </h4>
               <div className="flex flex-wrap gap-3 sm:gap-4">
@@ -163,7 +158,7 @@ export default function Footer() {
 
             {/* Newsletter */}
             <div className="w-full lg:w-auto lg:max-w-md">
-              <h4 className="text-white font-medium text-base sm:text-lg mb-4">
+              <h4 className="text-white font-medium heading-sm mb-4">
                 Newsletter
               </h4>
               <div className="flex flex-col sm:flex-row gap-2">
