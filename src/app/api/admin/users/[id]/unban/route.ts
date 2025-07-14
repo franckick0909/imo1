@@ -1,11 +1,12 @@
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { Decimal } from "@prisma/client/runtime/library";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth.api.getSession({
@@ -74,7 +75,8 @@ export async function POST(
       ...unbannedUser,
       ordersCount: unbannedUser.orders.length,
       totalSpent: unbannedUser.orders.reduce(
-        (sum, order) => sum + Number(order.totalAmount),
+        (sum: number, order: { totalAmount: Decimal }) =>
+          sum + Number(order.totalAmount),
         0
       ),
     };

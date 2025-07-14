@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { errorResponse } from "@/lib/compression";
 import prisma from "@/lib/prisma";
+import { Category } from "@prisma/client";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 
@@ -38,7 +39,7 @@ export async function GET() {
     });
 
     // Transformer les données pour correspondre à l'interface AdminCategory
-    const adminCategories = categories.map((category) => ({
+    const adminCategories = categories.map((category: Category & { _count: { products: number } }) => ({
       id: category.id,
       name: category.name,
       slug: category.slug,

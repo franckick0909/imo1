@@ -1,5 +1,6 @@
 import AddToCartButton from "@/components/AddToCartButton";
 import prisma from "@/lib/prisma";
+import { Decimal } from "@prisma/client/runtime/library";
 import { Link } from "next-view-transitions";
 import Image from "next/image";
 import { Suspense } from "react";
@@ -13,6 +14,36 @@ interface Product {
   comparePrice?: number;
   stock: number;
   slug: string;
+  category: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  images: {
+    id: string;
+    url: string;
+    alt?: string | null;
+    position: number;
+  }[];
+}
+
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  isActive: boolean;
+}
+
+interface PrismaProduct {
+  id: string;
+  name: string;
+  description: string | null;
+  longDescription?: string | null;
+  price: Decimal;
+  comparePrice?: Decimal | null;
+  stock: number;
+  slug: string;
+  weight?: Decimal | null;
   category: {
     id: string;
     name: string;
@@ -67,7 +98,7 @@ async function getProductsData(categorySlug?: string) {
   ]);
 
   return {
-    products: products.map((product) => ({
+    products: products.map((product: PrismaProduct) => ({
       ...product,
       price: Number(product.price),
       comparePrice: product.comparePrice
@@ -297,7 +328,7 @@ export default async function ProductsPage({
 
   // Trouver la catégorie active pour l'affichage
   const activeCategory = category
-    ? categories.find((cat) => cat.slug === category)
+    ? categories.find((cat: Category) => cat.slug === category)
     : null;
 
   return (
@@ -363,7 +394,7 @@ export default async function ProductsPage({
                 >
                   Tous les produits
                 </Link>
-                {categories.map((cat) => (
+                {categories.map((cat: Category) => (
                   <Link
                     key={cat.id}
                     href={`/products?category=${cat.slug}`}
@@ -466,7 +497,7 @@ export default async function ProductsPage({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                {products.map((product) => (
+                {products.map((product: Product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
               </div>
