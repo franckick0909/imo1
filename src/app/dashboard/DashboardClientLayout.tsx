@@ -2,7 +2,19 @@
 
 import { signOut } from "@/lib/auth-client";
 import { AnimatePresence, motion } from "framer-motion";
-import { Bell, ChevronLeft, ChevronRight, LogOut, Search, Home, User, Edit, Package, Heart, Settings } from "lucide-react";
+import {
+  Bell,
+  ChevronLeft,
+  ChevronRight,
+  Edit,
+  Heart,
+  Home,
+  LogOut,
+  Package,
+  Search,
+  Settings,
+  User,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -13,8 +25,8 @@ interface DashboardUser {
   email: string;
   name?: string;
   profileComplete?: boolean;
-  createdAt: string;
-  role: string;
+  createdAt: Date | string;
+  role?: string | null;
   stripeCustomerId?: string;
 }
 
@@ -22,12 +34,10 @@ interface DashboardStats {
   totalOrders: number;
   totalSpent: number;
   favoriteProducts: number;
-  accountAge: number;
-  completedOrders: number;
-  pendingOrders: number;
-  lastOrderDate?: string;
-  avgOrderValue?: number;
-  loyaltyPoints?: number;
+  loyaltyPoints: number;
+  recentOrders: number;
+  memberSince: Date;
+  lastUpdated: string;
 }
 
 interface SidebarItem {
@@ -74,7 +84,7 @@ const sidebarItems: SidebarItem[] = [
 interface DashboardClientLayoutProps {
   children: React.ReactNode;
   user: DashboardUser;
-  stats: DashboardStats;
+  stats: DashboardStats | null | undefined;
 }
 
 export default function DashboardClientLayout({

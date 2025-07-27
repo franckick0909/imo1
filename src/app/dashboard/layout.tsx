@@ -5,6 +5,17 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import DashboardClientLayout from "./DashboardClientLayout";
 
+// Type pour les statistiques du dashboard
+interface DashboardStats {
+  totalOrders: number;
+  totalSpent: number;
+  favoriteProducts: number;
+  loyaltyPoints: number;
+  recentOrders: number;
+  memberSince: Date;
+  lastUpdated: string;
+}
+
 export default async function DashboardLayout({
   children,
 }: {
@@ -24,7 +35,9 @@ export default async function DashboardLayout({
     getDashboardStatsAction().catch(() => ({ success: false, data: null })),
   ]);
 
-  const stats = statsResult.success ? statsResult.data : null;
+  const stats = statsResult.success
+    ? (statsResult.data as DashboardStats)
+    : null;
 
   return (
     <Suspense
@@ -36,3 +49,4 @@ export default async function DashboardLayout({
     </Suspense>
   );
 }
+  
