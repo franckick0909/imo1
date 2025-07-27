@@ -1,11 +1,12 @@
 import { auth } from "@/lib/auth";
+import prisma from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Vérifier l'authentification
@@ -17,7 +18,7 @@ export async function GET(
       return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
     }
 
-    const paymentIntentId = params.id;
+    const { id: paymentIntentId } = await params;
 
     if (!paymentIntentId) {
       return NextResponse.json(
@@ -29,12 +30,12 @@ export async function GET(
     // Récupérer l'utilisateur complet depuis la base de données
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { 
-        id: true, 
-        email: true, 
-        name: true, 
-        stripeCustomerId: true 
-      }
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        stripeCustomerId: true,
+      },
     });
 
     if (!user) {

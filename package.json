@@ -19,7 +19,6 @@
     "@react-email/tailwind": "^1.0.5",
     "@stripe/react-stripe-js": "^3.7.0",
     "@stripe/stripe-js": "^7.4.0",
-    "@studio-freight/react-lenis": "^0.0.47",
     "@vercel/postgres": "^0.10.0",
     "better-auth": "^1.2.8",
     "cloudinary": "^2.6.1",
