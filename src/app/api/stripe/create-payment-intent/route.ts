@@ -59,6 +59,14 @@ export async function POST(request: NextRequest) {
     // Créer ou récupérer le client Stripe
     const stripeCustomerId = await getOrCreateStripeCustomer(user);
 
+    // Vérifier que Stripe est configuré
+    if (!stripe) {
+      return NextResponse.json(
+        { error: "Stripe n'est pas configuré" },
+        { status: 500 }
+      );
+    }
+
     // Créer le Payment Intent
     const paymentIntent = await stripe.paymentIntents.create({
       amount,

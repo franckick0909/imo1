@@ -4,6 +4,10 @@ import { stripe } from "./stripe";
 
 // Créer ou récupérer un client Stripe pour un utilisateur
 export async function getOrCreateStripeCustomer(user: User): Promise<string> {
+  if (!stripe) {
+    throw new Error("Stripe n'est pas configuré");
+  }
+
   // Si l'utilisateur a déjà un Stripe Customer ID, le retourner
   if (user.stripeCustomerId) {
     try {
@@ -53,6 +57,10 @@ export async function updateStripeCustomer(
     };
   }
 ) {
+  if (!stripe) {
+    throw new Error("Stripe n'est pas configuré");
+  }
+
   try {
     await stripe.customers.update(stripeCustomerId, data);
   } catch (error) {
@@ -63,6 +71,10 @@ export async function updateStripeCustomer(
 
 // Supprimer un client Stripe
 export async function deleteStripeCustomer(stripeCustomerId: string) {
+  if (!stripe) {
+    throw new Error("Stripe n'est pas configuré");
+  }
+
   try {
     await stripe.customers.del(stripeCustomerId);
   } catch (error) {
@@ -73,6 +85,10 @@ export async function deleteStripeCustomer(stripeCustomerId: string) {
 
 // Récupérer les méthodes de paiement d'un client
 export async function getCustomerPaymentMethods(stripeCustomerId: string) {
+  if (!stripe) {
+    throw new Error("Stripe n'est pas configuré");
+  }
+
   try {
     const paymentMethods = await stripe.paymentMethods.list({
       customer: stripeCustomerId,
@@ -90,6 +106,10 @@ export async function getCustomerPaymentMethods(stripeCustomerId: string) {
 
 // Créer une Setup Intent pour sauvegarder une méthode de paiement
 export async function createSetupIntent(stripeCustomerId: string) {
+  if (!stripe) {
+    throw new Error("Stripe n'est pas configuré");
+  }
+
   try {
     const setupIntent = await stripe.setupIntents.create({
       customer: stripeCustomerId,

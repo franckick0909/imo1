@@ -4,8 +4,8 @@ import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
 import { getOrCreateStripeCustomer } from "@/lib/stripe-utils";
-import { z } from "zod";
 import { headers } from "next/headers";
+import { z } from "zod";
 
 // Schéma de validation pour créer un Payment Intent
 const CreatePaymentIntentSchema = z.object({
@@ -127,6 +127,11 @@ export async function createPaymentIntentAction(
       user.shippingCountry || "FR"
     );
 
+    // Vérifier que Stripe est configuré
+    if (!stripe) {
+      throw new Error("Stripe n'est pas configuré");
+    }
+
     // Créer le Payment Intent
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amountInCents,
@@ -215,6 +220,11 @@ export async function validatePaymentAction(paymentIntentId: string) {
       throw new Error("Utilisateur non trouvé");
     }
 
+    // Vérifier que Stripe est configuré
+    if (!stripe) {
+      throw new Error("Stripe n'est pas configuré");
+    }
+
     // Récupérer le Payment Intent depuis Stripe
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
 
@@ -274,6 +284,11 @@ export async function cancelPaymentAction(paymentIntentId: string) {
     });
     if (!session?.user?.id) {
       throw new Error("Utilisateur non authentifié");
+    }
+
+    // Vérifier que Stripe est configuré
+    if (!stripe) {
+      throw new Error("Stripe n'est pas configuré");
     }
 
     // Annuler le Payment Intent dans Stripe

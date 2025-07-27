@@ -1,10 +1,12 @@
 import Stripe from "stripe";
 
 // Configuration Stripe côté serveur
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-06-30.basil",
-  typescript: true,
-});
+export const stripe = process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: "2025-06-30.basil",
+      typescript: true,
+    })
+  : null;
 
 // Utilitaires pour les prix
 export const formatPrice = (amount: number, currency: string = "eur") => {
@@ -27,6 +29,9 @@ export const validateStripeWebhook = (
   secret: string
 ) => {
   try {
+    if (!stripe) {
+      throw new Error("Stripe n'est pas configuré");
+    }
     return stripe.webhooks.constructEvent(payload, signature, secret);
   } catch (error) {
     console.error("Erreur validation webhook Stripe:", error);

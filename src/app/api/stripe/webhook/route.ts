@@ -30,6 +30,15 @@ export async function POST(req: NextRequest) {
   let event: Stripe.Event;
 
   try {
+    // Vérifier que Stripe est configuré
+    if (!stripe) {
+      console.error("Stripe n'est pas configuré");
+      return NextResponse.json(
+        { error: "Configuration Stripe manquante" },
+        { status: 500 }
+      );
+    }
+
     // Vérifier la signature du webhook
     event = stripe.webhooks.constructEvent(
       body,

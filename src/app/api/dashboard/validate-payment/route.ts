@@ -42,6 +42,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Vérifier que Stripe est configuré
+    if (!stripe) {
+      return NextResponse.json(
+        { error: "Stripe n'est pas configuré" },
+        { status: 500 }
+      );
+    }
+
     // Récupérer le Payment Intent depuis Stripe
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
 

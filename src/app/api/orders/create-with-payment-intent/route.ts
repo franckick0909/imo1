@@ -153,6 +153,14 @@ export async function POST(request: NextRequest) {
     // Convertir le montant en centimes pour Stripe
     const amountInCents = Math.round(totalAmount * 100);
 
+    // Vérifier que Stripe est configuré
+    if (!stripe) {
+      return NextResponse.json(
+        { error: "Stripe n'est pas configuré" },
+        { status: 500 }
+      );
+    }
+
     // Créer le Payment Intent
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amountInCents,
