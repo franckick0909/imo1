@@ -1,44 +1,67 @@
-"use client";
-
-import { useSession } from "@/lib/auth-client";
-import { useRecentActivity, useStats } from "@/stores/dashboard-store";
-import { motion } from "framer-motion";
+import { auth } from "@/lib/auth";
+import {
+  getDashboardActivityAction,
+  getDashboardStatsAction,
+} from "@/lib/dashboard-actions";
 import {
   ArrowRight,
-  Clock,
+  DollarSign,
   Heart,
-  Loader2,
   Package,
   ShoppingBag,
   Star,
-  TrendingUp,
 } from "lucide-react";
+import { headers } from "next/headers";
 import Link from "next/link";
-import { memo, useEffect, useMemo } from "react";
+import { redirect } from "next/navigation";
+import { memo, Suspense } from "react";
 
-// Types
-interface StatCardProps {
-  title: string;
-  value: number;
-  isLoading: boolean;
-  icon: React.ComponentType<{ className?: string }>;
-  color: string;
-  delay: number;
+// Types pour le dashboard
+interface DashboardStats {
+  totalOrders: number;
+  totalSpent: number;
+  favoriteProducts: number;
+  accountAge: number;
+  completedOrders: number;
+  pendingOrders: number;
+  lastOrderDate?: string;
+  avgOrderValue?: number;
+  loyaltyPoints?: number;
 }
 
-interface QuickActionProps {
-  action: {
-    title: string;
-    description: string;
-    icon: React.ComponentType<{ className?: string }>;
-    href: string;
-    color: string;
-  };
+interface Activity {
+  id: string;
+  type: string;
+  title: string;
+  description: string;
+  status: string;
+  date: Date;
+  icon: string;
+  link: string;
+}
+
+// Composant client pour les animations
+function ClientWrapper({ children }: { children: React.ReactNode }) {
+  "use client";
+  return <>{children}</>;
 }
 
 // Composant StatCard mémorisé pour éviter les re-renders
 const StatCard = memo(
-  ({ title, value, isLoading, icon: Icon, color, delay }: StatCardProps) => {
+  ({
+    title,
+    value,
+    isLoading,
+    icon: Icon,
+    color,
+  }: {
+    title: string;
+    value: number;
+    isLoading: boolean;
+    icon: React.ComponentType<{ className?: string }>;
+    color: string;
+    delay: number;
+  }) => {
     // Utiliser des classes CSS statiques pour éviter les problèmes de purging
     const colorClasses = {
       blue: { bg: "bg-blue-100", text: "text-blue-600" },
@@ -51,31 +74,25 @@ const StatCard = memo(
       colorClasses[color as keyof typeof colorClasses] || colorClasses.blue;
 
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay }}
-        className="bg-white rounded-xl p-6 shadow-sm border border-gray-100"
-      >
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-gray-600">{title}</p>
-            {isLoading ? (
-              <div className="flex items-center space-x-2 mt-2">
-                <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
-                <span className="text-sm text-gray-400">Chargement...</span>
-              </div>
-            ) : (
-              <p className="text-3xl font-bold text-gray-900">{value}</p>
-            )}
-          </div>
-          <div
-            className={`h-12 w-12 ${colors.bg} rounded-lg flex items-center justify-center`}
-          >
-            <Icon className={`h-6 w-6 ${colors.text}`} />
+      <ClientWrapper>
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">{title}</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">
+                {isLoading ? (
+                  <div className="w-16 h-8 bg-gray-200 animate-pulse rounded"></div>
+                ) : (
+                  value.toLocaleString()
+                )}
+              </p>
+            </div>
+            <div className={`p-3 rounded-full ${colors.bg}`}>
+              <Icon className={`w-6 h-6 ${colors.text}`} />
+            </div>
           </div>
         </div>
-      </motion.div>
+      </ClientWrapper>
     );
   }
 );
@@ -83,231 +100,242 @@ const StatCard = memo(
 StatCard.displayName = "StatCard";
 
 // Composant QuickAction mémorisé
-const QuickAction = memo(({ action }: QuickActionProps) => {
-  const Icon = action.icon;
-  return (
-    <Link
-      title={action.title}
-      aria-label={action.description}
-      key={action.title}
-      href={action.href}
-      className="group p-4 border border-gray-200 rounded-lg hover:border-emerald-300 hover:bg-emerald-50 transition-all duration-200"
-    >
-      <div className="flex items-center space-x-4">
-        <div className="h-12 w-12 bg-emerald-100 rounded-lg flex items-center justify-center group-hover:bg-emerald-200 transition-colors">
-          <Icon className="h-6 w-6 text-emerald-600" />
+const QuickAction = memo(
+  ({
+    action,
+  }: {
+    action: {
+      title: string;
+      description: string;
+      icon: React.ComponentType<{ className?: string }>;
+      href: string;
+      color: string;
+    };
+  }) => {
+    return (
+      <ClientWrapper>
+        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 group hover:shadow-md transition-all duration-300">
+          <Link href={action.href} className="block">
+            <div className="flex items-center gap-4">
+              <div className={`p-3 rounded-full ${action.color}`}>
+                <action.icon className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-gray-900 group-hover:text-gray-700">
+                  {action.title}
+                </h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  {action.description}
+                </p>
+              </div>
+              <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors" />
+            </div>
+          </Link>
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-gray-900 group-hover:text-emerald-800">
-            {action.title}
-          </p>
-          <p className="text-sm text-gray-500 group-hover:text-emerald-600">
-            {action.description}
-          </p>
-        </div>
-        <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-emerald-600 transition-colors" />
-      </div>
-    </Link>
-  );
-});
+      </ClientWrapper>
+    );
+  }
+);
 
 QuickAction.displayName = "QuickAction";
 
-export default function DashboardHome() {
-  const { data: session } = useSession();
-  const { stats, isLoadingStats, loadStats } = useStats();
-  const { recentActivity, isLoadingActivity, loadRecentActivity } =
-    useRecentActivity();
-
-  // Charger les données progressivement
-  useEffect(() => {
-    // Charger d'abord les statistiques (plus importantes)
-    loadStats();
-
-    // Charger l'activité récente avec un délai
-    const timer = setTimeout(() => {
-      loadRecentActivity();
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [loadStats, loadRecentActivity]);
-
-  const quickActions = useMemo(
-    () => [
-      {
-        title: "Parcourir les produits",
-        description: "Découvrir notre collection",
-        icon: ShoppingBag,
-        href: "/products",
-        color: "emerald",
-      },
-      {
-        title: "Mes commandes",
-        description: "Suivre mes achats",
-        icon: Package,
-        href: "/dashboard/orders",
-        color: "blue",
-      },
-      {
-        title: "Mes favoris",
-        description: "Produits préférés",
-        icon: Heart,
-        href: "/dashboard/favorites",
-        color: "red",
-      },
-    ],
-    []
+// Composant de loading pour les stats
+function StatsLoading() {
+  return (
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      {[...Array(4)].map((_, i) => (
+        <div
+          key={i}
+          className="bg-white rounded-xl p-6 shadow-sm border border-gray-100"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="w-20 h-4 bg-gray-200 animate-pulse rounded mb-2"></div>
+              <div className="w-16 h-8 bg-gray-200 animate-pulse rounded"></div>
+            </div>
+            <div className="w-12 h-12 bg-gray-200 animate-pulse rounded-full"></div>
+          </div>
+        </div>
+      ))}
+    </div>
   );
+}
 
-  // Mémoriser les statistiques pour éviter les re-calculs
-  const statsData = useMemo(
-    () => [
-      {
-        title: "Commandes",
-        value: stats?.totalOrders || 0,
-        icon: Package,
-        color: "blue",
-        delay: 0.1,
-      },
-      {
-        title: "Total dépensé",
-        value: stats?.totalSpent || 0,
-        icon: TrendingUp,
-        color: "emerald",
-        delay: 0.2,
-        suffix: "€",
-      },
-      {
-        title: "Favoris",
-        value: stats?.favoriteProducts || 0,
-        icon: Heart,
-        color: "red",
-        delay: 0.3,
-      },
-      {
-        title: "Points fidélité",
-        value: stats?.loyaltyPoints || 0,
-        icon: Star,
-        color: "yellow",
-        delay: 0.4,
-      },
-    ],
-    [stats]
-  );
+// Composant pour afficher les stats
+function DashboardStats({ stats }: { stats: DashboardStats }) {
+  const statItems = [
+    {
+      title: "Total Commandes",
+      value: stats.totalOrders,
+      icon: Package,
+      color: "blue",
+      delay: 0,
+    },
+    {
+      title: "Total Dépensé",
+      value: stats.totalSpent,
+      icon: DollarSign,
+      color: "green",
+      delay: 0.1,
+    },
+    {
+      title: "Produits Favoris",
+      value: stats.favoriteProducts,
+      icon: Heart,
+      color: "red",
+      delay: 0.2,
+    },
+    {
+      title: "Points de Fidélité",
+      value: stats.loyaltyPoints || 0,
+      icon: Star,
+      color: "yellow",
+      delay: 0.3,
+    },
+  ];
 
   return (
-    <div className="space-y-6">
-      {/* Welcome Section */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl p-8 text-white"
-      >
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">
-              Bonjour {session?.user.name || "Utilisateur"} ! 👋
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      {statItems.map((item) => (
+        <StatCard key={item.title} {...item} isLoading={false} />
+      ))}
+    </div>
+  );
+}
+
+// Composant principal
+export default async function DashboardPage() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session?.user) {
+    redirect("/");
+  }
+
+  // Charger les données en parallèle
+  const [statsResult, activityResult] = await Promise.all([
+    getDashboardStatsAction(),
+    getDashboardActivityAction(),
+  ]);
+
+  const stats: DashboardStats = statsResult.success
+    ? (statsResult.data as DashboardStats)
+    : {
+        totalOrders: 0,
+        totalSpent: 0,
+        favoriteProducts: 0,
+        accountAge: 0,
+        completedOrders: 0,
+        pendingOrders: 0,
+        loyaltyPoints: 0,
+      };
+
+  const activities = activityResult.success ? activityResult.data : [];
+
+  const quickActions = [
+    {
+      title: "Mes Commandes",
+      description: "Suivez vos commandes en cours",
+      icon: Package,
+      href: "/dashboard/orders",
+      color: "bg-blue-500",
+    },
+    {
+      title: "Mes Favoris",
+      description: "Gérez vos produits favoris",
+      icon: Heart,
+      href: "/dashboard/favorites",
+      color: "bg-red-500",
+    },
+    {
+      title: "Mon Profil",
+      description: "Modifiez vos informations",
+      icon: ShoppingBag,
+      href: "/dashboard/profile",
+      color: "bg-emerald-500",
+    },
+    {
+      title: "Continuer mes achats",
+      description: "Découvrez nos nouveautés",
+      icon: Star,
+      href: "/products",
+      color: "bg-yellow-500",
+    },
+  ];
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <ClientWrapper>
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">
+              Tableau de bord
             </h1>
-            <p className="text-emerald-100 text-lg">
-              Bienvenue dans votre espace personnel Immo1
+            <p className="text-gray-600 mt-2">
+              Bonjour {session.user.name}, bienvenue sur votre espace personnel
             </p>
           </div>
-          <div className="hidden md:block">
-            <div className="h-24 w-24 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-              <span className="text-4xl">🌿</span>
+        </ClientWrapper>
+
+        {/* Stats Cards */}
+        <Suspense fallback={<StatsLoading />}>
+          <DashboardStats stats={stats} />
+        </Suspense>
+
+        {/* Quick Actions */}
+        <ClientWrapper>
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+              Actions rapides
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {quickActions.map((action, index) => (
+                <QuickAction key={index} action={action} />
+              ))}
             </div>
           </div>
-        </div>
-      </motion.div>
+        </ClientWrapper>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {statsData.map((stat) => (
-          <StatCard
-            key={stat.title}
-            title={stat.title}
-            value={stat.value}
-            isLoading={isLoadingStats}
-            icon={stat.icon}
-            color={stat.color}
-            delay={stat.delay}
-          />
-        ))}
-      </div>
-
-      {/* Quick Actions */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="bg-white rounded-xl p-6 shadow-sm border border-gray-100"
-      >
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">
-          Actions rapides
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {quickActions.map((action) => (
-            <QuickAction key={action.title} action={action} />
-          ))}
-        </div>
-      </motion.div>
-
-      {/* Recent Activity */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
-        className="bg-white rounded-xl p-6 shadow-sm border border-gray-100"
-      >
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">
-          Activité récente
-        </h2>
-        {isLoadingActivity ? (
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-            <span className="ml-2 text-gray-600">
-              Chargement de l&apos;activité...
-            </span>
-          </div>
-        ) : recentActivity && recentActivity.length > 0 ? (
-          <div className="space-y-4">
-            {recentActivity.map((activity) => (
-              <div
-                key={activity.id}
-                className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg"
-              >
-                <div className="h-10 w-10 bg-white rounded-full flex items-center justify-center shadow-sm">
-                  <span className="text-lg">{activity.icon}</span>
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">
-                    {activity.message}
-                  </p>
-                  <div className="flex items-center space-x-2 mt-1">
-                    <Clock className="h-4 w-4 text-gray-400" />
-                    <span className="text-xs text-gray-500">
-                      {activity.time}
-                    </span>
-                  </div>
-                </div>
-                {activity.link && (
-                  <Link
-                    href={activity.link}
-                    className="text-emerald-600 hover:text-emerald-700 transition-colors"
+        {/* Recent Activity */}
+        <ClientWrapper>
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+              Activité récente
+            </h2>
+            {activities && activities.length > 0 ? (
+              <div className="space-y-4">
+                {activities.slice(0, 5).map((activity: Activity) => (
+                  <div
+                    key={activity.id}
+                    className="flex items-center space-x-3 p-3 bg-white rounded-lg shadow-sm"
                   >
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                )}
+                    <div className="text-2xl">{activity.icon}</div>
+                    <div className="flex-1">
+                      <h4 className="font-medium text-gray-900">
+                        {activity.title}
+                      </h4>
+                      <p className="text-sm text-gray-500">
+                        {activity.description}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm text-gray-500">
+                        {activity.date.toLocaleDateString("fr-FR")}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            ) : (
+              <div className="text-center py-8">
+                <div className="text-gray-500">Aucune activité récente</div>
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="text-center py-8">
-            <Clock className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">Aucune activité récente</p>
-          </div>
-        )}
-      </motion.div>
+        </ClientWrapper>
+      </div>
     </div>
   );
 }

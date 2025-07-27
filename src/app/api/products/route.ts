@@ -1,346 +1,561 @@
-import { auth } from "@/lib/auth";
-import prisma from "@/lib/prisma";
-import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
+import { NextResponse } from "next/server";
 
-// Cache simple en mémoire
-const cache = new Map<string, { data: unknown; timestamp: number }>();
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+// Données de test pour les catégories
+const categories = [
+  {
+    id: "1",
+    name: "Hydratation",
+    slug: "hydratation",
+    isActive: true,
+  },
+  {
+    id: "2",
+    name: "Purification",
+    slug: "purification",
+    isActive: true,
+  },
+  {
+    id: "3",
+    name: "Anti-âge",
+    slug: "anti-age",
+    isActive: true,
+  },
+  {
+    id: "4",
+    name: "Protection",
+    slug: "protection",
+    isActive: true,
+  },
+];
 
-// Schema de validation pour créer un produit
-const createProductSchema = z.object({
-  name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
-  description: z
-    .string()
-    .min(10, "La description doit contenir au moins 10 caractères"),
-  longDescription: z.string().optional(),
-
-  // Nouveaux champs pour les détails produits
-  ingredients: z.string().optional(),
-  usage: z.string().optional(),
-  benefits: z.string().optional(),
-
-  price: z.number().min(0.01, "Le prix doit être supérieur à 0"),
-  comparePrice: z.number().optional(),
-  sku: z.string().optional(),
-  barcode: z.string().optional(),
-  stock: z.number().min(0, "Le stock ne peut pas être négatif"),
-  lowStockThreshold: z.number().min(0, "Le seuil ne peut pas être négatif"),
-  trackStock: z.boolean().default(true),
-  weight: z.number().optional(),
-  dimensions: z.string().optional(),
-  categoryId: z.string().min(1, "Veuillez sélectionner une catégorie"),
-
-  // SEO amélioré
-  slug: z.string().optional(),
-  metaTitle: z.string().optional(),
-  metaDescription: z.string().optional(),
-
-  isActive: z.boolean().default(true),
-  isFeatured: z.boolean().default(false),
-  images: z.array(z.string().url()).optional(),
-});
-
-// Fonction utilitaire pour générer un slug
-function generateSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .trim();
-}
-
-// Fonction pour vérifier et récupérer du cache
-function getCachedData(key: string) {
-  const cached = cache.get(key);
-  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-    return cached.data;
-  }
-  return null;
-}
-
-// Fonction pour sauvegarder en cache
-function setCacheData(key: string, data: unknown) {
-  cache.set(key, { data, timestamp: Date.now() });
-}
-
-// GET: Lister tous les produits avec optimisations
-export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const categoryId = searchParams.get("categoryId");
-    const isActive = searchParams.get("isActive");
-    const isFeatured = searchParams.get("isFeatured");
-    const slug = searchParams.get("slug");
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "10");
-    const fields = searchParams.get("fields")?.split(",") || [];
-
-    // Limiter à 50 items maximum par requête
-    const safeLimit = Math.min(limit, 50);
-    const offset = (page - 1) * safeLimit;
-
-    // Générer une clé de cache unique
-    const cacheKey = `products:${categoryId || "all"}:${isActive}:${isFeatured}:${slug}:${page}:${safeLimit}:${fields.join(",")}`;
-
-    // Vérifier le cache
-    const cachedResult = getCachedData(cacheKey);
-    if (cachedResult) {
-      return NextResponse.json(cachedResult);
-    }
-
-    const where: {
-      categoryId?: string;
-      isActive?: boolean;
-      isFeatured?: boolean;
-      slug?: string;
-    } = {};
-
-    if (categoryId) where.categoryId = categoryId;
-    if (isActive !== null) where.isActive = isActive === "true";
-    if (isFeatured !== null) where.isFeatured = isFeatured === "true";
-    if (slug) where.slug = slug;
-
-    // Optimiser la sélection des champs
-    const selectFields =
-      fields.length > 0 ? getSelectFields(fields) : undefined;
-
-    // Requête parallèle pour compter et récupérer les produits
-    const [products, totalCount] = await Promise.all([
-      prisma.product.findMany({
-        where,
-        select: selectFields || {
-          id: true,
-          name: true,
-          description: true,
-          price: true,
-          comparePrice: true,
-          stock: true,
-          slug: true,
-          isActive: true,
-          isFeatured: true,
-          createdAt: true,
-          category: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-            },
-          },
-          images: {
-            select: {
-              id: true,
-              url: true,
-              alt: true,
-              position: true,
-            },
-            orderBy: {
-              position: "asc",
-            },
-            take: 3, // Limiter à 3 images par produit
-          },
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
-        skip: offset,
-        take: safeLimit,
-      }),
-      prisma.product.count({ where }),
-    ]);
-
-    // Transformer les champs Decimal en nombres pour éviter les erreurs de sérialisation
-    const transformedProducts = products.map((product: any) => ({
-      ...product,
-      price: Number(product.price),
-      comparePrice: product.comparePrice ? Number(product.comparePrice) : null,
-      weight: product.weight ? Number(product.weight) : null,
-    }));
-
-    const result = {
-      products: transformedProducts,
-      pagination: {
-        page,
-        limit: safeLimit,
-        total: totalCount,
-        totalPages: Math.ceil(totalCount / safeLimit),
-        hasNext: page * safeLimit < totalCount,
-        hasPrev: page > 1,
+// Données de test pour les produits
+const products = [
+  // Produits Hydratation
+  {
+    id: "1",
+    name: "Sérum Hydratant Intense",
+    description: "Hydratation profonde avec acide hyaluronique",
+    price: 45.0,
+    stock: 15,
+    slug: "serum-hydratant-intense",
+    category: {
+      id: "1",
+      name: "Hydratation",
+      slug: "hydratation",
+    },
+    images: [
+      {
+        id: "1",
+        url: "/images/creme-rose.png",
+        alt: "Sérum Hydratant Intense",
+        position: 1,
       },
-    };
+    ],
+  },
+  {
+    id: "2",
+    name: "Crème Hydratante Quotidienne",
+    description: "Hydratation légère pour tous les jours",
+    price: 32.0,
+    stock: 25,
+    slug: "creme-hydratante-quotidienne",
+    category: {
+      id: "1",
+      name: "Hydratation",
+      slug: "hydratation",
+    },
+    images: [
+      {
+        id: "2",
+        url: "/images/creme-verte.png",
+        alt: "Crème Hydratante Quotidienne",
+        position: 1,
+      },
+    ],
+  },
+  {
+    id: "3",
+    name: "Masque Hydratant Nuit",
+    description: "Régénération nocturne intensive",
+    price: 28.0,
+    stock: 12,
+    slug: "masque-hydratant-nuit",
+    category: {
+      id: "1",
+      name: "Hydratation",
+      slug: "hydratation",
+    },
+    images: [
+      {
+        id: "3",
+        url: "/images/creme-rouge.png",
+        alt: "Masque Hydratant Nuit",
+        position: 1,
+      },
+    ],
+  },
+  {
+    id: "4",
+    name: "Gel Hydratant Fraîcheur",
+    description: "Hydratation rafraîchissante instantanée",
+    price: 38.0,
+    stock: 18,
+    slug: "gel-hydratant-fraicheur",
+    category: {
+      id: "1",
+      name: "Hydratation",
+      slug: "hydratation",
+    },
+    images: [
+      {
+        id: "4",
+        url: "/images/creme-rose.png",
+        alt: "Gel Hydratant Fraîcheur",
+        position: 1,
+      },
+    ],
+  },
+  {
+    id: "5",
+    name: "Huile Hydratante Nourrissante",
+    description: "Hydratation profonde avec huiles naturelles",
+    price: 42.0,
+    stock: 8,
+    slug: "huile-hydratante-nourrissante",
+    category: {
+      id: "1",
+      name: "Hydratation",
+      slug: "hydratation",
+    },
+    images: [
+      {
+        id: "5",
+        url: "/images/creme-verte.png",
+        alt: "Huile Hydratante Nourrissante",
+        position: 1,
+      },
+    ],
+  },
+  {
+    id: "6",
+    name: "Spray Hydratant Express",
+    description: "Hydratation rapide en spray",
+    price: 22.0,
+    stock: 30,
+    slug: "spray-hydratant-express",
+    category: {
+      id: "1",
+      name: "Hydratation",
+      slug: "hydratation",
+    },
+    images: [
+      {
+        id: "6",
+        url: "/images/creme-rouge.png",
+        alt: "Spray Hydratant Express",
+        position: 1,
+      },
+    ],
+  },
 
-    // Sauvegarder en cache
-    setCacheData(cacheKey, result);
+  // Produits Purification
+  {
+    id: "7",
+    name: "Gel Nettoyant Purifiant",
+    description: "Nettoyage en profondeur sans agression",
+    price: 26.0,
+    stock: 20,
+    slug: "gel-nettoyant-purifiant",
+    category: {
+      id: "2",
+      name: "Purification",
+      slug: "purification",
+    },
+    images: [
+      {
+        id: "7",
+        url: "/images/creme-rose.png",
+        alt: "Gel Nettoyant Purifiant",
+        position: 1,
+      },
+    ],
+  },
+  {
+    id: "8",
+    name: "Tonique Purifiant",
+    description: "Équilibre et purifie la peau",
+    price: 24.0,
+    stock: 16,
+    slug: "tonique-purifiant",
+    category: {
+      id: "2",
+      name: "Purification",
+      slug: "purification",
+    },
+    images: [
+      {
+        id: "8",
+        url: "/images/creme-verte.png",
+        alt: "Tonique Purifiant",
+        position: 1,
+      },
+    ],
+  },
+  {
+    id: "9",
+    name: "Masque Purifiant Argile",
+    description: "Purification intensive à l'argile",
+    price: 18.0,
+    stock: 22,
+    slug: "masque-purifiant-argile",
+    category: {
+      id: "2",
+      name: "Purification",
+      slug: "purification",
+    },
+    images: [
+      {
+        id: "9",
+        url: "/images/creme-rouge.png",
+        alt: "Masque Purifiant Argile",
+        position: 1,
+      },
+    ],
+  },
+  {
+    id: "10",
+    name: "Exfoliant Doux Purifiant",
+    description: "Exfoliation douce et efficace",
+    price: 30.0,
+    stock: 14,
+    slug: "exfoliant-doux-purifiant",
+    category: {
+      id: "2",
+      name: "Purification",
+      slug: "purification",
+    },
+    images: [
+      {
+        id: "10",
+        url: "/images/creme-rose.png",
+        alt: "Exfoliant Doux Purifiant",
+        position: 1,
+      },
+    ],
+  },
+  {
+    id: "11",
+    name: "Sérum Purifiant Anti-Imperfections",
+    description: "Cible les imperfections et purifie",
+    price: 35.0,
+    stock: 10,
+    slug: "serum-purifiant-anti-imperfections",
+    category: {
+      id: "2",
+      name: "Purification",
+      slug: "purification",
+    },
+    images: [
+      {
+        id: "11",
+        url: "/images/creme-verte.png",
+        alt: "Sérum Purifiant Anti-Imperfections",
+        position: 1,
+      },
+    ],
+  },
+  {
+    id: "12",
+    name: "Lotion Purifiante Nuit",
+    description: "Purification nocturne réparatrice",
+    price: 28.0,
+    stock: 12,
+    slug: "lotion-purifiante-nuit",
+    category: {
+      id: "2",
+      name: "Purification",
+      slug: "purification",
+    },
+    images: [
+      {
+        id: "12",
+        url: "/images/creme-rouge.png",
+        alt: "Lotion Purifiante Nuit",
+        position: 1,
+      },
+    ],
+  },
 
-    return NextResponse.json(result);
+  // Produits Anti-âge
+  {
+    id: "13",
+    name: "Sérum Anti-Âge Rétinol",
+    description: "Rétinol pur pour lutter contre le vieillissement",
+    price: 55.0,
+    stock: 8,
+    slug: "serum-anti-age-retinol",
+    category: {
+      id: "3",
+      name: "Anti-âge",
+      slug: "anti-age",
+    },
+    images: [
+      {
+        id: "13",
+        url: "/images/creme-rose.png",
+        alt: "Sérum Anti-Âge Rétinol",
+        position: 1,
+      },
+    ],
+  },
+  {
+    id: "14",
+    name: "Crème Anti-Âge Collagène",
+    description: "Stimule la production de collagène",
+    price: 48.0,
+    stock: 15,
+    slug: "creme-anti-age-collagene",
+    category: {
+      id: "3",
+      name: "Anti-âge",
+      slug: "anti-age",
+    },
+    images: [
+      {
+        id: "14",
+        url: "/images/creme-verte.png",
+        alt: "Crème Anti-Âge Collagène",
+        position: 1,
+      },
+    ],
+  },
+  {
+    id: "15",
+    name: "Masque Anti-Âge Lifting",
+    description: "Effet lifting immédiat et durable",
+    price: 32.0,
+    stock: 10,
+    slug: "masque-anti-age-lifting",
+    category: {
+      id: "3",
+      name: "Anti-âge",
+      slug: "anti-age",
+    },
+    images: [
+      {
+        id: "15",
+        url: "/images/creme-rouge.png",
+        alt: "Masque Anti-Âge Lifting",
+        position: 1,
+      },
+    ],
+  },
+  {
+    id: "16",
+    name: "Sérum Anti-Âge Peptides",
+    description: "Peptides avancés pour la jeunesse",
+    price: 62.0,
+    stock: 6,
+    slug: "serum-anti-age-peptides",
+    category: {
+      id: "3",
+      name: "Anti-âge",
+      slug: "anti-age",
+    },
+    images: [
+      {
+        id: "16",
+        url: "/images/creme-rose.png",
+        alt: "Sérum Anti-Âge Peptides",
+        position: 1,
+      },
+    ],
+  },
+  {
+    id: "17",
+    name: "Crème Contour des Yeux Anti-Âge",
+    description: "Spécialement formulée pour le contour des yeux",
+    price: 38.0,
+    stock: 12,
+    slug: "creme-contour-yeux-anti-age",
+    category: {
+      id: "3",
+      name: "Anti-âge",
+      slug: "anti-age",
+    },
+    images: [
+      {
+        id: "17",
+        url: "/images/creme-verte.png",
+        alt: "Crème Contour des Yeux Anti-Âge",
+        position: 1,
+      },
+    ],
+  },
+  {
+    id: "18",
+    name: "Huile Anti-Âge Régénérante",
+    description: "Huile riche en antioxydants naturels",
+    price: 45.0,
+    stock: 8,
+    slug: "huile-anti-age-regenerante",
+    category: {
+      id: "3",
+      name: "Anti-âge",
+      slug: "anti-age",
+    },
+    images: [
+      {
+        id: "18",
+        url: "/images/creme-rouge.png",
+        alt: "Huile Anti-Âge Régénérante",
+        position: 1,
+      },
+    ],
+  },
+
+  // Produits Protection
+  {
+    id: "19",
+    name: "Crème Solaire SPF 50+",
+    description: "Protection solaire haute performance",
+    price: 35.0,
+    stock: 20,
+    slug: "creme-solaire-spf50",
+    category: {
+      id: "4",
+      name: "Protection",
+      slug: "protection",
+    },
+    images: [
+      {
+        id: "19",
+        url: "/images/creme-rose.png",
+        alt: "Crème Solaire SPF 50+",
+        position: 1,
+      },
+    ],
+  },
+  {
+    id: "20",
+    name: "Sérum Protecteur Anti-Pollution",
+    description: "Protège contre la pollution urbaine",
+    price: 40.0,
+    stock: 15,
+    slug: "serum-protecteur-anti-pollution",
+    category: {
+      id: "4",
+      name: "Protection",
+      slug: "protection",
+    },
+    images: [
+      {
+        id: "20",
+        url: "/images/creme-verte.png",
+        alt: "Sérum Protecteur Anti-Pollution",
+        position: 1,
+      },
+    ],
+  },
+  {
+    id: "21",
+    name: "Crème Protectrice Barrière",
+    description: "Renforce la barrière cutanée",
+    price: 36.0,
+    stock: 18,
+    slug: "creme-protectrice-barriere",
+    category: {
+      id: "4",
+      name: "Protection",
+      slug: "protection",
+    },
+    images: [
+      {
+        id: "21",
+        url: "/images/creme-rouge.png",
+        alt: "Crème Protectrice Barrière",
+        position: 1,
+      },
+    ],
+  },
+  {
+    id: "22",
+    name: "Spray Protecteur Anti-UV",
+    description: "Protection UV en spray pratique",
+    price: 28.0,
+    stock: 25,
+    slug: "spray-protecteur-anti-uv",
+    category: {
+      id: "4",
+      name: "Protection",
+      slug: "protection",
+    },
+    images: [
+      {
+        id: "22",
+        url: "/images/creme-rose.png",
+        alt: "Spray Protecteur Anti-UV",
+        position: 1,
+      },
+    ],
+  },
+  {
+    id: "23",
+    name: "Sérum Protecteur Antioxydant",
+    description: "Protection antioxydante avancée",
+    price: 42.0,
+    stock: 12,
+    slug: "serum-protecteur-antioxydant",
+    category: {
+      id: "4",
+      name: "Protection",
+      slug: "protection",
+    },
+    images: [
+      {
+        id: "23",
+        url: "/images/creme-verte.png",
+        alt: "Sérum Protecteur Antioxydant",
+        position: 1,
+      },
+    ],
+  },
+  {
+    id: "24",
+    name: "Crème Protectrice Nuit",
+    description: "Protection et réparation nocturne",
+    price: 34.0,
+    stock: 16,
+    slug: "creme-protectrice-nuit",
+    category: {
+      id: "4",
+      name: "Protection",
+      slug: "protection",
+    },
+    images: [
+      {
+        id: "24",
+        url: "/images/creme-rouge.png",
+        alt: "Crème Protectrice Nuit",
+        position: 1,
+      },
+    ],
+  },
+];
+
+export async function GET() {
+  try {
+    // Simuler un délai réseau
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
+    return NextResponse.json({
+      products,
+      categories,
+    });
   } catch (error) {
     console.error("Erreur lors de la récupération des produits:", error);
     return NextResponse.json(
       { error: "Erreur lors de la récupération des produits" },
-      { status: 500 }
-    );
-  }
-}
-
-// Fonction pour mapper les champs demandés
-function getSelectFields(fields: string[]) {
-  const selectObj: Record<string, unknown> = {};
-
-  fields.forEach((field) => {
-    switch (field) {
-      case "id":
-      case "name":
-      case "description":
-      case "price":
-      case "comparePrice":
-      case "stock":
-      case "slug":
-      case "isActive":
-      case "isFeatured":
-      case "createdAt":
-        selectObj[field] = true;
-        break;
-      case "category":
-        selectObj.category = {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-          },
-        };
-        break;
-      case "images":
-        selectObj.images = {
-          select: {
-            id: true,
-            url: true,
-            alt: true,
-            position: true,
-          },
-          orderBy: {
-            position: "asc",
-          },
-          take: 3,
-        };
-        break;
-    }
-  });
-
-  return Object.keys(selectObj).length > 0 ? selectObj : undefined;
-}
-
-// POST: Créer un nouveau produit
-export async function POST(request: NextRequest) {
-  try {
-    // Vérifier l'authentification et les permissions admin
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
-    if (!session?.user) {
-      return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
-    }
-
-    const body = await request.json();
-    const validatedData = createProductSchema.parse(body);
-
-    // Générer un slug unique
-    const baseSlug = validatedData.slug || generateSlug(validatedData.name);
-    let slug = baseSlug;
-    let counter = 1;
-
-    // Vérifier l'unicité du slug
-    while (await prisma.product.findUnique({ where: { slug } })) {
-      slug = `${baseSlug}-${counter}`;
-      counter++;
-    }
-
-    // Générer un SKU unique si non fourni
-    let sku = validatedData.sku;
-    if (!sku) {
-      const baseSku = validatedData.name
-        .toUpperCase()
-        .replace(/[^A-Z0-9]/g, "")
-        .substring(0, 6);
-      sku = `${baseSku}-${Date.now().toString().slice(-6)}`;
-    }
-
-    // Vérifier l'unicité du SKU
-    let skuCounter = 1;
-    const originalSku = sku;
-    while (await prisma.product.findUnique({ where: { sku } })) {
-      sku = `${originalSku}-${skuCounter}`;
-      skuCounter++;
-    }
-
-    // Créer le produit
-    const product = await prisma.product.create({
-      data: {
-        name: validatedData.name,
-        description: validatedData.description,
-        longDescription: validatedData.longDescription,
-        ingredients: validatedData.ingredients,
-        usage: validatedData.usage,
-        benefits: validatedData.benefits,
-        price: validatedData.price,
-        comparePrice: validatedData.comparePrice,
-        sku: sku,
-        barcode: validatedData.barcode,
-        stock: validatedData.stock,
-        lowStockThreshold: validatedData.lowStockThreshold,
-        trackStock: validatedData.trackStock,
-        weight: validatedData.weight,
-        dimensions: validatedData.dimensions,
-        categoryId: validatedData.categoryId,
-        metaTitle: validatedData.metaTitle,
-        metaDescription: validatedData.metaDescription,
-        isActive: validatedData.isActive,
-        isFeatured: validatedData.isFeatured,
-        slug,
-        images: validatedData.images
-          ? {
-              create: validatedData.images.map((url, index) => ({
-                url,
-                position: index,
-                alt: validatedData.name,
-              })),
-            }
-          : undefined,
-      },
-      include: {
-        category: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-          },
-        },
-        images: {
-          orderBy: {
-            position: "asc",
-          },
-        },
-      },
-    });
-
-    // Vider le cache après création
-    cache.clear();
-
-    return NextResponse.json({ product }, { status: 201 });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Données invalides", details: error.errors },
-        { status: 400 }
-      );
-    }
-
-    console.error("Erreur lors de la création du produit:", error);
-    return NextResponse.json(
-      { error: "Erreur lors de la création du produit" },
       { status: 500 }
     );
   }

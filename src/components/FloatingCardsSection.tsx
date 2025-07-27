@@ -9,7 +9,6 @@ import {
 } from "framer-motion";
 import Image from "next/image";
 import { useMemo, useRef } from "react";
-import SophisticatedTitle from "./ui/SophisticatedTitle";
 
 interface FeatureCard {
   id: number;
@@ -26,7 +25,7 @@ const features: FeatureCard[] = [
       "Aucune formule cachée, nous révélons tous nos ingrédients pour que vous sachiez exactement ce que vous appliquez.",
     icon: (
       <svg
-        className="w-8 h-8"
+        className="w-6 h-6 lg:w-8 lg:h-8 text-gray-900"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -34,7 +33,7 @@ const features: FeatureCard[] = [
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
-          strokeWidth={2}
+          strokeWidth={1}
           d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
         />
       </svg>
@@ -47,7 +46,7 @@ const features: FeatureCard[] = [
       "Ingrédients vérifiés et libres de plus de 1800 substances douteuses. Ce que vous mettez sur votre peau compte.",
     icon: (
       <svg
-        className="w-8 h-8"
+        className="w-6 h-6 lg:w-8 lg:h-8 text-gray-900"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -55,7 +54,7 @@ const features: FeatureCard[] = [
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
-          strokeWidth={2}
+          strokeWidth={1}
           d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
         />
       </svg>
@@ -68,7 +67,7 @@ const features: FeatureCard[] = [
       "Certifié Vegan et Cruelty Free. Nos produits sont conditionnés de manière responsable et durable.",
     icon: (
       <svg
-        className="w-8 h-8"
+        className="w-6 h-6 lg:w-8 lg:h-8 text-gray-900"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -76,7 +75,7 @@ const features: FeatureCard[] = [
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
-          strokeWidth={2}
+          strokeWidth={1}
           d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
         />
       </svg>
@@ -89,7 +88,7 @@ const features: FeatureCard[] = [
       "Nos formules sont concentrées en actifs, agents anti-oxydants et réparateurs soutenus par la science.",
     icon: (
       <svg
-        className="w-8 h-8"
+        className="w-6 h-6 lg:w-8 lg:h-8 text-gray-900"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -97,7 +96,7 @@ const features: FeatureCard[] = [
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
-          strokeWidth={2}
+          strokeWidth={1}
           d="M13 10V3L4 14h7v7l9-11h-7z"
         />
       </svg>
@@ -146,7 +145,7 @@ export default function FloatingCardsSection() {
       <motion.section
         ref={containerRef}
         id="floating-cards-section"
-        className="relative min-h-[100vh] sm:min-h-[120vh] lg:min-h-[140vh] xl:min-h-[190vh] bg-white overflow-hidden pt-20 animation-container"
+        className="relative min-h-[100vh] sm:min-h-[120vh] lg:min-h-[140vh] xl:min-h-[200vh] bg-white overflow-hidden pt-20 animation-container"
         style={{
           willChange: "transform",
           containIntrinsicSize: "1px 100vh",
@@ -159,7 +158,7 @@ export default function FloatingCardsSection() {
 
         {/* Feuille aloe vera */}
         <motion.div
-          className="absolute top-1/3 right-4 sm:right-12 md:right-24 lg:right-48 w-48 h-48 md:w-60 md:h-60 lg:w-72 lg:h-72 z-50 parallax-optimized"
+          className="absolute top-1/3 right-4 sm:right-12 md:right-24 lg:right-48 w-48 h-48 md:w-60 md:h-60 lg:w-72 lg:h-72 z-40 parallax-optimized"
           style={{
             y: veraY,
             willChange: "transform",
@@ -173,6 +172,7 @@ export default function FloatingCardsSection() {
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
               className="object-cover image-optimized"
+              priority
             />
           </div>
         </motion.div>
@@ -190,8 +190,8 @@ export default function FloatingCardsSection() {
             {/* Ellipse rotée qui révèle l'image */}
             <motion.div
               style={{
-                clipPath: "ellipse(38vw 15vw at 50% 50%)",
-                transform: "rotate(-30deg)",
+                clipPath: "ellipse(38vw 17vw at 50% 50%)",
+                transform: "rotate(-35deg)",
                 width: "100%",
                 height: "100%",
               }}
@@ -200,7 +200,7 @@ export default function FloatingCardsSection() {
               <motion.div
                 style={{
                   y: imageY,
-                  transform: "rotate(30deg)",
+                  transform: "rotate(35deg)",
                   transformOrigin: "center center",
                   width: "100%",
                   height: "100%",
@@ -213,6 +213,7 @@ export default function FloatingCardsSection() {
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
                   className="object-cover object-center image-optimized"
+                  priority
                 />
               </motion.div>
             </motion.div>
@@ -225,14 +226,14 @@ export default function FloatingCardsSection() {
               willChange: "transform",
               transformStyle: "preserve-3d",
             }}
-            className="absolute top-72 left-0 right-0 bottom-0 z-40 parallax-optimized"
+            className="absolute top-72 left-0 right-0 bottom-0 z-30 parallax-optimized"
           >
             <div className="relative w-full h-full px-8 lg:px-16 py-16">
               {/* Première carte - en haut à gauche */}
               <motion.div
-                initial={{ opacity: 0, x: -100 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
+                initial={{ opacity: 0, y: -100 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, ease: "easeOut" }}
                 viewport={{ once: true }}
                 className="absolute top-[0%] left-4 lg:left-[25%] xl:left-[25%]"
               >
@@ -242,14 +243,14 @@ export default function FloatingCardsSection() {
                 >
                   <div className="text-center space-y-4">
                     <div className="mb-4 flex justify-center">
-                      <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center text-zinc-950">
+                      <div className="flex-shrink-0 w-20 h-20 bg-white rounded-full flex items-center justify-center text-zinc-950">
                         {features[0].icon}
                       </div>
                     </div>
-                    <h3 className="text-lg sm:text-xl md:text-2xl lg:text-xl xl:text-2xl font-semibold text-zinc-900 mb-3 leading-tight">
+                    <h3 className="heading-md font-medium text-gray-900 mb-3 tracking-tight font-metal">
                       {features[0].title}
                     </h3>
-                    <p className="text-xs sm:text-sm md:text-base lg:text-sm xl:text-base text-zinc-700 leading-relaxed">
+                    <p className="text-sm-responsive font-normal text-gray-600">
                       {features[0].description}
                     </p>
                   </div>
@@ -258,8 +259,8 @@ export default function FloatingCardsSection() {
 
               {/* Deuxième carte - en haut à droite */}
               <motion.div
-                initial={{ opacity: 0, x: 100 }}
-                whileInView={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, y: 100 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
                 viewport={{ once: true }}
                 className="absolute top-[50%] right-4 lg:right-[2%] xl:right-[6%]"
@@ -274,10 +275,10 @@ export default function FloatingCardsSection() {
                         {features[1].icon}
                       </div>
                     </div>
-                    <h3 className="text-lg sm:text-xl md:text-2xl lg:text-xl xl:text-2xl font-semibold text-zinc-900 mb-3 leading-tight">
+                    <h3 className="heading-md font-medium text-gray-900 mb-3 tracking-tight font-metal">
                       {features[1].title}
                     </h3>
-                    <p className="text-xs sm:text-sm md:text-base lg:text-sm xl:text-base text-zinc-700 leading-relaxed">
+                    <p className="text-sm-responsive font-normal text-gray-600">
                       {features[1].description}
                     </p>
                   </div>
@@ -293,13 +294,13 @@ export default function FloatingCardsSection() {
               willChange: "transform",
               transformStyle: "preserve-3d",
             }}
-            className="absolute top-72 left-0 right-0 bottom-0 z-40 parallax-optimized"
+            className="absolute top-72 left-0 right-0 bottom-0 z-30 parallax-optimized"
           >
             <div className="relative w-full h-full px-8 lg:px-16 py-16">
               {/* Troisième carte - en bas à gauche */}
               <motion.div
-                initial={{ opacity: 0, x: -100 }}
-                whileInView={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, y: -100 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: "easeOut", delay: 0.4 }}
                 viewport={{ once: true }}
                 className="absolute bottom-[60%] left-4 lg:left-[2%] xl:left-[6%]"
@@ -314,10 +315,10 @@ export default function FloatingCardsSection() {
                         {features[2].icon}
                       </div>
                     </div>
-                    <h3 className="text-lg sm:text-xl md:text-2xl lg:text-xl xl:text-2xl font-semibold text-zinc-900 mb-3 leading-tight">
+                    <h3 className="heading-md font-medium text-gray-900 mb-3 tracking-tight font-metal">
                       {features[2].title}
                     </h3>
-                    <p className="text-xs sm:text-sm md:text-base lg:text-sm xl:text-base text-zinc-700 leading-relaxed">
+                    <p className="text-sm-responsive font-normal text-gray-600">
                       {features[2].description}
                     </p>
                   </div>
@@ -326,8 +327,8 @@ export default function FloatingCardsSection() {
 
               {/* Quatrième carte - en bas à droite */}
               <motion.div
-                initial={{ opacity: 0, x: 100 }}
-                whileInView={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, y: 100 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, ease: "easeOut", delay: 0.6 }}
                 viewport={{ once: true }}
                 className="absolute bottom-[0%] right-4 lg:right-[25%] xl:right-[25%]"
@@ -342,10 +343,10 @@ export default function FloatingCardsSection() {
                         {features[3].icon}
                       </div>
                     </div>
-                    <h3 className="text-lg sm:text-xl md:text-2xl lg:text-xl xl:text-2xl font-semibold text-zinc-900 mb-3 leading-tight">
+                    <h3 className="heading-md font-medium text-gray-900 mb-3 tracking-tight font-metal">
                       {features[3].title}
                     </h3>
-                    <p className="text-xs sm:text-sm md:text-base lg:text-sm xl:text-base text-zinc-700 leading-relaxed">
+                    <p className="text-sm-responsive font-normal text-gray-600">
                       {features[3].description}
                     </p>
                   </div>
@@ -356,26 +357,26 @@ export default function FloatingCardsSection() {
         </div>
 
         {/* Section Header - Visible sur tous les formats */}
-        <div className="relative z-50 px-6 md:px-12 pb-16 md:pb-20">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="text-left max-w-4xl"
-          >
-            <SophisticatedTitle
-              level="h2"
-              variant="hero"
-              className="text-gray-900 leading-tight mb-8"
-            >
-              Soins de la peau propres, Responsables & Performants.
-            </SophisticatedTitle>
-            <p className="text-sm md:text-base text-gray-800 font-light leading-relaxed max-w-md">
+        <div className="relative z-50 w-full max-w-5xl flex flex-col text-zinc-900 px-2 md:px-4 pb-16 md:pb-20 leading-none">
+          {/* Bloc gauche */}
+          <div className="flex-1 min-w-[220px]">
+            <h2 className="uppercase font-thin heading-xxl tracking-tight">
+              <span className="inline-flex flex-nowrap">
+                Soins de la peau, responsables &
+              </span>
+            </h2>
+          </div>
+          <div className="flex-1 min-w-[220px] flex items-center justify-between">
+            <p className="text-sm-responsive text-gray-800 font-light leading-relaxed max-w-xs mt-2">
               Des produits honnêtes et sans réserve qui fonctionnent vraiment,
-              qui sont doux pour la peau et la planète – sans exception !
+              qui sont doux pour la peau et la planète sans exception !
             </p>
-          </motion.div>
+
+            <h3 className="font-metal font-medium italic subheading-xxl text-zinc-900 relative group tracking-tight">
+              Performants.
+              <span className="absolute left-0 right-0 bottom-1 h-1 w-full bg-zinc-900 rounded transition-scale duration-500  group-hover:scale-0 z-0 block pointer-events-none"></span>
+            </h3>
+          </div>
         </div>
 
         {/* Section Footer - Visible sur tous les formats */}
@@ -416,6 +417,7 @@ export default function FloatingCardsSection() {
                       fill
                       sizes="(max-width: 768px) 92vw, (max-width: 1024px) 80vw, 70vw"
                       className="object-cover object-center image-optimized"
+                      priority
                     />
                   </motion.div>
                 </motion.div>
@@ -444,10 +446,10 @@ export default function FloatingCardsSection() {
                             {feature.icon}
                           </div>
                         </div>
-                        <h3 className="text-base sm:text-lg md:text-xl font-semibold text-zinc-900 mb-2 md:mb-3 leading-tight">
+                        <h3 className="heading-md font-medium text-gray-900 mb-3 tracking-tight font-metal">
                           {feature.title}
                         </h3>
-                        <p className="text-xs sm:text-sm md:text-base text-zinc-700 leading-relaxed">
+                        <p className="text-sm-responsive font-normal text-gray-600">
                           {feature.description}
                         </p>
                       </div>

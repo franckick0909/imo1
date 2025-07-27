@@ -675,7 +675,7 @@ export default function AuthModals({
         {showSignUp && (
           <motion.div
             key="signup-modal"
-            className="fixed inset-0 z-50 p-4 bg-black/30"
+            className="fixed inset-0 z-50 p-4 bg-black/30 -top-4"
             variants={backdropVariants}
             initial="hidden"
             animate="visible"

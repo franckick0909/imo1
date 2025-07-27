@@ -2,10 +2,16 @@ import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
 import { ToastProvider } from "@/components/ui/ToastContainer";
 import { CartProvider } from "@/contexts/CartContext";
-import { ReactLenis } from "@/utils/lenis";
+import SmoothLenis from "@/utils/SmoothLenis";
 import type { Metadata } from "next";
 import { ViewTransitions } from "next-view-transitions";
-import { Cormorant_Garamond, Inter, Luxurious_Roman } from "next/font/google";
+import {
+  Archivo_Black,
+  Inter,
+  Luxurious_Roman,
+  Metal,
+  Monsieur_La_Doulaise,
+} from "next/font/google";
 import "../styles/responsive.css";
 import "./globals.css";
 
@@ -39,55 +45,101 @@ const luxuriousRoman = Luxurious_Roman({
   preload: false, // Non critique, chargé après
 });
 
-// Police pour les titres - chargement optimisé
-const cormorantGaramond = Cormorant_Garamond({
-  variable: "--font-cormorant-garamond",
+// Police pour les gros titres - chargement différé
+const archivoBlack = Archivo_Black({
+  variable: "--font-archivo-black",
   subsets: ["latin"],
-  weight: ["400", "600"], // Poids multiples en une seule déclaration
+  weight: "400",
+  display: "swap",
+  preload: false,
+});
+
+const monsieurLaDoulaise = Monsieur_La_Doulaise({
+  variable: "--font-monsieur-la-doulaise",
+  subsets: ["latin"],
+  weight: "400",
+  display: "swap",
+  preload: false,
+});
+
+const metal = Metal({
+  variable: "--font-metal",
+  subsets: ["latin"],
+  weight: "400",
   display: "swap",
   preload: false,
 });
 
 export const metadata: Metadata = {
-  title: "Immo1 - Plateforme Immobilière",
-  description: "Plateforme immobilière moderne avec authentification sécurisée",
+  title: "Immo1 - Cosmétiques Bio & Naturels",
+  description:
+    "Découvrez notre gamme de cosmétiques bio et naturels pour une beauté authentique et respectueuse de l'environnement.",
+  keywords: [
+    "cosmétiques bio",
+    "produits naturels",
+    "beauté écologique",
+    "soins bio",
+    "cosmétiques français",
+  ],
+  authors: [{ name: "Immo1" }],
+  creator: "Immo1",
+  publisher: "Immo1",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL("https://immo1.com"),
+  openGraph: {
+    title: "Immo1 - Cosmétiques Bio & Naturels",
+    description:
+      "Découvrez notre gamme de cosmétiques bio et naturels pour une beauté authentique et respectueuse de l'environnement.",
+    url: "https://immo1.com",
+    siteName: "Immo1",
+    images: [
+      {
+        url: "/images/hero.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Immo1 - Cosmétiques Bio & Naturels",
+      },
+    ],
+    locale: "fr_FR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Immo1 - Cosmétiques Bio & Naturels",
+    description:
+      "Découvrez notre gamme de cosmétiques bio et naturels pour une beauté authentique et respectueuse de l'environnement.",
+    images: ["/images/hero.jpg"],
+  },
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <ViewTransitions>
-      <html lang="fr" className="h-full">
-        <ReactLenis
-          root
-          options={{
-            duration: 1.2, // Réduit pour des transitions plus rapides
-            lerp: 0.06, // Plus équilibré pour la performance
-            wheelMultiplier: 1.2, // Réduit pour éviter les conflits
-            touchMultiplier: 2, // Réduit pour mobile
-            infinite: false,
-            orientation: "vertical",
-            gestureOrientation: "vertical",
-            smoothWheel: true,
-            syncTouch: false,
-          }}
+    <html lang="fr">
+      <SmoothLenis>
+        <body
+          className={`${inter.variable} ${luxuriousRoman.variable} ${archivoBlack.variable} ${monsieurLaDoulaise.variable} ${metal.variable} font-sans antialiased`}
         >
-          <body
-            className={`${inter.variable} ${luxuriousRoman.variable} ${cormorantGaramond.variable} antialiased h-full font-inter`}
-          >
-            <CartProvider>
-              <ToastProvider>
-                <Header />
-                {children}
-                <Footer />
-              </ToastProvider>
-            </CartProvider>
-          </body>
-        </ReactLenis>
-      </html>
-    </ViewTransitions>
+          <ViewTransitions>
+            <ToastProvider>
+              <CartProvider>
+                <div className="min-h-screen flex flex-col">
+                  <Header />
+                  <main className="flex-1">{children}</main>
+                  <Footer />
+                </div>
+              </CartProvider>
+            </ToastProvider>
+          </ViewTransitions>
+        </body>
+      </SmoothLenis>
+    </html>
   );
 }

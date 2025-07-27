@@ -1,487 +1,669 @@
-import {
-  AdminCategory,
-  AdminLog,
-  AdminOrder,
-  AdminProduct,
-  AdminStats,
-  AdminUser,
-  OrdersFilters,
-  OrdersPagination,
-  ProductsFilters,
-  ProductsPagination,
-  UsersFilters,
-  UsersPagination,
-} from "@/stores/admin-store";
+"use server";
 
-/**
- * Classe d'erreur personnalisée pour les actions admin
- */
-export class AdminActionError extends Error {
-  constructor(
-    message: string,
-    public code?: string
-  ) {
-    super(message);
-    this.name = "AdminActionError";
-  }
-}
+import { auth } from "@/lib/auth";
+import prisma from "@/lib/prisma";
+import { headers } from "next/headers";
+import { z } from "zod";
 
-/**
- * Récupère les statistiques admin
- */
-export async function getAdminStats(): Promise<AdminStats> {
-  const response = await fetch("/api/admin/stats", {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+// ========================
+// SCHEMAS DE VALIDATION
+// ========================
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new AdminActionError(
-      error.error || "Erreur lors du chargement des statistiques"
-    );
-  }
+const adminFiltersSchema = z.object({
+  page: z.number().min(1).default(1),
+  limit: z.number().min(1).max(100).default(10),
+  search: z.string().optional(),
+  sortBy: z.string().default("createdAt"),
+  sortOrder: z.enum(["asc", "desc"]).default("desc"),
+});
 
-  return await response.json();
-}
+const userFiltersSchema = adminFiltersSchema.extend({
+  role: z.string().optional(),
+  banned: z.boolean().optional(),
+  emailVerified: z.boolean().optional(),
+});
 
-/**
- * Récupère les utilisateurs avec pagination et filtres
- */
-export async function getAdminUsers(
-  pagination: UsersPagination,
-  filters: UsersFilters
-): Promise<{
-  users: AdminUser[];
-  total: number;
-  totalPages: number;
-}> {
-  const searchParams = new URLSearchParams();
+const orderFiltersSchema = adminFiltersSchema.extend({
+  status: z.string().optional(),
+  paymentStatus: z.string().optional(),
+});
 
-  // Pagination
-  searchParams.append("page", pagination.page.toString());
-  searchParams.append("limit", pagination.limit.toString());
+// ========================
+// ACTIONS ADMIN STATISTIQUES
+// ========================
 
-  // Filtres
-  if (filters.search) searchParams.append("search", filters.search);
-  if (filters.role) searchParams.append("role", filters.role);
-  if (filters.banned !== undefined)
-    searchParams.append("banned", filters.banned.toString());
-  if (filters.emailVerified !== undefined)
-    searchParams.append("emailVerified", filters.emailVerified.toString());
+// Cache pour les statistiques admin
+const adminStatsCache = new Map<string, { data: unknown; timestamp: number }>();
+const ADMIN_STATS_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-  // Tri
-  if (filters.sortBy) searchParams.append("sortBy", filters.sortBy);
-  if (filters.sortOrder) searchParams.append("sortOrder", filters.sortOrder);
+export async function getAdminStatsAction() {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
 
-  const response = await fetch(`/api/admin/users?${searchParams}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new AdminActionError(
-      error.error || "Erreur lors du chargement des utilisateurs"
-    );
-  }
-
-  return await response.json();
-}
-
-/**
- * Crée un nouvel utilisateur
- */
-export async function createAdminUser(userData: {
-  name?: string;
-  email: string;
-  password?: string;
-  role?: string | null;
-  emailVerified?: boolean;
-}): Promise<AdminUser> {
-  const response = await fetch("/api/admin/users", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(userData),
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new AdminActionError(
-      error.error || "Erreur lors de la création de l'utilisateur"
-    );
-  }
-
-  return await response.json();
-}
-
-/**
- * Met à jour un utilisateur
- */
-export async function updateAdminUser(
-  userId: string,
-  userData: Partial<AdminUser>
-): Promise<AdminUser> {
-  const response = await fetch(`/api/admin/users/${userId}`, {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(userData),
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new AdminActionError(
-      error.error || "Erreur lors de la mise à jour de l'utilisateur"
-    );
-  }
-
-  return await response.json();
-}
-
-/**
- * Supprime un utilisateur
- */
-export async function deleteAdminUser(userId: string): Promise<void> {
-  const response = await fetch(`/api/admin/users/${userId}`, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new AdminActionError(
-      error.error || "Erreur lors de la suppression de l'utilisateur"
-    );
-  }
-}
-
-/**
- * Bannit un utilisateur
- */
-export async function banAdminUser(
-  userId: string,
-  reason: string,
-  expiresAt?: Date
-): Promise<AdminUser> {
-  const response = await fetch(`/api/admin/users/${userId}/ban`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      reason,
-      expiresAt: expiresAt?.toISOString(),
-    }),
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new AdminActionError(
-      error.error || "Erreur lors du bannissement de l'utilisateur"
-    );
-  }
-
-  return await response.json();
-}
-
-/**
- * Débannit un utilisateur
- */
-export async function unbanAdminUser(userId: string): Promise<AdminUser> {
-  const response = await fetch(`/api/admin/users/${userId}/unban`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new AdminActionError(
-      error.error || "Erreur lors du débannissement de l'utilisateur"
-    );
-  }
-
-  return await response.json();
-}
-
-/**
- * Change le rôle d'un utilisateur
- */
-export async function changeUserRole(
-  userId: string,
-  role: string | null
-): Promise<AdminUser> {
-  const response = await fetch(`/api/admin/users/${userId}/role`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ role }),
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new AdminActionError(
-      error.error || "Erreur lors du changement de rôle"
-    );
-  }
-
-  return await response.json();
-}
-
-/**
- * Récupère les commandes admin avec pagination et filtres
- */
-export async function getAdminOrders(
-  pagination: OrdersPagination,
-  filters: OrdersFilters
-): Promise<{
-  orders: AdminOrder[];
-  total: number;
-  totalPages: number;
-}> {
-  const searchParams = new URLSearchParams();
-
-  // Pagination
-  searchParams.append("page", pagination.page.toString());
-  searchParams.append("limit", pagination.limit.toString());
-
-  // Filtres
-  if (filters.search) searchParams.append("search", filters.search);
-  if (filters.status) searchParams.append("status", filters.status);
-  if (filters.paymentStatus)
-    searchParams.append("paymentStatus", filters.paymentStatus);
-
-  // Tri
-  if (filters.sortBy) searchParams.append("sortBy", filters.sortBy);
-  if (filters.sortOrder) searchParams.append("sortOrder", filters.sortOrder);
-
-  const response = await fetch(`/api/admin/orders?${searchParams}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new AdminActionError(
-      error.error || "Erreur lors du chargement des commandes"
-    );
-  }
-
-  return await response.json();
-}
-
-/**
- * Met à jour une commande
- */
-export async function updateAdminOrder(
-  orderId: string,
-  updates: {
-    status?: string;
-    paymentStatus?: string;
-    trackingNumber?: string;
-  }
-): Promise<AdminOrder> {
-  const response = await fetch("/api/admin/orders", {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      orderId,
-      ...updates,
-    }),
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new AdminActionError(
-      error.error || "Erreur lors de la mise à jour de la commande"
-    );
-  }
-
-  return await response.json();
-}
-
-/**
- * Récupère les logs d'activité admin
- */
-export async function getAdminLogs(
-  page: number = 1,
-  limit: number = 20,
-  filters: {
-    level?: string;
-    action?: string;
-    sortBy?: string;
-    sortOrder?: string;
-  } = {}
-): Promise<{
-  logs: AdminLog[];
-  total: number;
-  totalPages: number;
-}> {
-  const searchParams = new URLSearchParams();
-
-  searchParams.append("page", page.toString());
-  searchParams.append("limit", limit.toString());
-
-  if (filters.level) searchParams.append("level", filters.level);
-  if (filters.action) searchParams.append("action", filters.action);
-  if (filters.sortBy) searchParams.append("sortBy", filters.sortBy);
-  if (filters.sortOrder) searchParams.append("sortOrder", filters.sortOrder);
-
-  const response = await fetch(`/api/admin/logs?${searchParams}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new AdminActionError(
-      error.error || "Erreur lors du chargement des logs"
-    );
-  }
-
-  return await response.json();
-}
-
-/**
- * Crée un nouveau log d'activité
- */
-export async function createAdminLog(logData: {
-  action: string;
-  level: "INFO" | "WARNING" | "ERROR";
-  message: string;
-  metadata?: Record<string, unknown>;
-}): Promise<AdminLog> {
-  const response = await fetch("/api/admin/logs", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(logData),
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new AdminActionError(
-      error.error || "Erreur lors de la création du log"
-    );
-  }
-
-  return await response.json();
-}
-
-/**
- * Récupère les produits admin avec pagination et filtres
- */
-export async function getAdminProducts(
-  pagination: ProductsPagination,
-  filters: ProductsFilters
-): Promise<{
-  products: AdminProduct[];
-  total: number;
-  totalPages: number;
-}> {
-  const searchParams = new URLSearchParams();
-
-  // Pagination
-  searchParams.append("page", pagination.page.toString());
-  searchParams.append("limit", pagination.limit.toString());
-
-  // Filtres
-  if (filters.search) searchParams.append("search", filters.search);
-  if (filters.categoryId) searchParams.append("categoryId", filters.categoryId);
-  if (filters.isActive !== undefined)
-    searchParams.append("isActive", filters.isActive.toString());
-  if (filters.isFeatured !== undefined)
-    searchParams.append("isFeatured", filters.isFeatured.toString());
-  if (filters.lowStock !== undefined)
-    searchParams.append("lowStock", filters.lowStock.toString());
-
-  // Tri
-  if (filters.sortBy) searchParams.append("sortBy", filters.sortBy);
-  if (filters.sortOrder) searchParams.append("sortOrder", filters.sortOrder);
-
-  const response = await fetch(`/api/admin/products?${searchParams}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new AdminActionError(
-      error.error || "Erreur lors du chargement des produits"
-    );
-  }
-
-  return await response.json();
-}
-
-/**
- * Récupère les catégories admin
- */
-export async function getAdminCategories(): Promise<AdminCategory[]> {
-  const response = await fetch("/api/admin/categories", {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new AdminActionError(
-      error.error || "Erreur lors du chargement des catégories"
-    );
-  }
-
-  return await response.json();
-}
-
-/**
- * Utilitaire pour retry automatique avec backoff exponentiel
- */
-export async function retryWithBackoff<T>(
-  fn: () => Promise<T>,
-  maxRetries: number = 3,
-  initialDelay: number = 1000
-): Promise<T> {
-  let lastError: Error;
-
-  for (let i = 0; i < maxRetries; i++) {
-    try {
-      return await fn();
-    } catch (error) {
-      lastError = error as Error;
-
-      if (i === maxRetries - 1) {
-        throw lastError;
-      }
-
-      // Attendre avant de retry (backoff exponentiel)
-      await new Promise((resolve) =>
-        setTimeout(resolve, initialDelay * Math.pow(2, i))
-      );
+    if (!session?.user?.id) {
+      return {
+        success: false,
+        error: "Non autorisé",
+      };
     }
-  }
 
-  throw lastError!;
+    // TODO: Vérifier les permissions admin
+    const cacheKey = "admin-stats:global";
+
+    // Vérifier le cache
+    const cached = adminStatsCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < ADMIN_STATS_CACHE_DURATION) {
+      return {
+        success: true,
+        data: cached.data,
+        cached: true,
+      };
+    }
+
+    const now = new Date();
+    const startOfDay = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate()
+    );
+
+    // Récupérer les statistiques admin de manière optimisée
+    const [
+      totalUsers,
+      totalProducts,
+      totalCategories,
+      totalOrders,
+      totalRevenueResult,
+      newUsersToday,
+      newOrdersToday,
+      lowStockProducts,
+      activeUsers,
+    ] = await Promise.all([
+      // Total utilisateurs
+      prisma.user.count(),
+
+      // Total produits
+      prisma.product.count(),
+
+      // Total catégories
+      prisma.category.count(),
+
+      // Total commandes
+      prisma.order.count(),
+
+      // Revenus totaux (commandes livrées)
+      prisma.order.aggregate({
+        where: {
+          status: "DELIVERED",
+          paymentStatus: "PAID",
+        },
+        _sum: {
+          totalAmount: true,
+        },
+      }),
+
+      // Nouveaux utilisateurs aujourd'hui
+      prisma.user.count({
+        where: {
+          createdAt: {
+            gte: startOfDay,
+          },
+        },
+      }),
+
+      // Nouvelles commandes aujourd'hui
+      prisma.order.count({
+        where: {
+          createdAt: {
+            gte: startOfDay,
+          },
+        },
+      }),
+
+      // Produits en stock bas (stock <= 5)
+      prisma.product.count({
+        where: {
+          AND: [{ trackStock: true }, { stock: { lte: 5 } }],
+        },
+      }),
+
+      // Utilisateurs actifs (connectés dans les 30 derniers jours)
+      // TODO: Ajouter un champ lastLogin au schéma User
+      Promise.resolve(0), // Placeholder pour maintenant
+    ]);
+
+    const totalRevenue = Number(totalRevenueResult._sum.totalAmount || 0);
+
+    const stats = {
+      totalUsers,
+      totalProducts,
+      totalCategories,
+      totalOrders,
+      totalRevenue,
+      newUsersToday,
+      newOrdersToday,
+      activeUsers,
+      lowStockProducts,
+      lastUpdated: new Date().toISOString(),
+    };
+
+    // Sauvegarder en cache
+    adminStatsCache.set(cacheKey, { data: stats, timestamp: Date.now() });
+
+    return {
+      success: true,
+      data: stats,
+      cached: false,
+    };
+  } catch (error) {
+    console.error("[ADMIN_STATS_ACTION_ERROR]", error);
+    return {
+      success: false,
+      error: "Erreur lors du chargement des statistiques admin",
+    };
+  }
+}
+
+// ========================
+// ACTIONS ADMIN UTILISATEURS
+// ========================
+
+export async function getAdminUsersAction(params: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  role?: string;
+  banned?: boolean;
+  emailVerified?: boolean;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+}) {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session?.user?.id) {
+      return {
+        success: false,
+        error: "Non autorisé",
+      };
+    }
+
+    // TODO: Vérifier les permissions admin
+    const validatedParams = userFiltersSchema.parse(params);
+
+    const where: Record<string, unknown> = {};
+
+    // Filtres
+    if (validatedParams.search) {
+      where.OR = [
+        { name: { contains: validatedParams.search, mode: "insensitive" } },
+        { email: { contains: validatedParams.search, mode: "insensitive" } },
+      ];
+    }
+
+    if (validatedParams.role) {
+      where.role = validatedParams.role;
+    }
+
+    if (validatedParams.banned !== undefined) {
+      where.banned = validatedParams.banned;
+    }
+
+    if (validatedParams.emailVerified !== undefined) {
+      where.emailVerified = validatedParams.emailVerified;
+    }
+
+    // Ordre de tri
+    const orderBy: Record<string, "asc" | "desc"> = {};
+    orderBy[validatedParams.sortBy] = validatedParams.sortOrder;
+
+    const offset = (validatedParams.page - 1) * validatedParams.limit;
+
+    // Récupérer les utilisateurs avec statistiques
+    const [users, total] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        orderBy,
+        skip: offset,
+        take: validatedParams.limit,
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          emailVerified: true,
+          role: true,
+          banned: true,
+          banReason: true,
+          banExpires: true,
+          createdAt: true,
+          image: true,
+          phone: true,
+          orders: {
+            select: {
+              totalAmount: true,
+            },
+          },
+        },
+      }),
+      prisma.user.count({ where }),
+    ]);
+
+    // Calculer les statistiques pour chaque utilisateur
+    const usersWithStats = users.map((user) => ({
+      ...user,
+      ordersCount: user.orders.length,
+      totalSpent: user.orders.reduce(
+        (sum, order) => sum + Number(order.totalAmount),
+        0
+      ),
+    }));
+
+    const result = {
+      users: usersWithStats,
+      pagination: {
+        page: validatedParams.page,
+        limit: validatedParams.limit,
+        total,
+        totalPages: Math.ceil(total / validatedParams.limit),
+        hasNext: validatedParams.page * validatedParams.limit < total,
+        hasPrev: validatedParams.page > 1,
+      },
+    };
+
+    return {
+      success: true,
+      data: result,
+    };
+  } catch (error) {
+    console.error("[ADMIN_USERS_ACTION_ERROR]", error);
+    return {
+      success: false,
+      error: "Erreur lors du chargement des utilisateurs",
+    };
+  }
+}
+
+// ========================
+// ACTIONS ADMIN COMMANDES
+// ========================
+
+export async function getAdminOrdersAction(params: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: string;
+  paymentStatus?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+}) {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session?.user?.id) {
+      return {
+        success: false,
+        error: "Non autorisé",
+      };
+    }
+
+    // TODO: Vérifier les permissions admin
+    const validatedParams = orderFiltersSchema.parse(params);
+
+    const where: Record<string, unknown> = {};
+
+  // Filtres
+    if (validatedParams.search) {
+      where.OR = [
+        { id: { contains: validatedParams.search } },
+        {
+          customerName: {
+            contains: validatedParams.search,
+            mode: "insensitive",
+          },
+        },
+        {
+          customerEmail: {
+            contains: validatedParams.search,
+            mode: "insensitive",
+          },
+        },
+        {
+          user: {
+            OR: [
+              {
+                name: { contains: validatedParams.search, mode: "insensitive" },
+              },
+              {
+                email: {
+                  contains: validatedParams.search,
+                  mode: "insensitive",
+                },
+              },
+            ],
+          },
+        },
+      ];
+    }
+
+    if (validatedParams.status) {
+      where.status = validatedParams.status;
+    }
+
+    if (validatedParams.paymentStatus) {
+      where.paymentStatus = validatedParams.paymentStatus;
+    }
+
+    // Ordre de tri
+    const orderBy: Record<string, "asc" | "desc"> = {};
+    orderBy[validatedParams.sortBy] = validatedParams.sortOrder;
+
+    const offset = (validatedParams.page - 1) * validatedParams.limit;
+
+    // Récupérer les commandes
+    const [orders, total] = await Promise.all([
+      prisma.order.findMany({
+        where,
+        orderBy,
+        skip: offset,
+        take: validatedParams.limit,
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+            },
+          },
+          orderItems: {
+            include: {
+              product: {
+                select: {
+                  id: true,
+                  name: true,
+                  images: {
+                    select: {
+                      url: true,
+                    },
+                    take: 1,
+                  },
+                  price: true,
+                },
+              },
+            },
+          },
+        },
+      }),
+      prisma.order.count({ where }),
+    ]);
+
+    // Mapper les commandes avec les données admin
+    const adminOrders = orders.map((order) => ({
+      id: order.id,
+      customerId: order.userId,
+      customerName: order.user?.name || order.customerName,
+      customerEmail: order.user?.email || order.customerEmail,
+      customerAvatar: order.user?.image,
+      totalAmount: Number(order.totalAmount),
+      status: order.status,
+      paymentStatus: order.paymentStatus,
+      trackingNumber: order.trackingNumber,
+      createdAt: order.createdAt,
+      shippingAddress: order.shippingAddress,
+      items: order.orderItems.map((item) => ({
+        id: item.id,
+        productId: item.productId,
+        productName: item.product?.name || "Produit supprimé",
+        productImage: item.product?.images?.[0]?.url || null,
+        quantity: item.quantity,
+        price: Number(item.price),
+        total: Number(item.price) * item.quantity,
+      })),
+      itemsCount: order.orderItems.length,
+    }));
+
+    const result = {
+      orders: adminOrders,
+      pagination: {
+        page: validatedParams.page,
+        limit: validatedParams.limit,
+        total,
+        totalPages: Math.ceil(total / validatedParams.limit),
+        hasNext: validatedParams.page * validatedParams.limit < total,
+        hasPrev: validatedParams.page > 1,
+      },
+    };
+
+    return {
+      success: true,
+      data: result,
+    };
+  } catch (error) {
+    console.error("[ADMIN_ORDERS_ACTION_ERROR]", error);
+    return {
+      success: false,
+      error: "Erreur lors du chargement des commandes",
+    };
+  }
+}
+
+// ========================
+// ACTIONS ADMIN PRODUITS
+// ========================
+
+export async function getAdminProductsAction(params: {
+  page?: number;
+  limit?: number;
+  search?: string;
+    sortBy?: string;
+  sortOrder?: "asc" | "desc";
+}) {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session?.user?.id) {
+      return {
+        success: false,
+        error: "Non autorisé",
+      };
+    }
+
+    // TODO: Vérifier les permissions admin
+    const validatedParams = adminFiltersSchema.parse(params);
+
+    const where: Record<string, unknown> = {};
+
+    // Filtres
+    if (validatedParams.search) {
+      where.OR = [
+        { name: { contains: validatedParams.search, mode: "insensitive" } },
+        {
+          description: {
+            contains: validatedParams.search,
+            mode: "insensitive",
+          },
+        },
+      ];
+    }
+
+    // Ordre de tri
+    const orderBy: Record<string, "asc" | "desc"> = {};
+    orderBy[validatedParams.sortBy] = validatedParams.sortOrder;
+
+    const offset = (validatedParams.page - 1) * validatedParams.limit;
+
+    // Récupérer les produits
+    const [products, total] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        orderBy,
+        skip: offset,
+        take: validatedParams.limit,
+        include: {
+          category: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              isActive: true,
+            },
+          },
+          images: {
+            orderBy: { position: "asc" },
+            select: {
+              id: true,
+              url: true,
+              alt: true,
+              position: true,
+            },
+          },
+        },
+      }),
+      prisma.product.count({ where }),
+    ]);
+
+    // Sérialiser les données pour éviter les erreurs Decimal
+    const serializedProducts = products.map((product) => ({
+      ...product,
+      price: Number(product.price),
+      comparePrice: product.comparePrice ? Number(product.comparePrice) : null,
+      weight: product.weight ? Number(product.weight) : null,
+    }));
+
+    const result = {
+      products: serializedProducts,
+      pagination: {
+        page: validatedParams.page,
+        limit: validatedParams.limit,
+        total,
+        totalPages: Math.ceil(total / validatedParams.limit),
+        hasNext: validatedParams.page * validatedParams.limit < total,
+        hasPrev: validatedParams.page > 1,
+      },
+    };
+
+    return {
+      success: true,
+      data: result,
+    };
+  } catch (error) {
+    console.error("[ADMIN_PRODUCTS_ACTION_ERROR]", error);
+    return {
+      success: false,
+      error: "Erreur lors du chargement des produits",
+    };
+  }
+}
+
+// ========================
+// ACTIONS ADMIN PRODUIT INDIVIDUEL
+// ========================
+
+export async function getAdminProductAction(id: string) {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session?.user?.id) {
+      return {
+        success: false,
+        error: "Non autorisé",
+      };
+    }
+
+    // TODO: Vérifier les permissions admin
+
+    const product = await prisma.product.findUnique({
+      where: { id },
+      include: {
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            isActive: true,
+          },
+        },
+        images: {
+          orderBy: { position: "asc" },
+          select: {
+            id: true,
+            url: true,
+            alt: true,
+            position: true,
+          },
+        },
+    },
+  });
+
+    if (!product) {
+      return {
+        success: false,
+        error: "Produit non trouvé",
+      };
+    }
+
+    // Sérialiser les données
+    const serializedProduct = {
+      ...product,
+      price: Number(product.price),
+      comparePrice: product.comparePrice ? Number(product.comparePrice) : null,
+      weight: product.weight ? Number(product.weight) : null,
+    };
+
+    return {
+      success: true,
+      data: serializedProduct,
+    };
+  } catch (error) {
+    console.error("[ADMIN_PRODUCT_ACTION_ERROR]", error);
+    return {
+      success: false,
+      error: "Erreur lors de la récupération du produit",
+    };
+  }
+}
+
+// ========================
+// ACTIONS CACHE ADMIN
+// ========================
+
+export async function clearAdminCacheAction() {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session?.user?.id) {
+      return {
+        success: false,
+        error: "Non autorisé",
+      };
+    }
+
+    // TODO: Vérifier les permissions admin
+
+    // Vider le cache admin
+    adminStatsCache.clear();
+
+    return {
+      success: true,
+      message: "Cache admin vidé avec succès",
+    };
+  } catch (error) {
+    console.error("[CLEAR_ADMIN_CACHE_ERROR]", error);
+    return {
+      success: false,
+      error: "Erreur lors du vidage du cache admin",
+    };
+  }
 }

@@ -26,7 +26,7 @@ export default function TitleAnimation({
   delay = 0,
   duration = 0.6,
   stagger = 0.1,
-  triggerStart = "top 75%",
+  triggerStart = "top 85%",
   as: Component = "h1",
   splitBy = "words",
   autoPlay = false,

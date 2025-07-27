@@ -12,7 +12,7 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: light) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
@@ -36,9 +36,14 @@ body {
   font-family: var(--font-luxurious-roman);
 }
 
-.font-cormorant {
-  font-family: var(--font-cormorant-garamond);
+.font-monsieur {
+  font-family: var(--font-monsieur-la-doulaise);
 }
+
+.font-metal {
+  font-family: var(--font-metal);
+}
+
 
 /*p {
   font-size: clamp(1rem, 1.5vw, 1.2rem);
@@ -56,7 +61,7 @@ body {
 }
 
 .title-script {
-  font-family: var(--font-cormorant-garamond);
+  font-family: var(--font-metal);
   font-size: 1.2em;
   position: relative;
   display: inline-block;
@@ -256,6 +261,20 @@ html.lenis body {
 */
 
 /* Titres de section (h2, h3, h4) */
+
+.heading-xxxl {
+  font-size: clamp(5rem, 7vw, 9rem);
+}
+.subheading-xxxl {
+  font-size: clamp(4rem, 6vw, 7rem);
+}
+.heading-xxl {
+  font-size: clamp(4rem, 5vw, 7rem);
+}
+.subheading-xxl {
+  font-size: clamp(3rem, 4vw, 6rem);
+}
+
 .heading-xl {
   font-size: clamp(2rem, 4vw, 3rem);
   line-height: 1.2;

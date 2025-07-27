@@ -1,14 +1,24 @@
 "use client";
 
+import { useCart } from "@/contexts/CartContext";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import { Draggable } from "gsap/Draggable";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import ImageParallax from "./ImageParallax";
+import { CircleButton } from "./ui/ExploreButton";
 import { useToast } from "./ui/ToastContainer";
 
 gsap.registerPlugin(ScrollTrigger, Draggable, useGSAP);
+
+interface DraggableInstance {
+  kill(): void;
+  disable(): void;
+  enable(): void;
+  update(): void;
+}
 
 interface Product {
   id: string;
@@ -31,41 +41,49 @@ interface Product {
   }[];
 }
 
-interface PurificationSectionProps {
+interface SectionBandeauLeftProps {
   products: Product[];
   loading: boolean;
+  categorySlug?: string;
 }
 
 function ProductCard({ product, index }: { product: Product; index: number }) {
+  const { addItem } = useCart();
+  const { success, error } = useToast();
+  const [isAdding, setIsAdding] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
-  const { showToast } = useToast();
 
   const handleAddToCart = async () => {
+    if (product.stock === 0) {
+      error("Produit en rupture de stock");
+      return;
+    }
+    setIsAdding(true);
     try {
-      // Logique d'ajout au panier
-      showToast({
-        type: "success",
-        message: `${product.name} a été ajouté au panier`,
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      addItem({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.images?.[0]?.url || "/placeholder.jpg",
+        slug: product.slug,
+        stock: product.stock,
       });
-    } catch {
-      showToast({
-        type: "error",
-        message: "Impossible d'ajouter le produit au panier",
-      });
+      success(`${product.name} ajouté au panier !`);
+    } catch (err) {
+      console.error("Erreur lors de l'ajout au panier:", err);
+      error("Erreur lors de l'ajout au panier");
+    } finally {
+      setIsAdding(false);
     }
   };
 
   useGSAP(
     () => {
       if (cardRef.current) {
-        // Animation d'entrée pour chaque carte
         gsap.fromTo(
           cardRef.current,
-          {
-            opacity: 0,
-            y: 50,
-            rotation: -4,
-          },
+          { opacity: 0, y: 50, rotation: -4 },
           {
             opacity: 1,
             y: 0,
@@ -80,10 +98,7 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
             },
           }
         );
-
-        // Animation hover
         const card = cardRef.current;
-
         const handleMouseEnter = () => {
           gsap.to(card, {
             y: -4,
@@ -92,7 +107,6 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
             ease: "power2.out",
           });
         };
-
         const handleMouseLeave = () => {
           gsap.to(card, {
             y: 0,
@@ -101,10 +115,8 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
             ease: "power2.out",
           });
         };
-
         card.addEventListener("mouseenter", handleMouseEnter);
         card.addEventListener("mouseleave", handleMouseLeave);
-
         return () => {
           card.removeEventListener("mouseenter", handleMouseEnter);
           card.removeEventListener("mouseleave", handleMouseLeave);
@@ -117,38 +129,38 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
   return (
     <div
       ref={cardRef}
-      className="min-w-[240px] max-w-[280px] sm:min-w-[280px] sm:max-w-[320px] lg:min-w-[320px] lg:max-w-[380px] w-full max-h-[420px] sm:max-h-[480px] lg:max-h-[540px] h-full bg-green-500/30 rounded-2xl px-3 py-4 sm:px-4 sm:py-6 flex flex-col justify-between gap-3 sm:gap-4 cursor-grab active:cursor-grabbing select-none flex-shrink-0"
+      className="min-w-[240px] max-w-[280px] sm:min-w-[280px] sm:max-w-[320px] lg:min-w-[320px] lg:max-w-[380px] w-full max-h-[420px] sm:max-h-[480px] lg:max-h-[540px] h-full bg-[#f5c9cb] rounded-2xl px-3 py-4 sm:px-4 sm:py-6 flex flex-col justify-between gap-3 sm:gap-4 cursor-grab active:cursor-grabbing select-none flex-shrink-0"
     >
-      {/* Badge et bouton panier */}
       <div className="flex justify-between items-center">
         <span className="bg-white text-gray-600 px-3 py-2 sm:px-4 sm:py-2 lg:px-6 lg:py-3 text-xs font-medium uppercase tracking-wider rounded-full">
-          PURE PURIFICATION
+          PURE HYDRATATION
         </span>
-
         <button
           type="button"
           onClick={handleAddToCart}
-          disabled={product.stock === 0}
+          disabled={isAdding || product.stock === 0}
           className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 bg-white hover:bg-gray-50 text-gray-700 rounded-full flex items-center justify-center transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50"
           title="Ajouter au panier"
         >
-          <svg
-            className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1}
-              d="M16 11V7a4 4 0 00-8 0v4M5 9h14l-1 7a2 2 0 01-2 2H8a2 2 0 01-2-2L5 9z"
-            />
-          </svg>
+          {isAdding ? (
+            <div className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 border-2 border-gray-700 border-t-transparent rounded-full animate-spin"></div>
+          ) : (
+            <svg
+              className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1}
+                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l-1 7a2 2 0 01-2 2H8a2 2 0 01-2-2L5 9z"
+              />
+            </svg>
+          )}
         </button>
       </div>
-
-      {/* Image produit */}
       <div className="relative flex-1 rounded-lg overflow-hidden">
         {product.images && product.images.length > 0 ? (
           <Image
@@ -157,6 +169,7 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
             fill
             sizes="(max-width: 640px) 280px, (max-width: 1024px) 320px, 380px"
             className="object-cover"
+            priority
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gray-200">
@@ -174,150 +187,81 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
           </div>
         )}
       </div>
-
-      {/* Info produit */}
       <div className="flex items-center justify-between gap-4 sm:gap-6 lg:gap-20">
         <h4 className="text-gray-600 font-normal text-sm sm:text-base uppercase tracking-tight">
           {product.name}
         </h4>
-        <p className="text-gray-700 font-normal text-base-responsive">
-          €{Number(product.price).toFixed(0)}
+        <p className="text-gray-700 font-normal text-base sm:text-lg">
+          {Number(product.price).toFixed(2).replace(".", ",")}€
         </p>
       </div>
     </div>
   );
 }
 
-export default function PurificationSection({
-  products,
+export default function SectionBandeauLeft({
+  products = [],
   loading,
-}: PurificationSectionProps) {
-  const containerRef = useRef<HTMLElement>(null);
-  const imageRef = useRef<HTMLDivElement>(null);
+  categorySlug = "hydratation",
+}: SectionBandeauLeftProps) {
   const sliderRef = useRef<HTMLDivElement>(null);
   const sliderContainerRef = useRef<HTMLDivElement>(null);
-  const draggableInstanceRef = useRef<any>(null); // eslint-disable-line @typescript-eslint/no-explicit-any
+  const containerRef = useRef<HTMLElement>(null);
+  const draggableInstanceRef = useRef<DraggableInstance | null>(null);
 
   useGSAP(
     () => {
-      // Parallax désactivé pour le container - utilise le parallax global de la page
-      // if (containerRef.current) {
-      //   gsap.to(containerRef.current, {
-      //     y: "-15%",
-      //     ease: "none",
-      //     scrollTrigger: {
-      //       trigger: containerRef.current,
-      //       start: "top bottom",
-      //       end: "bottom top",
-      //       scrub: 1,
-      //     },
-      //   });
-      // }
-
-      // Parallax GSAP pour l'image uniquement
-      if (imageRef.current && containerRef.current) {
-        gsap.to(imageRef.current, {
-          y: "-28%", // Parallax plus intense avec la marge de 140vh, cohérent avec HydratationSection
-          ease: "none",
-          scrollTrigger: {
-            trigger: containerRef.current,
-            start: "top bottom",
-            end: "bottom top",
-            scrub: 1, // Scrub équilibré entre fluidité et réactivité
-          },
-        });
-      }
-
       if (sliderRef.current && sliderContainerRef.current) {
         const slider = sliderRef.current;
         const container = sliderContainerRef.current;
-
-        // Attendre que les cartes soient complètement rendues
         const initSlider = () => {
           const cards = slider.children;
-          console.log(
-            "Initialisation du slider - Nombre de cartes:",
-            cards.length
-          );
-
           if (cards.length === 0) {
-            console.log("Aucune carte trouvée, retry dans 200ms");
             setTimeout(initSlider, 200);
             return;
           }
-
-          // Calculer la largeur totale du slider
           let totalWidth = 0;
           Array.from(cards).forEach((card) => {
             const cardElement = card as HTMLElement;
-            const cardWidth = cardElement.offsetWidth || 380; // Fallback à 380px
-            totalWidth += cardWidth + 20; // 20px d'espacement (moitié moins)
+            const cardWidth = cardElement.offsetWidth || 380;
+            totalWidth += cardWidth + 20;
           });
-
           const containerWidth = container.offsetWidth;
-          // Soustraire le padding du conteneur (64px de chaque côté pour lg:px-16) pour que la dernière carte respecte le même padding
-          const availableWidth = containerWidth - 64; // 64px de padding à droite sur desktop
+          const availableWidth = containerWidth - 64;
           const maxScroll = Math.max(0, totalWidth - availableWidth);
-
-          console.log(
-            "Total width:",
-            totalWidth,
-            "Container width:",
-            containerWidth,
-            "Available width:",
-            availableWidth,
-            "Max scroll:",
-            maxScroll
-          );
-
-          // Détruire l'instance existante si elle existe
           if (draggableInstanceRef.current) {
             draggableInstanceRef.current.kill();
           }
-
-          // Variables pour gérer la rotation fluide
           let isDragging = false;
           let dragDirection = 0;
-
-          // Draggable GSAP pour le slider
           const draggableInstance = Draggable.create(slider, {
             type: "x",
             bounds: { minX: -maxScroll, maxX: 0 },
             inertia: {
-              resistance: 50, // Résistance réduite pour plus de fluidité
-              minDuration: 0.3, // Durée minimale d'inertie
-              maxDuration: 2, // Durée maximale d'inertie
+              resistance: 50,
+              minDuration: 0.3,
+              maxDuration: 2,
             },
-            edgeResistance: 0.9, // Résistance aux bords plus élevée
-            dragResistance: 0.1, // Résistance de drag très faible pour plus de fluidité
-            allowNativeTouchScrolling: false, // Meilleur contrôle sur mobile
+            edgeResistance: 0.9,
+            dragResistance: 0.1,
+            allowNativeTouchScrolling: false,
             onPress: function () {
-              // Arrêter toute animation en cours lors du press
               gsap.killTweensOf(slider);
               isDragging = true;
               dragDirection = 0;
             },
             onDrag: function () {
               if (!isDragging) return;
-
-              // Détecter la direction basée sur le déplacement depuis le début du drag
               const totalDeltaX = this.x - this.startX;
-
-              // Définir la direction et maintenir une rotation stable
               if (Math.abs(totalDeltaX) > 5) {
-                // Seuil minimum pour éviter les micro-mouvements
                 dragDirection = totalDeltaX > 0 ? 1 : -1;
-
-                // Rotation fixe basée sur la direction - reste stable pendant tout le drag
-                const baseRotation = 5 * dragDirection; // 12 degrés fixes dans la direction du mouvement
-
+                const baseRotation = 5 * dragDirection;
                 const cards = slider.children;
                 Array.from(cards).forEach((card) => {
                   const element = card as HTMLElement;
-
                   gsap.to(element, {
                     rotation: baseRotation,
-                    scale: 0.9, // Réduction des cartes pendant le drag
+                    scale: 0.9,
                     duration: 0.2,
                     transformOrigin: "center center",
                     ease: "power2.out",
@@ -326,17 +270,14 @@ export default function PurificationSection({
               }
             },
             onThrowUpdate: function () {
-              // Maintenir la rotation pendant l'inertie si on a une direction
               if (dragDirection !== 0) {
                 const cards = slider.children;
-                const inertiaRotation = 8 * dragDirection; // Rotation plus douce pendant l'inertie
-
+                const inertiaRotation = 8 * dragDirection;
                 Array.from(cards).forEach((card) => {
                   const element = card as HTMLElement;
-
                   gsap.to(element, {
                     rotation: inertiaRotation,
-                    scale: 0.95, // Scale légèrement plus grand pendant l'inertie
+                    scale: 0.95,
                     duration: 0.1,
                     transformOrigin: "center center",
                     ease: "power2.out",
@@ -346,45 +287,33 @@ export default function PurificationSection({
             },
             onDragEnd: function () {
               isDragging = false;
-
-              // Remettre les rotations et le scale à la normale avec animation fluide SANS élasticité
               const cards = slider.children;
               Array.from(cards).forEach((card, index) => {
                 gsap.to(card, {
                   rotation: 0,
-                  scale: 1, // Retour au scale normal
+                  scale: 1,
                   duration: 1,
-                  delay: index * 0.02, // Petit délai échelonné pour effet vague
-                  ease: "power3.out", // Easing doux sans bounce
+                  delay: index * 0.02,
+                  ease: "power3.out",
                 });
               });
-
-              // Reset de la direction
               dragDirection = 0;
             },
             onThrowComplete: function () {
-              // Animation finale au repos - toutes ensemble SANS élasticité
               const cards = slider.children;
               Array.from(cards).forEach((card, index) => {
                 gsap.to(card, {
                   rotation: 0,
-                  scale: 1, // Retour au scale normal
+                  scale: 1,
                   duration: 0.4,
                   delay: index * 0.01,
-                  ease: "power3.out", // Easing doux sans bounce
+                  ease: "power3.out",
                 });
               });
-
               dragDirection = 0;
             },
           });
-
-          // Stocker l'instance pour pouvoir la détruire plus tard
           draggableInstanceRef.current = draggableInstance[0];
-
-          console.log("Draggable créé avec succès:", draggableInstance);
-
-          // Animation d'entrée du slider
           gsap.fromTo(
             slider,
             { x: 200, opacity: 0 },
@@ -401,20 +330,18 @@ export default function PurificationSection({
             }
           );
         };
-
-        // Démarrer l'initialisation
         setTimeout(initSlider, 300);
       }
     },
     { scope: containerRef, dependencies: [products] }
-  ); // Ajouter products comme dépendance
+  );
 
   if (loading) {
     return (
       <section className="py-16 sm:py-20 lg:py-24 bg-white">
         <div className="text-center">
           <div className="w-16 h-16 mx-auto mb-8 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-gray-600 font-light text-lg">
+          <p className="text-gray-600 font-light text-lg-responsive">
             Chargement des produits...
           </p>
         </div>
@@ -425,64 +352,69 @@ export default function PurificationSection({
   return (
     <section
       ref={containerRef}
-      id="purification-section"
-      className="relative overflow-hidden min-h-[100vh] max-h-[140vh] h-auto"
+      className="flex w-full items-stretch min-h-[100vh] max-h-[140vh] h-auto pt-16 lg:pt-20 bg-white relative"
     >
-      {/* Main Content - Slider gauche + Image droite (inversé) */}
-      <div className="relative w-full min-h-[100vh]">
-        {/* Slider à gauche */}
-        <div className="absolute left-0 lg:right-[50%] top-0 lg:left-0 right-0 h-full  flex flex-col z-5">
-          {/* Header du slider */}
-          <div className="p-8 lg:pr-16">
-            <h3 className="text-4xl lg:text-5xl font-light text-gray-900 mb-2">
-              Pure <br />
-              <span className="font-medium font-pinyon text-5xl  md:text-6xl lg:text-7xl">
-                Purification
-              </span>
-            </h3>
+      {/* Colonne gauche : ImageParallax */}
+      <div className="hidden lg:block lg:w-1/2 relative overflow-hidden min-h-[120vh]">
+        <ImageParallax
+          imgParallax="/images/visage-1.jpg"
+          title={null}
+          subtitle={null}
+        />
+      </div>
+      {/* Colonne droite : Slider et textes */}
+      <div className="w-full lg:w-1/2 flex flex-col justify-center">
+        {/* Slider */}
+        <div className="relative flex-1 flex flex-col justify-center">
+          <div className="p-8 lg:pl-16">
+            <div className="flex justify-between">
+              <h3 className="text-gray-900 mb-2 leading-none">
+                <span className="font-thin tracking-tight heading-xxl">
+                  Pure
+                </span>
+                <br />
+                <span className="font-normal italic font-metal tracking-tight subheading-xxl">
+                  Hydratation
+                </span>
+              </h3>
+              <div className="flex items-end mb-4">
+                <CircleButton
+                  href="/products"
+                  direction="right"
+                  variant="dark"
+                  size="large"
+                />
+              </div>
+            </div>
           </div>
-
-          {/* Container du slider - hauteur ajustée */}
           <div
             ref={sliderContainerRef}
             className="overflow-hidden relative px-8 lg:px-16 flex-1"
           >
             <div ref={sliderRef} className="flex gap-5 h-full items-center">
-              {products.slice(0, 6).map((product, index) => (
-                <ProductCard key={product.id} product={product} index={index} />
-              ))}
+              {products
+                .filter((product) => product.category.slug === categorySlug)
+                .slice(0, 6)
+                .map((product, index) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    index={index}
+                  />
+                ))}
             </div>
           </div>
-
-          {/* Section des textes - hauteur fixe */}
           <div className="h-32 flex justify-between items-center">
-            {/* Texte descriptif */}
             <div className="px-8 lg:px-16 text-left">
               <p className="text-gray-900 text-xs-responsive sm:text-sm-responsive md:text-base-responsive font-light leading-relaxed max-w-xs uppercase">
-                Purifiez votre peau en profondeur avec nos soins experts.
+                Restez éclatant et en bonne santé sans avoir à y penser.
               </p>
             </div>
-
-            {/* Indication de drag */}
             <div className="px-8 lg:px-16">
-              <p className="text-gray-600 text-xs uppercase">
+              <p className="text-gray-600 text-xs-responsive uppercase">
                 ← Faites glisser pour découvrir →
               </p>
             </div>
-          </div>
-        </div>
-
-        {/* Image droite avec parallax GSAP */}
-        <div className="absolute right-0 top-0 w-full lg:w-1/2 h-full overflow-hidden z-10 hidden lg:block">
-          <div ref={imageRef} className="relative w-full min-h-[140vh] top-0">
-            <Image
-              src="/images/visage-2.jpg"
-              alt="Pure Purification"
-              fill
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              className="object-cover object-center"
-              priority
-            />
           </div>
         </div>
       </div>

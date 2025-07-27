@@ -28,10 +28,10 @@ export default function CloudinaryUpload({
     console.log("Upload success:", result);
 
     // Ajouter l'image à la référence ET au state
-    if (result?.info?.secure_url) {
-      uploadedImagesRef.current.push(result.info.secure_url);
-      setUploadedInSession((prev) => [...prev, result.info.secure_url]);
-      console.log("Image added to session:", result.info.secure_url);
+    if (result?.secure_url) {
+      uploadedImagesRef.current.push(result.secure_url);
+      setUploadedInSession((prev) => [...prev, result.secure_url]);
+      console.log("Image added to session:", result.secure_url);
       console.log("Current session images:", uploadedImagesRef.current);
     }
   };
@@ -64,6 +64,13 @@ export default function CloudinaryUpload({
     setUploadedInSession([]); // Reset le state
     console.error("Upload error:", error);
     alert("Erreur lors de l'upload. Veuillez réessayer.");
+  };
+
+  const handleQueuesStart = () => {
+    setIsUploading(true);
+    uploadedImagesRef.current = []; // Reset la référence
+    setUploadedInSession([]); // Reset le state
+    console.log("Upload started, resetting session");
   };
 
   const removeImage = (index: number) => {
@@ -124,12 +131,7 @@ export default function CloudinaryUpload({
             folder: FOLDERS.products,
             sources: ["local", "url", "camera"],
           }}
-          onQueuesStart={() => {
-            setIsUploading(true);
-            uploadedImagesRef.current = []; // Reset la référence
-            setUploadedInSession([]); // Reset le state
-            console.log("Upload started, resetting session");
-          }}
+          onQueuesStart={handleQueuesStart}
           onQueuesEnd={handleQueuesEnd}
           onSuccess={handleUploadSuccess}
           onError={handleUploadError}

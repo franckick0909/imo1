@@ -12,3 +12,12 @@ DATABASE_URL="postgresql://username:password@localhost:5432/database_name"
 # Variables pour la production sur Vercel
 # BETTER_AUTH_URL=https://immo1.shop
 # DATABASE_URL="postgresql://..." # URL de votre base PostgreSQL sur Vercel 
+
+# Stripe Configuration
+STRIPE_SECRET_KEY=sk_test_...
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+
+# Email Configuration (Resend)
+RESEND_API_KEY=re_your_resend_api_key_here
+FROM_EMAIL=BioCreme <noreply@biocreme.com> 

@@ -35,6 +35,9 @@ model User {
   // Profil utilisateur étendu
   phone String?
 
+  // Stripe Customer ID pour les paiements
+  stripeCustomerId String?
+
   // Adresse de livraison
   shippingStreet     String?
   shippingCity       String?

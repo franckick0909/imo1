@@ -1,131 +1,158 @@
-"use client";
-
 import BestSellerSection from "@/components/BestSellerSection";
 import CacheStatus from "@/components/CacheStatus";
+import ConnectWithUsSection from "@/components/ConnectWithUsSection";
 import FloatingCardsSection from "@/components/FloatingCardsSection";
-import HeroSection from "@/components/HeroSection";
-import HydratationSection from "@/components/HydratationSection";
-import PurificationSection from "@/components/PurificationSection";
+import SectionBandeauLeft from "@/components/SectionBandeauLeft";
+import SectionBandeauRight from "@/components/SectionBandeauRight";
 import TransparentSection from "@/components/TransparentSection";
-import SophisticatedTitle from "@/components/ui/SophisticatedTitle";
-import {
-  useFeaturedProductsServer,
-  useServerActions,
-} from "@/hooks/useServerActions";
-import { motion } from "framer-motion";
-import { Link } from "next-view-transitions";
-import Image from "next/image";
-import { useEffect, useRef } from "react";
+import HeroLoader from "@/components/ui/HeroLoader";
+import { getCategoriesAction, getFeaturedProductsAction } from "@/lib/actions";
+import { Suspense } from "react";
 
-export default function Home() {
-  const { products: featuredProducts, loading } = useFeaturedProductsServer();
-  const { prefetchData } = useServerActions();
-  const sectionsContainerProductsRef = useRef<HTMLDivElement>(null);
+// Types pour les données
+interface Product {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  comparePrice?: number;
+  stock: number;
+  slug: string;
+  category: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  images: {
+    id: string;
+    url: string;
+    alt?: string | null;
+    position: number;
+  }[];
+}
 
-  // Prefetch automatique des données avec Server Actions
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      prefetchData({
-        featured: true,
-        categories: true,
-        products: false,
-        delay: 50, // Très rapide pour la page d'accueil
-      });
-    }, 100);
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+}
 
-    return () => clearTimeout(timer);
-  }, [prefetchData]);
+// Composant de chargement pour les produits
+function ProductsLoadingSkeleton() {
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-4 lg:gap-8 mx-auto max-w-full">
+      {[...Array(6)].map((_, i) => (
+        <div key={i} className="animate-pulse">
+          <div className="aspect-square bg-gray-200 rounded-lg mb-4"></div>
+          <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
-  // Suppression du parallax global pour éviter le problème de collage avec BestSellerSection
-  // useGSAP(() => {
-  //   if (sectionsContainerRef.current) {
-  //     gsap.to(sectionsContainerRef.current, {
-  //       y: "-10%",
-  //       ease: "none",
-  //       scrollTrigger: {
-  //         trigger: sectionsContainerRef.current,
-  //         start: "top bottom",
-  //         end: "bottom top",
-  //         scrub: 1,
-  //       },
-  //     });
-  //   }
-  // }, { scope: sectionsContainerRef });
+// Fonctions helper pour extraire les données de manière sécurisée
+function extractFeaturedProducts(result: unknown): Product[] {
+  if (
+    !result ||
+    typeof result !== "object" ||
+    !("success" in result) ||
+    !result.success
+  ) {
+    return [];
+  }
+
+  const data = result as { success: boolean; data?: { products?: unknown } };
+  const products = data.data?.products;
+  return Array.isArray(products) ? products : [];
+}
+
+function extractCategories(result: unknown): Category[] {
+  if (
+    !result ||
+    typeof result !== "object" ||
+    !("success" in result) ||
+    !result.success
+  ) {
+    return [];
+  }
+
+  const data = result as { success: boolean; data?: unknown };
+  const categories = data.data;
+  return Array.isArray(categories) ? categories : [];
+}
+
+export default async function Home() {
+  // Charger les données en parallèle avec les server actions
+  const [featuredResult, categoriesResult] = await Promise.all([
+    getFeaturedProductsAction(6),
+    getCategoriesAction(),
+  ]);
+
+  // Extraction sécurisée des données
+  const featuredProducts = extractFeaturedProducts(featuredResult);
+  const categories = extractCategories(categoriesResult);
+
+  console.log("🔄 Fetching featured products from database...");
+  if (featuredResult.success) {
+    console.log(
+      `✅ Featured products fetched: ${featuredProducts.length} items`
+    );
+  } else {
+    console.log(
+      `❌ Failed to fetch featured products: ${featuredResult.error}`
+    );
+  }
+
+  console.log("🔄 Fetching categories from database...");
+  if (categoriesResult.success) {
+    console.log(`✅ Categories fetched: ${categories.length} items`);
+  } else {
+    console.log(`❌ Failed to fetch categories: ${categoriesResult.error}`);
+  }
 
   return (
-    <div className="min-h-screen bg-white relative">
-      {/* Hero Section avec parallax */}
-      <HeroSection />
-
-      {/* Section FloatingCards - Notre Engagement */}
-      
-      <FloatingCardsSection />
-
-      {/* Section Transparence - Style TrueKind */}
-      <div className="relative">
-        <TransparentSection />
-      </div>
-
-      {/* Sections collées - HydratationSection + PurificationSection */}
-      <div ref={sectionsContainerProductsRef} className="relative">
-        <HydratationSection products={featuredProducts} loading={loading} />
-        <PurificationSection products={featuredProducts} loading={loading} />
-      </div>
-
-      {/* Section Bestsellers */}
-      <BestSellerSection products={featuredProducts} loading={loading} />
-
-      {/* Section Hydratez-vous Pendant Votre Sommeil */}
-      <section className="py-20 bg-gray-50 overflow-hidden">
-        <div className="w-full">
-          <div className="grid [grid-template-columns:repeat(auto-fit,minmax(320px,1fr))] gap-10 items-center mx-auto max-w-full">
-            <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
-              className="px-4 lg:px-6"
-            >
-              <SophisticatedTitle
-                level="h2"
-                variant="section"
-                className="text-gray-900 leading-52 mb-8"
-              >
-                Hydratez-vous Pendant Votre Sommeil
-              </SophisticatedTitle>
-              <p className="text-xl text-gray-600 font-light leading-relaxed mb-10">
-                Réveillez-vous avec des mains douces et souples grâce à ce
-                traitement nocturne recommandé par les dermatologues.
-              </p>
-              <Link
-                href="/products"
-                className="inline-block bg-gray-900 text-white px-10 py-5 font-medium uppercase tracking-wider hover:bg-gray-800 transition-colors duration-300 shadow-lg"
-              >
-                Découvrir Maintenant
-              </Link>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 50, scale: 0.9 }}
-              whileInView={{ opacity: 1, x: 0, scale: 1 }}
-              transition={{ duration: 0.8, type: "spring", stiffness: 100 }}
-              viewport={{ once: true }}
-              className="relative aspect-square flex-1 w-full h-full"
-            >
-              <Image
-                src="/images/soir.jpg"
-                alt="Soin des mains naturel de nuit"
-                fill
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-cover"
-              />
-            </motion.div>
-          </div>
-        </div>
+    <main className="relative overflow-hidden">
+      {/* Hero Section */}
+      <section className="relative">
+        <HeroLoader />
       </section>
 
-      {/* Composant de debug du cache (seulement en développement) */}
+     
+        {/* Floating Cards Section */}
+        <section className="relative">
+          <FloatingCardsSection />
+        </section>
+
+        {/* Best Seller Section avec produits */}
+        <section className="relative">
+          <Suspense fallback={<ProductsLoadingSkeleton />}>
+            <BestSellerSection products={featuredProducts} loading={false} />
+          </Suspense>
+        </section>
+
+        {/* Section de produits */}
+
+        <section className="relative">
+          {/* Première section - Image à gauche */}
+          <SectionBandeauLeft products={featuredProducts} loading={false} />
+          {/* Deuxième section - Image à droite */}
+          <SectionBandeauRight products={featuredProducts} loading={false} />
+        </section>
+        {/* Transparent Section */}
+        <section className="relative">
+          <TransparentSection />
+        </section>
+
+        {/* Final CTA Section */}
+        <section className="relative">
+          <ConnectWithUsSection />
+        </section>
+      
+
+      {/* Cache Status */}
       <CacheStatus />
-    </div>
+    </main>
   );
 }

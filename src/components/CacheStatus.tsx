@@ -57,6 +57,7 @@ export default function CacheStatus({
             <div className="w-3 h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
           )}
           <button
+            type="button"
             onClick={() => setIsVisible(false)}
             className="text-gray-400 hover:text-white"
           >
@@ -177,6 +178,7 @@ export default function CacheStatus({
       <div className="mt-3 pt-2 border-t border-gray-600">
         <div className="flex gap-2 flex-wrap">
           <button
+            type="button"
             onClick={() => store.invalidateCache("all")}
             className="px-2 py-1 bg-red-600 hover:bg-red-700 rounded text-xs"
             disabled={isPending}
@@ -184,6 +186,7 @@ export default function CacheStatus({
             Clear Client
           </button>
           <button
+            type="button"
             onClick={() => store.clearErrors()}
             className="px-2 py-1 bg-blue-600 hover:bg-blue-700 rounded text-xs"
             disabled={isPending}
@@ -191,6 +194,7 @@ export default function CacheStatus({
             Clear Errors
           </button>
           <button
+            type="button"
             onClick={() => revalidateData("all")}
             className="px-2 py-1 bg-green-600 hover:bg-green-700 rounded text-xs"
             disabled={isPending}

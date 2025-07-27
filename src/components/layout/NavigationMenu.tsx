@@ -17,6 +17,9 @@ const navigationLinks = [
   { href: "/products?category=hydratation", label: "Hydratation" },
   { href: "/products?category=anti-age", label: "Anti-âge" },
   { href: "/products?category=purification", label: "Purification" },
+  { href: "/products?category=soins-corps", label: "Soins corps" },
+  { href: "/products?category=soins-mains", label: "Soins mains" },
+  { href: "/products?category=protection-soleil", label: "Protection solaire" },
   { href: "/about", label: "À propos" },
   { href: "/contact", label: "Contact" },
 ];
@@ -148,7 +151,7 @@ export default function NavigationMenu({
         ref={menuButtonRef}
         type="button"
         aria-label="Menu navigation"
-        className="relative focus:outline-none cursor-pointer hidden sm:block"
+        className="relative focus:outline-none cursor-pointer hidden sm:block z-[300]"
         onClick={() => {
           handleButtonTap();
           handleMenuToggle();
@@ -218,7 +221,7 @@ export default function NavigationMenu({
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="fixed inset-0 bg-black/30 z-[9998]"
+                className="fixed inset-0 bg-black/30 z-[100]"
                 onClick={() => setIsMenuOpen(false)}
               />
 
@@ -231,7 +234,7 @@ export default function NavigationMenu({
                   duration: 0.7,
                   ease: [0.76, 0, 0.24, 1] as const,
                 }}
-                className="fixed left-0 top-0 bg-white shadow-2xl flex flex-col z-[9999] border-r border-gray-300 min-h-screen"
+                className="fixed left-0 top-0 bg-white shadow-2xl flex flex-col z-[100] border-r border-gray-300 min-h-screen"
                 style={{
                   width: "500px",
                   maxWidth: "90vw",
@@ -266,7 +269,7 @@ export default function NavigationMenu({
 
                 {/* Navigation Links */}
                 <div className="flex-1 overflow-y-auto p-6">
-                  <nav className="space-y-2">
+                  <nav className="space-y-1">
                     {navigationLinks.map((link, index) => (
                       <motion.div
                         key={link.href}
@@ -281,14 +284,17 @@ export default function NavigationMenu({
                       >
                         <Link
                           href={link.href}
-                          className={`group relative block px-4 py-4 rounded-lg text-gray-700 hover:bg-gray-50 transition-all duration-300 ${
+                          className={`group relative block px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-50 transition-all duration-300 ${
                             pathname === link.href
                               ? "bg-emerald-50 text-emerald-700 font-medium"
                               : ""
-                          }`}
+                          } ${link.href.startsWith("/products?category=") ? "pl-8 flex items-center gap-2" : ""}`}
                           onClick={() => setIsMenuOpen(false)}
                         >
-                          <span className="relative font-light uppercase tracking-wide transition-all duration-300 group-hover:text-gray-900 group-hover:translate-x-1 text-responsive">
+                          {link.href.startsWith("/products?category=") && (
+                            <span className="w-1 h-1 rounded-full bg-black inline-block mr-2" />
+                          )}
+                          <span className="relative font-light uppercase tracking-wide transition-all duration-300 group-hover:text-gray-900 group-hover:translate-x-1 text-sm-responsive">
                             {link.label}
                           </span>
                           {/* Ligne d'animation hover */}

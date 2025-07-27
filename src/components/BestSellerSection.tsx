@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import { Link } from "next-view-transitions";
 import Image from "next/image";
 import { useState } from "react";
-import SophisticatedTitle from "./ui/SophisticatedTitle";
 import { useToast } from "./ui/ToastContainer";
 
 interface Product {
@@ -120,7 +119,7 @@ function ProductCard({ product }: { product: Product }) {
         {/* Badge Best Seller */}
         <div className="absolute top-1 left-1 sm:top-2 sm:left-2 md:top-4 md:left-4">
           <span className="bg-black text-white px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-3 md:py-1.5 text-[10px] sm:text-xs font-medium uppercase tracking-wider">
-            Bestseller
+            Best-seller
           </span>
         </div>
 
@@ -190,7 +189,7 @@ function ProductCard({ product }: { product: Product }) {
           </h3>
         </div>
         <p className="text-base sm:text-base-responsive font-semibold text-gray-900 mt-1 sm:mt-2">
-          €{Number(product.price).toFixed(0)}
+          {Number(product.price).toFixed(2).replace(".", ",")}€
         </p>
       </div>
     </motion.div>
@@ -202,7 +201,10 @@ export default function BestSellerSection({
   loading,
 }: BestSellerSectionProps) {
   return (
-    <section id="bestseller-section" className="py-16 sm:py-20 lg:py-24">
+    <section
+      id="bestseller-section"
+      className="py-16 sm:py-20 lg:py-24 bg-white"
+    >
       <div className="w-full px-1 sm:px-2 md:px-6 lg:px-12">
         {/* Header */}
         <motion.div
@@ -210,16 +212,12 @@ export default function BestSellerSection({
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="text-center mb-20"
+          className="text-center mb-20 leading-none"
         >
-          <SophisticatedTitle
-            level="h2"
-            variant="section"
-            className="text-gray-900 mb-6"
-          >
-            Bestsellers
-          </SophisticatedTitle>
-          <p className="text-lg text-gray-600 font-light max-w-2xl mx-auto">
+          <h2 className="text-zinc-900 mb-6 uppercase font-thin heading-xxl tracking-tight">
+          best-sellers
+          </h2>
+          <p className="text-base-responsive text-zinc-700 font-light max-w-2xl mx-auto ">
             Nos produits les plus appréciés, sélectionnés par notre communauté
           </p>
         </motion.div>

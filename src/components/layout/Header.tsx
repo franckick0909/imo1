@@ -3,7 +3,8 @@
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import { Link } from "next-view-transitions";
-import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 import CartSidebar from "../CartSidebar";
 import NavigationMenu from "./NavigationMenu";
 import UserMenu from "./UserMenu";
@@ -16,13 +17,47 @@ export default function Header() {
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isAtTop, setIsAtTop] = useState(true);
   const [hasScrolledUp, setHasScrolledUp] = useState(false);
+  const [backgroundIsDark, setBackgroundIsDark] = useState(true);
+
+  // Hook Next.js pour détecter les changements de route
+  const pathname = usePathname();
 
   // Ref pour l'animation GSAP
   const headerRef = useRef<HTMLDivElement>(null);
 
+  // Fonction pour détecter la couleur du fond avec useCallback
+  const detectBackgroundColor = useCallback(() => {
+    // Sur les pages dashboard, le fond est clair
+    if (pathname.startsWith("/dashboard") || pathname.startsWith("/admin")) {
+      setBackgroundIsDark(false);
+      return;
+    }
+
+    // Sur la page d'accueil, détecter selon la position de scroll
+    if (pathname === "/") {
+      const scrollY = window.scrollY;
+      // En haut de la page d'accueil (hero section), le fond est sombre
+      setBackgroundIsDark(scrollY < 300);
+    } else {
+      // Par défaut, considérer que le fond est clair
+      setBackgroundIsDark(false);
+    }
+  }, [pathname]);
+
+  // Effet pour détecter les changements de route
   useEffect(() => {
+    detectBackgroundColor();
+  }, [detectBackgroundColor]);
+
+  useEffect(() => {
+    // Détecter la couleur du fond au chargement
+    detectBackgroundColor();
+
     const controlHeader = () => {
       const currentScrollY = window.scrollY;
+
+      // Détecter la couleur du fond à chaque scroll
+      detectBackgroundColor();
 
       // Détecter si on est en haut de page
       setIsAtTop(currentScrollY <= 50);
@@ -58,7 +93,7 @@ export default function Header() {
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [lastScrollY]);
+  }, [lastScrollY, detectBackgroundColor]);
 
   // Animation GSAP pour l'apparition/disparition
   useGSAP(() => {
@@ -83,14 +118,9 @@ export default function Header() {
     return "bg-transparent";
   };
 
-  // Déterminer la couleur du logo
-  const getLogoColor = () => {
-    if (isAtTop) {
-      return "text-white";
-    } else if (hasScrolledUp) {
-      return "text-zinc-700";
-    }
-    return "text-white";
+  // Couleur pour la partie "Crème" du logo
+  const getCremeColor = () => {
+    return backgroundIsDark ? "text-white" : "text-slate-700";
   };
 
   return (
@@ -98,7 +128,7 @@ export default function Header() {
       ref={headerRef}
       className={`fixed top-0 left-0 right-0 z-[45] transition-all duration-300 ${getHeaderStyle()}`}
     >
-      <div className="flex justify-between items-center py-3 sm:py-3 md:py-4 lg:py-5 px-4 sm:px-5 md:px-6 lg:px-7">
+      <div className="flex justify-between items-center py-3 sm:py-3 md:py-4 lg:py-5 px-4 sm:px-5 md:px-6 lg:px-8">
         {/* Menu Navigation (gauche) */}
         <div className="flex-1 flex justify-start">
           <NavigationMenu isHeaderWhite={hasScrolledUp} />
@@ -108,9 +138,14 @@ export default function Header() {
         <div className="flex-1 flex justify-center">
           <Link
             href="/"
-            className={`font-pinyon text-2xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-light transition-all duration-300 cursor-pointer ${getLogoColor()}`}
+            className="heading-xl transition-all duration-300 cursor-pointer font-light"
           >
-            BioCrème
+            <span className=" text-emerald-400 font-light">Bio</span>
+            <span
+              className={`transition-all duration-300 tracking-tight ${getCremeColor()}`}
+            >
+              Crème
+            </span>
           </Link>
         </div>
 
