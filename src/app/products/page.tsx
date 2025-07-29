@@ -32,14 +32,23 @@ export default function ProductsPage({
   const [categories, setCategories] = useState<Category[]>([]);
   const [params, setParams] = useState<{ category?: string }>({});
 
-  // Charger les données au montage
+  // Charger les données au montage avec gestion d'état de chargement
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
     const loadData = async () => {
-      const searchParamsData = await searchParams;
-      setParams(searchParamsData);
+      try {
+        setIsLoading(true);
+        const searchParamsData = await searchParams;
+        setParams(searchParamsData);
 
-      const categoriesData = await getCategories();
-      setCategories(categoriesData);
+        const categoriesData = await getCategories();
+        setCategories(categoriesData);
+      } catch (error) {
+        console.error("Erreur lors du chargement des données:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     loadData();
@@ -74,13 +83,13 @@ export default function ProductsPage({
           alt="Visuel inspirant"
           className="object-cover"
         />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 subheading-xxl font-light text-gray-800 mb-6 leading-tight text-center tracking-tighter">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 heading-xxl font-medium text-gray-800 mb-6 leading-tight text-center tracking-tighter font-metal max-w-2xl mx-auto w-full px-4 lg:px-8">
           <h2>Pour une peau éclatante et saine</h2>
         </div>
       </div>
 
       {/* Contenu principal */}
-      <div className="pt-20 bg-white">
+      <div className="pt-20 bg-stone-100">
         <div className="max-w-screen mx-auto px-4 sm:px-6 lg:px-8 py-12">
           {/* En-tête style TrueKind */}
           <div className="text-center mb-16">
@@ -95,124 +104,138 @@ export default function ProductsPage({
           <div className="flex flex-col lg:flex-row gap-12">
             {/* Filtres sur le côté - style TrueKind */}
             <div className="lg:w-64 flex-shrink-0">
-              <div className="sticky top-8">
-                <h3 className="text-sm font-medium text-gray-500 mb-6 uppercase tracking-wider">
-                  FILTERS
-                </h3>
+              {isLoading ? (
+                <div className="animate-pulse">
+                  <div className="h-4 bg-gray-200 rounded w-24 mb-6"></div>
+                  <div className="space-y-2">
+                    {[...Array(6)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="h-4 bg-gray-200 rounded w-32"
+                      ></div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="sticky top-8">
+                  <h3 className="text-sm font-medium text-gray-500 mb-6 uppercase tracking-wider">
+                    FILTERS
+                  </h3>
 
-                {/* Filtre RANGE - style TrueKind */}
-                <div className="mb-8">
-                  <button
-                    type="button"
-                    onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
-                    className="flex items-center justify-between w-full mb-4 hover:opacity-80 transition-opacity"
-                  >
-                    <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider">
-                      Catégories
-                    </h4>
-                    <svg
-                      aria-hidden="true"
-                      className={`w-4 h-4 text-gray-500 transition-transform duration-300 cursor-pointer ${
-                        isCategoriesOpen ? "rotate-180" : "-rotate-90"
-                      }`}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                  {/* Filtre RANGE - style TrueKind */}
+                  <div className="mb-8">
+                    <button
+                      type="button"
+                      onClick={() => setIsCategoriesOpen(!isCategoriesOpen)}
+                      className="flex items-center justify-between w-full mb-4 hover:opacity-80 transition-opacity"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  </button>
-                  <div
-                    className={`overflow-hidden transition-all duration-500 ease-in-out ${
-                      isCategoriesOpen
-                        ? "max-h-96 opacity-100"
-                        : "max-h-0 opacity-0"
-                    }`}
-                  >
-                    <div className="space-y-2 pt-2">
-                      <Link
-                        href="/products"
-                        className={`block text-sm font-medium transition-colors ${
-                          !params.category
-                            ? "text-black"
-                            : "text-zinc-500 hover:text-zinc-950"
+                      <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider">
+                        Catégories
+                      </h4>
+                      <svg
+                        aria-hidden="true"
+                        className={`w-4 h-4 text-gray-500 transition-transform duration-300 cursor-pointer ${
+                          isCategoriesOpen ? "rotate-180" : "-rotate-90"
                         }`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
                       >
-                        TOUS LES PRODUITS
-                      </Link>
-
-                      {categories.map((category: Category) => (
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </button>
+                    <div
+                      className={`overflow-hidden transition-all duration-500 ease-in-out ${
+                        isCategoriesOpen
+                          ? "max-h-96 opacity-100"
+                          : "max-h-0 opacity-0"
+                      }`}
+                    >
+                      <div className="space-y-2 pt-2">
                         <Link
-                          key={category.id}
-                          href={`/products?category=${category.slug}`}
-                          className={`block text-sm font-light transition-colors ${
-                            params.category === category.slug
+                          href="/products"
+                          className={`block text-sm font-medium transition-colors ${
+                            !params.category
                               ? "text-black"
-                              : "text-zinc-500 hover:text-zinc-900"
+                              : "text-zinc-500 hover:text-zinc-950"
                           }`}
                         >
-                          {getCategoryLabel(category.slug).toUpperCase()}
+                          TOUS LES PRODUITS
                         </Link>
-                      ))}
+
+                        {categories.map((category: Category) => (
+                          <Link
+                            key={category.id}
+                            href={`/products?category=${category.slug}`}
+                            className={`block text-sm font-light transition-colors ${
+                              params.category === category.slug
+                                ? "text-black"
+                                : "text-zinc-500 hover:text-zinc-900"
+                            }`}
+                          >
+                            {getCategoryLabel(category.slug).toUpperCase()}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Ligne de séparation */}
+                  <div className="border-t border-gray-300 mb-8"></div>
+
+                  {/* Section TYPE (collapsed) - style TrueKind */}
+                  <div className="mb-8">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider">
+                        TYPE
+                      </h4>
+                      <svg
+                        className="w-4 h-4 text-gray-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+
+                  {/* Ligne de séparation */}
+                  <div className="border-t border-gray-300 mb-8"></div>
+
+                  {/* Section INGREDIENTS (collapsed) - style TrueKind */}
+                  <div className="mb-8">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider">
+                        INGREDIENTS
+                      </h4>
+                      <svg
+                        className="w-4 h-4 text-gray-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1}
+                          d="M9 5l7 7-7 7"
+                        />
+                      </svg>
                     </div>
                   </div>
                 </div>
-
-                {/* Ligne de séparation */}
-                <div className="border-t border-gray-300 mb-8"></div>
-
-                {/* Section TYPE (collapsed) - style TrueKind */}
-                <div className="mb-8">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider">
-                      TYPE
-                    </h4>
-                    <svg
-                      className="w-4 h-4 text-gray-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1}
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
-                  </div>
-                </div>
-
-                {/* Ligne de séparation */}
-                <div className="border-t border-gray-300 mb-8"></div>
-
-                {/* Section INGREDIENTS (collapsed) - style TrueKind */}
-                <div className="mb-8">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-medium text-gray-500 uppercase tracking-wider">
-                      INGREDIENTS
-                    </h4>
-                    <svg
-                      className="w-4 h-4 text-gray-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1}
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
-                  </div>
-                </div>
-              </div>
+              )}
             </div>
 
             {/* Sections par catégories */}

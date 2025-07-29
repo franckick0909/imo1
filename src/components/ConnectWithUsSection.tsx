@@ -201,7 +201,7 @@ export default function ConnectWithUsSection() {
       {/* Texte en bas à gauche */}
       <div
         ref={textRef}
-        className="absolute bottom-[10%] xl:bottom-[30%] xl:left-28 text-left max-w-sm"
+        className="absolute bottom-[10%] xl:bottom-[30%] xl:left-28 text-left max-w-sm px-4 lg:px-8"
         style={{ position: "absolute" }}
       >
         <p className="text-base-responsive text-gray-600 leading-relaxed">
@@ -265,7 +265,7 @@ export default function ConnectWithUsSection() {
         </div>
 
         {/* Texte "on instagram" */}
-        <div ref={instagramRef} className="text-center max-w-4xl mx-auto">
+        <div ref={instagramRef} className="text-center max-w-4xl mx-auto px-4 lg:px-8">
           <div className="absolute -top-48 left-1/2 transform -translate-x-1/2 font-medium italic font-metal tracking-tight text-[clamp(5rem,6vw,8rem)] z-10 font-metal text-gray-900 leading-[0.6]">
             <p className="">sur</p>
             <p className="">instagram</p>
@@ -275,7 +275,7 @@ export default function ConnectWithUsSection() {
           <div className="mt-36">
             <InstagramButton
               href="https://instagram.com"
-              className="w-full max-w-96 mx-auto border-[0.5px] border-zinc-300"
+              className="w-full max-w-[clamp(350px,30vw,30rem)] mx-auto border-[0.5px] border-zinc-300"
               variant="dark"
             >
               INSTAGRAM

@@ -6,6 +6,7 @@ import { gsap } from "gsap";
 import { Draggable } from "gsap/Draggable";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import ImageParallax from "./ImageParallax";
 import { CircleButton } from "./ui/ExploreButton";
@@ -47,11 +48,24 @@ interface SectionBandeauRightProps {
   categorySlug?: string;
 }
 
+// Fonction pour générer un slug à partir du nom
+const generateSlug = (name: string): string => {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "") // Supprimer les caractères spéciaux
+    .replace(/\s+/g, "-") // Remplacer les espaces par des tirets
+    .replace(/-+/g, "-") // Remplacer les tirets multiples par un seul
+    .replace(/^-+|-+$/g, "") // Supprimer les tirets en début et fin
+    .trim();
+};
+
 function ProductCard({ product, index }: { product: Product; index: number }) {
   const { addItem } = useCart();
   const { success, error } = useToast();
   const [isAdding, setIsAdding] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   const handleAddToCart = async () => {
     if (product.stock === 0) {
@@ -78,6 +92,33 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
     }
   };
 
+  const handleViewProduct = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Utiliser le slug existant s'il est propre, sinon en générer un à partir du nom
+    const slug =
+      product.slug && !product.slug.includes(" ")
+        ? product.slug
+        : generateSlug(product.name);
+
+    if (slug) {
+      router.push(`/products/${slug}`);
+    }
+  };
+
+  // Prefetch la route du produit au hover
+  const handleMouseEnter = () => {
+    const slug =
+      product.slug && !product.slug.includes(" ")
+        ? product.slug
+        : generateSlug(product.name);
+
+    if (slug) {
+      router.prefetch(`/products/${slug}`);
+    }
+  };
+
   useGSAP(
     () => {
       if (cardRef.current) {
@@ -98,29 +139,6 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
             },
           }
         );
-        const card = cardRef.current;
-        const handleMouseEnter = () => {
-          gsap.to(card, {
-            y: -4,
-            rotation: 0,
-            duration: 0.5,
-            ease: "power2.out",
-          });
-        };
-        const handleMouseLeave = () => {
-          gsap.to(card, {
-            y: 0,
-            rotation: 0,
-            duration: 0.3,
-            ease: "power2.out",
-          });
-        };
-        card.addEventListener("mouseenter", handleMouseEnter);
-        card.addEventListener("mouseleave", handleMouseLeave);
-        return () => {
-          card.removeEventListener("mouseenter", handleMouseEnter);
-          card.removeEventListener("mouseleave", handleMouseLeave);
-        };
       }
     },
     { scope: cardRef, dependencies: [index] }
@@ -129,22 +147,20 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
   return (
     <div
       ref={cardRef}
-      className="min-w-[240px] max-w-[280px] sm:min-w-[280px] sm:max-w-[320px] lg:min-w-[320px] lg:max-w-[380px] w-full max-h-[420px] sm:max-h-[480px] lg:max-h-[540px] h-full bg-[#D8CEC4] rounded-2xl px-3 py-4 sm:px-4 sm:py-6 flex flex-col justify-between gap-3 sm:gap-4 cursor-grab active:cursor-grabbing select-none flex-shrink-0"
+      className="min-w-[240px] max-w-[280px] sm:min-w-[280px] sm:max-w-[320px] lg:min-w-[320px] lg:max-w-[380px] w-full max-h-[420px] sm:max-h-[480px] lg:max-h-[540px] h-full bg-[#D4E8F8] rounded-2xl px-3 py-4 sm:px-4 sm:py-6 flex flex-col justify-between gap-3 sm:gap-4 cursor-grab active:cursor-grabbing select-none flex-shrink-0 group"
+      onMouseEnter={handleMouseEnter}
     >
       <div className="flex justify-between items-center">
         <span className="bg-white text-gray-600 px-3 py-2 sm:px-4 sm:py-2 lg:px-6 lg:py-3 text-xs font-medium uppercase tracking-wider rounded-full">
           PURE PURIFICATION
         </span>
-        <button
-          type="button"
-          onClick={handleAddToCart}
-          disabled={isAdding || product.stock === 0}
-          className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 bg-white hover:bg-gray-50 text-gray-700 rounded-full flex items-center justify-center transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50"
-          title="Ajouter au panier"
-        >
-          {isAdding ? (
-            <div className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 border-2 border-gray-700 border-t-transparent rounded-full animate-spin"></div>
-          ) : (
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={handleViewProduct}
+            className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 bg-white hover:bg-stone-50 text-zinc-700 rounded-full flex items-center justify-center transition-all duration-300 shadow-md hover:shadow-lg cursor-pointer"
+            title="Voir le produit"
+          >
             <svg
               className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4"
               fill="none"
@@ -154,21 +170,52 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
                 strokeWidth={1}
-                d="M16 11V7a4 4 0 00-8 0v4M5 9h14l-1 7a2 2 0 01-2 2H8a2 2 0 01-2-2L5 9z"
+                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
               />
             </svg>
-          )}
-        </button>
+          </button>
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            disabled={isAdding || product.stock === 0}
+            className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 bg-white hover:bg-gray-50 text-gray-700 rounded-full flex items-center justify-center transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50"
+            title="Ajouter au panier"
+          >
+            {isAdding ? (
+              <div className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 border-2 border-gray-700 border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              <svg
+                className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1}
+                  d="M16 11V7a4 4 0 00-8 0v4M5 9h14l-1 7a2 2 0 01-2 2H8a2 2 0 01-2-2L5 9z"
+                />
+              </svg>
+            )}
+          </button>
+        </div>
       </div>
-      <div className="relative flex-1 rounded-lg overflow-hidden">
+      <div className="relative flex-1 rounded-lg overflow-hidden h-[280px] sm:h-[300px] lg:h-[320px]">
         {product.images && product.images.length > 0 ? (
           <Image
             src={product.images[0].url}
             alt={product.images[0].alt || product.name}
             fill
             sizes="(max-width: 640px) 280px, (max-width: 1024px) 320px, 380px"
-            className="object-cover"
+            className="object-cover transition-transform duration-300 ease-out group-hover:scale-105"
             priority
           />
         ) : (
@@ -204,6 +251,10 @@ export default function SectionBandeauRight({
   loading,
   categorySlug = "purification",
 }: SectionBandeauRightProps) {
+  // Détection d'appareil tactile
+  const isTouchDevice = () => {
+    return "ontouchstart" in window || navigator.maxTouchPoints > 0;
+  };
   const sliderRef = useRef<HTMLDivElement>(null);
   const sliderContainerRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLElement>(null);
@@ -244,7 +295,8 @@ export default function SectionBandeauRight({
             },
             edgeResistance: 0.9,
             dragResistance: 0.1,
-            allowNativeTouchScrolling: false,
+            allowNativeTouchScrolling: isTouchDevice(),
+            preventDefault: !isTouchDevice(),
             onPress: function () {
               gsap.killTweensOf(slider);
               isDragging = true;
@@ -371,7 +423,7 @@ export default function SectionBandeauRight({
               </h3>
               <div className="flex items-end mb-4">
                 <CircleButton
-                  href="/products"
+                  href={`/products?category=${categorySlug}`}
                   direction="right"
                   variant="dark"
                   size="large"

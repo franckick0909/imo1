@@ -36,7 +36,7 @@ export async function GET() {
     // Sauvegarder en cache
     categoriesCache.set(cacheKey, { data: categories, timestamp: Date.now() });
 
-    return cachedResponse({ categories }, 900); // 15 minutes de cache
+    return cachedResponse(categories, 900); // 15 minutes de cache
   } catch (error) {
     console.error("Erreur lors de la récupération des catégories:", error);
     return errorResponse("Erreur lors de la récupération des catégories", 500);

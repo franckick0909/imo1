@@ -3,7 +3,7 @@
 
 // Preset d'upload pour les produits BioCrème
 export const UPLOAD_PRESETS = {
-  products: "bio_creme", // Nom validé et fonctionnel sur Cloudinary
+  products: "bio_creme", // Preset existant sur votre compte Cloudinary
 } as const;
 
 // Dossiers d'organisation

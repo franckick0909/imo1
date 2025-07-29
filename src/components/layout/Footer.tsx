@@ -1,8 +1,5 @@
 "use client";
 
-import { useGSAP } from "@gsap/react";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
   Facebook,
   Instagram,
@@ -12,12 +9,9 @@ import {
   Phone,
   Twitter,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
-import { useRef } from "react";
-import { CircleButton } from "../ui/ExploreButton";
-
-gsap.registerPlugin(ScrollTrigger);
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const navLinks = [
   { label: "Accueil", href: "/" },
@@ -38,97 +32,32 @@ const socialLinks = [
 ];
 
 export default function Footer() {
-  const colRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const imgRef = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
   const currentYear = new Date().getFullYear();
+  const [isVisible, setIsVisible] = useState(false);
 
-  useGSAP(() => {
-    // Animation des colonnes du footer
-    colRefs.current.forEach((el, i) => {
-      if (!el) return;
-      gsap.fromTo(
-        el,
-        { opacity: 0, y: 40 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.7,
-          delay: i * 0.15,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: el,
-            start: "top bottom",
-            toggleActions: "play none none reverse",
-          },
-        }
-      );
-    });
-
-    // Effet parallax sur l'image de fond
-    gsap.fromTo(
-      imgRef.current,
-      { y: -200 },
-      {
-        y: 200,
-        ease: "none",
-        scrollTrigger: {
-          trigger: containerRef.current,
-          scrub: true,
-          start: "top bottom",
-          end: "bottom top",
-        },
-      }
-    );
-
-    // Effet parallax sur le contenu de la newsletter
-    gsap.fromTo(
-      contentRef.current,
-      { y: 300 },
-      {
-        y: -300,
-        ease: "none",
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: "top bottom",
-          end: "bottom top",
-          scrub: 1,
-        },
-      }
-    );
-  }, []);
+  useEffect(() => {
+    // Réinitialiser l'animation lors des changements de route
+    setIsVisible(false);
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [pathname]);
 
   return (
     <>
-      {/* Section Parallax */}
-      <section
-        ref={containerRef}
-        className="relative w-full min-h-[85vh] h-full overflow-hidden"
-      >
-        {/* ParallaxBanner en arrière-plan */}
-        <div
-          ref={imgRef}
-          className="absolute inset-0 will-change-transform"
-        >
-          <Image
-            src="/images/banner.jpg"
-            alt="Visuel inspirant"
-            fill
-            className="object-cover object-center select-none pointer-events-none"
-            priority
-          />
-        </div>
-      </section>
-
       {/* Footer */}
       <footer className="bg-white border-t border-zinc-200 pt-16 pb-8 relative">
         <div className="max-w-screen-2xl mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Col 1 : Logo + slogan */}
           <div
-            ref={(el) => {
-              colRefs.current[0] = el;
-            }}
+            className={`transition-all duration-700 ease-out ${
+              isVisible
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-10"
+            }`}
+            style={{ transitionDelay: "0ms" }}
           >
             <Link
               href="/"
@@ -140,11 +69,15 @@ export default function Footer() {
               Soins naturels, transparents et efficaces pour toutes les peaux.
             </p>
           </div>
+
           {/* Col 2 : Navigation */}
           <div
-            ref={(el) => {
-              colRefs.current[1] = el;
-            }}
+            className={`transition-all duration-700 ease-out ${
+              isVisible
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-10"
+            }`}
+            style={{ transitionDelay: "150ms" }}
           >
             <h3 className="text-zinc-900 mb-4 font-light tracking-tight heading-sm uppercase">
               Navigation
@@ -162,11 +95,15 @@ export default function Footer() {
               ))}
             </ul>
           </div>
+
           {/* Col 3 : Suivi & Contact */}
           <div
-            ref={(el) => {
-              colRefs.current[2] = el;
-            }}
+            className={`transition-all duration-700 ease-out ${
+              isVisible
+                ? "opacity-100 translate-y-0"
+                : "opacity-0 translate-y-10"
+            }`}
+            style={{ transitionDelay: "300ms" }}
           >
             <h3 className="text-zinc-900 font-light mb-4 tracking-tight heading-sm uppercase">
               Suivez-nous
@@ -210,6 +147,7 @@ export default function Footer() {
             </ul>
           </div>
         </div>
+
         <div className="mt-12 border-t border-zinc-200 pt-6 text-center text-xs text-zinc-500 flex items-center justify-between gap-2 max-w-screen-2xl mx-auto px-4">
           <div>
             © {currentYear} BioCrème. Tous droits réservés. |{" "}
@@ -230,42 +168,6 @@ export default function Footer() {
               Webdesign by{" "}
               <span className="text-zinc-600 font-medium">Franckick</span>
             </Link>
-          </div>
-        </div>
-
-        {/* Newsletter Overlay - par-dessus le footer */}
-        <div className="absolute -top-20 right-4 lg:-top-32 lg:right-8 xl:-top-40 xl:right-8 z-30">
-          <div ref={contentRef} className="max-w-md">
-            <div className="bg-black text-white p-8 shadow-2xl rounded-lg">
-              <div className="text-center mb-6">
-                <h2 className="text-xl font-light tracking-tight mb-3 uppercase">
-                  En savoir plus sur nous
-                </h2>
-                <p className="text-zinc-100 text-sm font-light">
-                  Recevez les dernières nouvelles sur nos conseils beauté et nos
-                  nouveaux produits.
-                </p>
-              </div>
-
-              <form className="flex flex-col gap-4 items-center justify-center max-w-sm mx-auto border-b border-white pb-6">
-                <input
-                  type="email"
-                  placeholder="ENTER YOUR EMAIL"
-                  className="flex-1 px-4 py-3 bg-zinc-950 text-white placeholder-zinc-400 border border-zinc-600 rounded-full focus:outline-none focus:border-zinc-400 text-sm w-full"
-                />
-                <CircleButton
-                  href="#"
-                  variant="dark"
-                  size="large"
-                  className="text-zinc-800 -rotate-45 hover:text-zinc-900"
-                />
-              </form>
-
-              <p className="text-center text-zinc-50 text-xs mt-4 font-thin">
-                Pas de spam, que des conseils beauté pour vous aider à être plus
-                radieuse.
-              </p>
-            </div>
           </div>
         </div>
       </footer>

@@ -46,8 +46,8 @@ export default function TransparentSection() {
       <div className="bg-zinc-100">
         {/* Titre principal imposant - Style TrueKind */}
         <div className="relative w-full h-full py-12">
-          <div className="text-content text-zinc-700 px-2 lg:px-4 xl:px-8 mx-auto w-full leading-[0.8] h-full text-[clamp(3rem,11vw,20rem)]">
-            {/* Première ligne - TRANSPARENCE */}
+            <div className="text-content text-zinc-700 px-2 lg:px-4 xl:px-8 mx-auto w-full leading-[0.8] h-full heading-transparentSection">
+              {/* Première ligne - TRANSPARENCE */}
             <div className="title-line flex mb-1 lg:mb-2 text-center justify-center items-center">
               <TitleAnimation
                 text="TRANSPARENCE"
@@ -99,7 +99,7 @@ export default function TransparentSection() {
                   alt="Crème rose"
                   fill={true}
                   priority={true}
-                  className="flex-shrink-0 !relative w-[clamp(4rem,8vw,12rem)] h-[clamp(4rem,6vw,12rem)]"
+                  className="flex-shrink-0 !relative w-[clamp(5rem,8vw,13rem)] h-[clamp(5rem,8vw,13rem)]"
                   delay={0.5}
                   duration={1.2}
                   triggerStart="top 85%"
@@ -135,10 +135,10 @@ export default function TransparentSection() {
 
             {/* Quatrième ligne avec deuxième image - CACHER */}
             <div className="title-line flex justify-center sm:gap-4 lg:gap-6">
-              <div className="flex items-center gap-24">
+              <div className="flex items-center gap-8 lg:gap-24">
                 <TitleAnimation
                   text="CACHER."
-                  className="font-medium text-gray-700 tracking-tight text-[clamp(3rem,11vw,20rem)]"
+                  className="font-medium text-gray-700 tracking-tight heading-transparentSection"
                   delay={0.5}
                   duration={0.6}
                   stagger={0.08}
@@ -152,7 +152,7 @@ export default function TransparentSection() {
                   src="/images/creme-verte.png"
                   alt="Crème verte"
                   fill={true}
-                  className="flex-shrink-0 !relative w-[clamp(4rem,8vw,12rem)] h-[clamp(3rem,6vw,12rem)]"
+                  className="flex-shrink-0 !relative w-[clamp(5rem,9vw,16rem)] h-[clamp(4rem,7vw,12rem)]"
                   delay={1.2}
                   duration={1.3}
                   triggerStart="top 85%"

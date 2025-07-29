@@ -8,7 +8,11 @@ import { CircleButton } from "./ui/ExploreButton";
 
 gsap.registerPlugin(ScrollTrigger);
 
-export default function NewsletterOverlay() {
+export default function NewsletterOverlay({ 
+  className,
+}: {
+  className?: string;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -33,8 +37,8 @@ export default function NewsletterOverlay() {
   }, []);
 
   return (
-    <div ref={containerRef} className="relative z-10 ">
-      <div ref={contentRef} className="max-w-xl w-full h-full px-4 md:px-8">
+    <div ref={containerRef} className={`${className}`}>
+      <div ref={contentRef} className="max-w-xl h-full px-4 md:px-8">
         <div className="bg-black text-white p-12 shadow-2xl h-full w-full flex flex-col justify-center items-center space-y-12">
           <div className="text-center mb-8">
             <h2 className="heading-lg font-light tracking-tight mb-4 uppercase">

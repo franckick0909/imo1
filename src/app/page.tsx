@@ -2,6 +2,8 @@ import BestSellerSection from "@/components/BestSellerSection";
 import CacheStatus from "@/components/CacheStatus";
 import ConnectWithUsSection from "@/components/ConnectWithUsSection";
 import FloatingCardsSection from "@/components/FloatingCardsSection";
+import NewsletterOverlay from "@/components/NewsletterOverlay";
+import ParallaxBanner from "@/components/ParallaxBanner";
 import SectionBandeauLeft from "@/components/SectionBandeauLeft";
 import SectionBandeauRight from "@/components/SectionBandeauRight";
 import TransparentSection from "@/components/TransparentSection";
@@ -119,37 +121,44 @@ export default async function Home() {
         <HeroLoader />
       </section>
 
-     
-        {/* Floating Cards Section */}
-        <section className="relative">
-          <FloatingCardsSection />
-        </section>
+      {/* Floating Cards Section */}
+      <section className="relative">
+        <FloatingCardsSection />
+      </section>
 
-        {/* Best Seller Section avec produits */}
-        <section className="relative">
-          <Suspense fallback={<ProductsLoadingSkeleton />}>
-            <BestSellerSection products={featuredProducts} loading={false} />
-          </Suspense>
-        </section>
+      {/* Best Seller Section avec produits */}
+      <section className="relative">
+        <Suspense fallback={<ProductsLoadingSkeleton />}>
+          <BestSellerSection products={featuredProducts} loading={false} />
+        </Suspense>
+      </section>
 
-        {/* Section de produits */}
+      {/* Section de produits */}
 
-        <section className="relative">
-          {/* Première section - Image à gauche */}
-          <SectionBandeauLeft products={featuredProducts} loading={false} />
-          {/* Deuxième section - Image à droite */}
-          <SectionBandeauRight products={featuredProducts} loading={false} />
-        </section>
-        {/* Transparent Section */}
-        <section className="relative">
-          <TransparentSection />
-        </section>
+      <section className="relative">
+        {/* Première section - Image à gauche */}
+        <SectionBandeauLeft products={featuredProducts} loading={false} />
+        {/* Deuxième section - Image à droite */}
+        <SectionBandeauRight products={featuredProducts} loading={false} />
+      </section>
+      {/* Transparent Section */}
+      <section className="relative">
+        <TransparentSection />
+      </section>
 
-        {/* Final CTA Section */}
-        <section className="relative">
-          <ConnectWithUsSection />
-        </section>
-      
+      {/* Final CTA Section */}
+      <section className="relative">
+        <ConnectWithUsSection />
+      </section>
+
+      {/* Parallax Banner */}
+      <section className="relative w-full h-full">
+        {/* Newsletter Overlay */}
+        <NewsletterOverlay className="absolute bottom-0 right-0 z-10 " />
+        <div className=" w-full h-auto relative">
+          <ParallaxBanner src="/images/banner.jpg" alt="Banner" />
+        </div>
+      </section>
 
       {/* Cache Status */}
       <CacheStatus />

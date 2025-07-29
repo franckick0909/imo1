@@ -60,7 +60,7 @@ export default function HeroLoader() {
       progressFillRef.current,
       {
         scaleX: 1,
-        duration: 5, // Durée totale pour atteindre 99
+        duration: 3, // Réduit de 5 à 3 secondes
         ease: "power1.inOut",
       },
       0
@@ -71,10 +71,10 @@ export default function HeroLoader() {
       progressBarRef.current,
       {
         opacity: 0,
-        duration: 0.3,
+        duration: 0.2, // Réduit de 0.3 à 0.2
         ease: "power2.out",
       },
-      "+=0.5"
+      "+=0.3" // Réduit de 0.5 à 0.3
     );
 
     // Animation séquentielle des groupes de chiffres
@@ -84,10 +84,10 @@ export default function HeroLoader() {
         group,
         {
           y: "0%",
-          duration: 1,
-          stagger: 0.075,
+          duration: 0.6, // Réduit de 1 à 0.6
+          stagger: 0.05, // Réduit de 0.075 à 0.05
         },
-        index * 1 + 0.1
+        index * 0.6 + 0.1 // Réduit l'intervalle entre les groupes
       );
 
       // Disparition du groupe (ensemble, rapide)
@@ -95,9 +95,9 @@ export default function HeroLoader() {
         group,
         {
           y: "-100%",
-          stagger: 0.05,
+          stagger: 0.03, // Réduit de 0.05 à 0.03
         },
-        index * 1 + 1
+        index * 0.6 + 0.6 // Ajusté pour correspondre à la nouvelle durée
       );
     });
 
@@ -108,7 +108,7 @@ export default function HeroLoader() {
         word1Ref.current,
         {
           y: "0%",
-          duration: 1.2,
+          duration: 0.8, // Réduit de 1.2 à 0.8
         },
         "<"
       );
@@ -117,7 +117,7 @@ export default function HeroLoader() {
         word2Ref.current,
         {
           y: "0%",
-          duration: 1.2,
+          duration: 0.8, // Réduit de 1.2 à 0.8
         },
         "<"
       );
@@ -127,8 +127,8 @@ export default function HeroLoader() {
       dividerRef.current,
       {
         scaleY: 1,
-        duration: 0.5,
-        delay: 0.2,
+        duration: 0.3, // Réduit de 0.5 à 0.3
+        delay: 0.1, // Réduit de 0.2 à 0.1
         ease: "power4.inOut",
       },
       "<"
@@ -137,7 +137,7 @@ export default function HeroLoader() {
     // Disparition du divider vers le bas
     tl.to(dividerRef.current, {
       y: "100%",
-      duration: 0.3,
+      duration: 0.2, // Réduit de 0.3 à 0.2
       ease: "power2.out",
     });
 
@@ -146,7 +146,7 @@ export default function HeroLoader() {
       insetLeftRef.current,
       {
         clipPath: "inset(0 0 100% 0)",
-        duration: 0.9,
+        duration: 0.6, // Réduit de 0.9 à 0.6
       },
       "<"
     );
@@ -155,7 +155,7 @@ export default function HeroLoader() {
       insetRightRef.current,
       {
         clipPath: "inset(0 0 100% 0)",
-        duration: 1,
+        duration: 0.7, // Réduit de 1 à 0.7
       },
       "<"
     );
@@ -164,7 +164,7 @@ export default function HeroLoader() {
       word1Ref.current,
       {
         y: "100%",
-        duration: 0.7,
+        duration: 0.5, // Réduit de 0.7 à 0.5
         opacity: 0,
       },
       "<"
@@ -174,31 +174,37 @@ export default function HeroLoader() {
       word2Ref.current,
       {
         y: "-100%",
-        duration: 0.7,
+        duration: 0.5, // Réduit de 0.7 à 0.5
         opacity: 0,
       },
       "<"
     );
 
-    // Animation du logo vers le haut en même temps que les insets
-    //    tl.to(
-    //      logoRef.current,
-    //      {
-    //        y: "-100%",
-    //        duration: 0.7,
-    //        opacity: 0,
-    //      },
-    //      "<"
-    //    );
+    // Faire disparaître le loaderRef après les insets
+    tl.to(
+      loaderRef.current,
+      {
+        opacity: 0,
+        duration: 0.1,
+        ease: "power2.out",
+        onComplete: () => {
+          // Supprimer complètement le loader du DOM
+          if (loaderRef.current) {
+            loaderRef.current.style.display = "none";
+          }
+        },
+      },
+      "+=0.1"
+    ); // Petit délai après les insets
 
     // Animation de l'image qui revient à scale 1 quand les insets se relèvent
     tl.to(
       imageRef.current,
       {
         scale: 1,
-        duration: 1,
-        delay: 0.5,
-        ease: "power2.out",
+        duration: 0.8, // Réduit de 1 à 0.7
+        delay: 0.3, // Réduit de 0.5 à 0.3
+        ease: "none",
       },
       "<"
     );
@@ -207,62 +213,76 @@ export default function HeroLoader() {
     if (contentRef.current && buttonRef.current && overlayRef.current) {
       tl.to(overlayRef.current, { opacity: 1 }, "<");
 
-      // Créer tous les splits avant l'animation
-      const h1Split = contentRef.current
-        ? new SplitText(contentRef.current, {
-            type: "chars",
-            charsClass: "char++",
-          })
-        : null;
+      // Vérifier que les polices sont chargées avant de créer les splits
+      const waitForFonts = () => {
+        return new Promise<void>((resolve) => {
+          if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(() => resolve());
+          } else {
+            // Fallback si document.fonts n'est pas supporté
+            setTimeout(resolve, 100);
+          }
+        });
+      };
 
-      const h2Element = contentRef.current?.nextElementSibling as HTMLElement;
-      const h2Split = h2Element
-        ? new SplitText(h2Element, {
-            type: "lines",
-            linesClass: "line++",
-          })
-        : null;
+      // Créer tous les splits après que les polices soient chargées
+      waitForFonts().then(() => {
+        const h1Split = contentRef.current
+          ? new SplitText(contentRef.current, {
+              type: "chars",
+              charsClass: "char++",
+            })
+          : null;
 
-      const paragraphSplit = paragraphRef.current
-        ? new SplitText(paragraphRef.current, {
-            type: "words",
-            wordsClass: "word++",
-          })
-        : null;
+        const h2Element = contentRef.current?.nextElementSibling as HTMLElement;
+        const h2Split = h2Element
+          ? new SplitText(h2Element, {
+              type: "lines",
+              linesClass: "line++",
+            })
+          : null;
 
-      // Regrouper tous les éléments dans un tableau pour l'animation
-      const allElements: gsap.TweenTarget[] = [];
+        const paragraphSplit = paragraphRef.current
+          ? new SplitText(paragraphRef.current, {
+              type: "words",
+              wordsClass: "word++",
+            })
+          : null;
 
-      if (h1Split) allElements.push(...h1Split.chars);
-      if (h2Split) allElements.push(...h2Split.lines);
-      if (paragraphSplit) allElements.push(...paragraphSplit.words);
+        // Regrouper tous les éléments dans un tableau pour l'animation
+        const allElements: gsap.TweenTarget[] = [];
 
-      // Animation unifiée avec stagger
-      tl.fromTo(
-        allElements,
-        {
-          y: "100%",
-          opacity: 0,
-          rotateY: "10deg",
-        },
-        {
-          y: "0%",
-          opacity: 1,
-          rotateY: "0deg",
-          duration: 1,
-          stagger: 0.1,
-          ease: "power4.out",
-        },
-        "<"
-      );
+        if (h1Split) allElements.push(...h1Split.chars);
+        if (h2Split) allElements.push(...h2Split.lines);
+        if (paragraphSplit) allElements.push(...paragraphSplit.words);
+
+        // Animation unifiée avec stagger
+        tl.fromTo(
+          allElements,
+          {
+            y: "100%",
+            opacity: 0,
+            rotateY: "10deg",
+          },
+          {
+            y: "0%",
+            opacity: 1,
+            rotateY: "0deg",
+            duration: 0.7, // Réduit de 1 à 0.7
+            stagger: 0.07, // Réduit de 0.1 à 0.07
+            ease: "power4.out",
+          },
+          "<"
+        );
+      });
 
       tl.to(
         buttonRef.current,
         {
           scaleX: 1,
           opacity: 1,
-          duration: 1,
-          delay: 0.5,
+          duration: 0.7, // Réduit de 1 à 0.7
+          delay: 0.3, // Réduit de 0.5 à 0.3
           ease: "power4.out",
         },
         "<"
@@ -277,18 +297,22 @@ export default function HeroLoader() {
       heroRef.current
     ) {
       // Parallax pour l'image de fond
-      gsap.fromTo(imageRef.current, {
-        y: -0,
-      }, {
-        y: 500,
-        ease: "none",
-        scrollTrigger: {
-          trigger: heroRef.current,
-          start: "top top",
-          end: "bottom top",
-          scrub: true,
+      gsap.fromTo(
+        imageRef.current,
+        {
+          y: -0,
         },
-      });
+        {
+          y: 500,
+          ease: "none",
+          scrollTrigger: {
+            trigger: heroRef.current,
+            start: "top top",
+            end: "bottom top",
+            scrub: true,
+          },
+        }
+      );
 
       // Parallax pour le contenu (plus lent)
       gsap.to(contentRef.current, {
@@ -445,7 +469,7 @@ export default function HeroLoader() {
         <div
           ref={imageRef}
           style={{ willChange: "transform", transform: "scale(1.2)" }}
-          className="absolute inset-0 will-change-transform h-screen w-screen" 
+          className="absolute inset-0 will-change-transform h-screen w-screen"
         >
           <Image
             src="/images/hero.jpg"

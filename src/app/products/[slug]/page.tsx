@@ -41,7 +41,20 @@ interface PageProps {
 
 // Server Component pour récupérer les données du produit
 async function getProduct(slug: string): Promise<Product | null> {
-  const product = await prisma.product.findUnique({
+  // Fonction pour générer un slug à partir du nom
+  const generateSlug = (name: string): string => {
+    return name
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s-]/g, '') // Supprimer les caractères spéciaux
+      .replace(/\s+/g, '-') // Remplacer les espaces par des tirets
+      .replace(/-+/g, '-') // Remplacer les tirets multiples par un seul
+      .replace(/^-+|-+$/g, '') // Supprimer les tirets en début et fin
+      .trim();
+  };
+
+  // D'abord, essayer de trouver le produit avec le slug exact
+  let product = await prisma.product.findUnique({
     where: {
       slug,
       isActive: true,
@@ -61,6 +74,32 @@ async function getProduct(slug: string): Promise<Product | null> {
       },
     },
   });
+
+  // Si pas trouvé, essayer de trouver par le nom (en générant le slug)
+  if (!product) {
+    const allProducts = await prisma.product.findMany({
+      where: {
+        isActive: true,
+      },
+      include: {
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+        images: {
+          orderBy: {
+            position: "asc",
+          },
+        },
+      },
+    });
+
+    // Chercher le produit dont le slug généré correspond
+    product = allProducts.find(p => generateSlug(p.name) === slug) || null;
+  }
 
   if (!product) return null;
 
@@ -121,41 +160,41 @@ export default async function ProductDetailPage({ params }: PageProps) {
   const isLowStock = product.stock < 10;
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-20">
+    <div className="min-h-screen bg-stone-100 pt-20">
       {/* Breadcrumb */}
-      <div className="bg-gradient-to-b from-emerald-50 to-gray-50">
+      <div className="bg-white border-b border-stone-200">
         <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <nav className="flex overflow-hidden" aria-label="Breadcrumb">
             <ol className="flex items-center space-x-2 text-sm min-w-0 w-full">
               <li className="flex-shrink-0">
                 <Link
                   href="/"
-                  className="text-gray-500 hover:text-emerald-600 transition-colors"
+                  className="text-stone-500 hover:text-emerald-600 transition-colors"
                 >
                   Accueil
                 </Link>
               </li>
-              <li className="text-gray-300 flex-shrink-0">/</li>
+              <li className="text-stone-300 flex-shrink-0">/</li>
               <li className="flex-shrink-0">
                 <Link
                   href="/products"
-                  className="text-gray-500 hover:text-emerald-600 transition-colors"
+                  className="text-stone-500 hover:text-emerald-600 transition-colors"
                 >
                   Produits
                 </Link>
               </li>
-              <li className="text-gray-300 flex-shrink-0">/</li>
+              <li className="text-stone-300 flex-shrink-0">/</li>
               <li className="min-w-0 flex-shrink">
                 <Link
                   href={`/products?category=${product.category.slug}`}
-                  className="text-gray-500 hover:text-emerald-600 transition-colors truncate block"
+                  className="text-stone-500 hover:text-emerald-600 transition-colors truncate block"
                   title={product.category.name}
                 >
                   {product.category.name}
                 </Link>
               </li>
-              <li className="text-gray-300 flex-shrink-0">/</li>
-              <li className="text-gray-900 font-medium min-w-0 flex-1">
+              <li className="text-stone-300 flex-shrink-0">/</li>
+              <li className="text-stone-900 font-medium min-w-0 flex-1">
                 <span className="truncate block" title={product.name}>
                   {product.name}
                 </span>
@@ -168,7 +207,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
       {/* Contenu principal */}
       <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Section produit principale */}
-        <div className="bg-white rounded-3xl shadow-sm overflow-hidden mb-12">
+        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-sm border border-stone-200/50 overflow-hidden mb-12">
           <div className="grid grid-cols-1 lg:grid-cols-2">
             {/* Galerie d'images */}
             <div className="p-8 lg:p-12">
@@ -179,7 +218,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
             </div>
 
             {/* Informations produit */}
-            <div className="p-8 lg:p-12 bg-gray-50 flex flex-col justify-center">
+            <div className="p-8 lg:p-12 bg-stone-50/50 flex flex-col justify-center">
               {/* Badges et catégorie */}
               <div className="flex flex-wrap gap-2 mb-6">
                 <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-emerald-100 text-emerald-700 border border-emerald-200">
@@ -204,7 +243,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
               </div>
 
               {/* Titre */}
-              <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+              <h1 className="text-4xl lg:text-5xl font-bold text-stone-900 mb-6 leading-tight">
                 {product.name}
               </h1>
 
@@ -214,7 +253,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                   {[...Array(5)].map((_, i) => (
                     <svg
                       key={i}
-                      className={`w-5 h-5 ${i < 4 ? "text-yellow-400" : "text-gray-200"}`}
+                      className={`w-5 h-5 ${i < 4 ? "text-yellow-400" : "text-stone-200"}`}
                       fill="currentColor"
                       viewBox="0 0 20 20"
                     >
@@ -222,42 +261,42 @@ export default async function ProductDetailPage({ params }: PageProps) {
                     </svg>
                   ))}
                 </div>
-                <span className="text-gray-600 text-sm">(4.0) • 127 avis</span>
+                <span className="text-stone-600 text-sm">(4.0) • 127 avis</span>
               </div>
 
               {/* Prix */}
               <div className="mb-8">
                 <div className="flex items-baseline gap-4 mb-2">
-                  <span className="text-5xl font-bold text-gray-900">
+                  <span className="text-5xl font-bold text-stone-900">
                     €{Number(product.price).toFixed(2)}
                   </span>
                   {product.comparePrice && (
-                    <span className="text-2xl text-gray-400 line-through">
+                    <span className="text-2xl text-stone-400 line-through">
                       €{product.comparePrice.toFixed(2)}
                     </span>
                   )}
                 </div>
-                <p className="text-gray-600">
+                <p className="text-stone-600">
                   TVA incluse • Livraison gratuite dès 50€
                 </p>
               </div>
 
               {/* Indicateurs de stock et qualité */}
               <div className="grid grid-cols-2 gap-4 mb-8">
-                <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200">
+                <div className="flex items-center gap-3 p-4 bg-white/80 backdrop-blur-sm rounded-xl border border-stone-200/50">
                   <div
                     className={`w-3 h-3 rounded-full ${product.stock > 10 ? "bg-green-500" : product.stock > 5 ? "bg-orange-500" : "bg-red-500"}`}
                   />
                   <div>
-                    <p className="text-sm font-medium text-gray-900">Stock</p>
-                    <p className="text-xs text-gray-600">
+                    <p className="text-sm font-medium text-stone-900">Stock</p>
+                    <p className="text-xs text-stone-600">
                       {product.stock > 0
                         ? `${product.stock} unités`
                         : "Rupture"}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200">
+                <div className="flex items-center gap-3 p-4 bg-white/80 backdrop-blur-sm rounded-xl border border-stone-200/50">
                   <svg
                     className="w-6 h-6 text-emerald-500"
                     fill="currentColor"
@@ -270,10 +309,10 @@ export default async function ProductDetailPage({ params }: PageProps) {
                     />
                   </svg>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-medium text-stone-900">
                       Bio & Naturel
                     </p>
-                    <p className="text-xs text-gray-600">Certifié</p>
+                    <p className="text-xs text-stone-600">Certifié</p>
                   </div>
                 </div>
               </div>
@@ -287,12 +326,12 @@ export default async function ProductDetailPage({ params }: PageProps) {
 
                 <div className="flex gap-3">
                   <button
-                    className="flex-1 px-6 py-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                    className="flex-1 px-6 py-3 border-2 border-stone-200 rounded-xl hover:bg-stone-50 transition-colors flex items-center justify-center gap-2"
                     title="Ajouter aux favoris"
                     aria-label="Ajouter aux favoris"
                   >
                     <svg
-                      className="w-5 h-5 text-gray-600"
+                      className="w-5 h-5 text-stone-600"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -304,18 +343,18 @@ export default async function ProductDetailPage({ params }: PageProps) {
                         d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                       />
                     </svg>
-                    <span className="text-sm font-medium text-gray-700">
+                    <span className="text-sm font-medium text-stone-700">
                       Favoris
                     </span>
                   </button>
 
                   <button
-                    className="flex-1 px-6 py-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                    className="flex-1 px-6 py-3 border-2 border-stone-200 rounded-xl hover:bg-stone-50 transition-colors flex items-center justify-center gap-2"
                     title="Partager"
                     aria-label="Partager"
                   >
                     <svg
-                      className="w-5 h-5 text-gray-600"
+                      className="w-5 h-5 text-stone-600"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -323,11 +362,11 @@ export default async function ProductDetailPage({ params }: PageProps) {
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        strokeWidth={2}
+                        strokeWidth={1.5}
                         d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
                       />
                     </svg>
-                    <span className="text-sm font-medium text-gray-700">
+                    <span className="text-sm font-medium text-stone-700">
                       Partager
                     </span>
                   </button>
@@ -335,7 +374,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
               </div>
 
               {/* Garanties */}
-              <div className="mt-8 pt-8 border-t border-gray-200">
+              <div className="mt-8 pt-8 border-t border-stone-200">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div className="flex items-center gap-2">
                     <svg
@@ -349,7 +388,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                         clipRule="evenodd"
                       />
                     </svg>
-                    <span className="text-gray-700">Livraison 2-3 jours</span>
+                    <span className="text-stone-700">Livraison 2-3 jours</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <svg
@@ -363,7 +402,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                         clipRule="evenodd"
                       />
                     </svg>
-                    <span className="text-gray-700">Retours 30 jours</span>
+                    <span className="text-stone-700">Retours 30 jours</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <svg
@@ -377,7 +416,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                         clipRule="evenodd"
                       />
                     </svg>
-                    <span className="text-gray-700">
+                    <span className="text-stone-700">
                       Satisfait ou remboursé
                     </span>
                   </div>
@@ -393,7 +432,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                         clipRule="evenodd"
                       />
                     </svg>
-                    <span className="text-gray-700">Support 7j/7</span>
+                    <span className="text-stone-700">Support 7j/7</span>
                   </div>
                 </div>
               </div>
@@ -414,7 +453,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                   "Soin naturel premium pour une peau éclatante et nourrie en profondeur. Formulé avec des ingrédients biologiques certifiés pour respecter votre peau et l'environnement.",
                 icon: (
                   <svg
-                    className="w-5 h-5 text-gray-600"
+                    className="w-5 h-5 text-stone-600"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -500,11 +539,11 @@ export default async function ProductDetailPage({ params }: PageProps) {
 
         {/* Description longue si elle existe */}
         {product.longDescription && (
-          <div className="bg-white rounded-2xl shadow-sm p-8 mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-stone-200/50 p-8 mb-12">
+            <h2 className="text-3xl font-bold text-stone-900 mb-8 text-center">
               Description détaillée
             </h2>
-            <div className="prose max-w-none text-gray-700 text-lg leading-relaxed">
+            <div className="prose max-w-none text-stone-700 text-lg leading-relaxed">
               <p>{product.longDescription}</p>
             </div>
           </div>
@@ -512,8 +551,8 @@ export default async function ProductDetailPage({ params }: PageProps) {
 
         {/* Produits similaires */}
         {similarProducts.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-sm p-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-stone-200/50 p-8">
+            <h2 className="text-3xl font-bold text-stone-900 mb-8 text-center">
               Vous pourriez aussi aimer
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -521,7 +560,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                 <Link
                   key={similar.id}
                   href={`/products/${similar.slug}`}
-                  className="group bg-gray-50 rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300"
+                  className="group bg-stone-50/80 backdrop-blur-sm rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300 border border-stone-200/50"
                 >
                   <div className="aspect-square bg-white relative overflow-hidden">
                     {similar.images[0] ? (
@@ -533,7 +572,7 @@ export default async function ProductDetailPage({ params }: PageProps) {
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-300">
+                      <div className="w-full h-full flex items-center justify-center text-stone-300">
                         <svg
                           className="w-16 h-16"
                           fill="currentColor"
@@ -549,15 +588,15 @@ export default async function ProductDetailPage({ params }: PageProps) {
                     )}
                   </div>
                   <div className="p-6">
-                    <h3 className="font-semibold text-gray-900 mb-3 line-clamp-2 group-hover:text-emerald-600 transition-colors">
+                    <h3 className="font-semibold text-stone-900 mb-3 line-clamp-2 group-hover:text-emerald-600 transition-colors">
                       {similar.name}
                     </h3>
                     <div className="flex items-center gap-2">
-                      <span className="text-xl font-bold text-gray-900">
+                      <span className="text-xl font-bold text-stone-900">
                         €{Number(similar.price).toFixed(2)}
                       </span>
                       {similar.comparePrice && (
-                        <span className="text-sm text-gray-400 line-through">
+                        <span className="text-sm text-stone-400 line-through">
                           €{similar.comparePrice.toFixed(2)}
                         </span>
                       )}

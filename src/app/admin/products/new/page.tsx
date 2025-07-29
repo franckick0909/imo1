@@ -156,7 +156,7 @@ export default function NewProductPage() {
       console.log("Données du produit:", productData);
 
       // Appel API pour créer le produit
-      const response = await fetch("/api/products", {
+      const response = await fetch("/api/admin/products", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -23,17 +23,37 @@ export default function CloudinaryUpload({
   // Utiliser useRef pour éviter les problèmes de closure avec les states
   const uploadedImagesRef = useRef<string[]>([]);
 
+  // Vérifier si Cloudinary est configuré
+  const isCloudinaryConfigured =
+    process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME &&
+    process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY;
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleUploadSuccess = (result: any) => {
     console.log("Upload success:", result);
+    console.log("Result type:", typeof result);
+    console.log("Result keys:", Object.keys(result || {}));
+    console.log("Result info:", result?.info);
 
-    // Ajouter l'image à la référence ET au state
-    if (result?.secure_url) {
-      uploadedImagesRef.current.push(result.secure_url);
-      setUploadedInSession((prev) => [...prev, result.secure_url]);
-      console.log("Image added to session:", result.secure_url);
+    // Construire l'URL de l'image à partir des informations Cloudinary
+    if (result?.info?.public_id) {
+      const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+      const secureUrl = `https://res.cloudinary.com/${cloudName}/image/upload/v${result.info.version}/${result.info.public_id}`;
+
+      console.log("Constructed secure URL:", secureUrl);
+
+      uploadedImagesRef.current.push(secureUrl);
+      setUploadedInSession((prev) => [...prev, secureUrl]);
+      console.log("Image added to session:", secureUrl);
       console.log("Current session images:", uploadedImagesRef.current);
+    } else {
+      console.warn("No public_id in result info:", result?.info);
     }
+  };
+
+  const handleUploadClose = () => {
+    console.log("Upload widget closed");
+    // Ne pas reset ici, laisser handleQueuesEnd gérer
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -42,6 +62,7 @@ export default function CloudinaryUpload({
     console.log("All uploads completed:", result);
     console.log("Images in ref:", uploadedImagesRef.current);
     console.log("Images in state:", uploadedInSession);
+    console.log("Current images:", images);
 
     // Utiliser la référence qui contient toutes les images
     if (uploadedImagesRef.current.length > 0) {
@@ -53,24 +74,56 @@ export default function CloudinaryUpload({
       uploadedImagesRef.current = [];
       setUploadedInSession([]);
     } else {
-      console.warn("No images found in session!");
+      console.log("No images uploaded in this session");
+      // Vérifier si on a des images dans la session state
+      if (uploadedInSession.length > 0) {
+        console.log("Using session state images:", uploadedInSession);
+        const newImages = [...images, ...uploadedInSession];
+        onImagesChange(newImages);
+        setUploadedInSession([]);
+      }
     }
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleUploadError = (error: any) => {
     setIsUploading(false);
-    uploadedImagesRef.current = []; // Reset la référence
-    setUploadedInSession([]); // Reset le state
     console.error("Upload error:", error);
-    alert("Erreur lors de l'upload. Veuillez réessayer.");
+    console.error("Error type:", typeof error);
+    console.error("Error keys:", Object.keys(error || {}));
+
+    // Log détaillé de l'erreur
+    if (error?.error) {
+      console.error("Error details:", {
+        message: error.error.message,
+        code: error.error.code,
+        status: error.error.status,
+      });
+    }
+
+    // Log de l'erreur complète
+    console.error("Full error object:", JSON.stringify(error, null, 2));
+
+    // Ne pas reset automatiquement, laisser handleQueuesEnd gérer
+    // Sauf si c'est une erreur critique
+    if (error?.error?.message?.includes("cancel")) {
+      console.log("Upload cancelled by user");
+    } else {
+      const errorMessage = error?.error?.message || "Erreur lors de l'upload";
+      alert(`Erreur lors de l'upload: ${errorMessage}`);
+    }
   };
 
   const handleQueuesStart = () => {
     setIsUploading(true);
-    uploadedImagesRef.current = []; // Reset la référence
-    setUploadedInSession([]); // Reset le state
-    console.log("Upload started, resetting session");
+    // Reset seulement si on commence une nouvelle session
+    if (uploadedImagesRef.current.length === 0) {
+      uploadedImagesRef.current = [];
+      setUploadedInSession([]);
+      console.log("New upload session started");
+    } else {
+      console.log("Continuing upload session");
+    }
   };
 
   const removeImage = (index: number) => {
@@ -116,6 +169,46 @@ export default function CloudinaryUpload({
 
   const canAddMore = images.length < maxImages;
 
+  // Si Cloudinary n'est pas configuré, afficher un message d'erreur
+  if (!isCloudinaryConfigured) {
+    return (
+      <div className="space-y-6">
+        <div className="w-full border-2 border-red-200 rounded-lg p-6 text-center bg-red-50">
+          <svg
+            className="w-12 h-12 mx-auto text-red-500 mb-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+            />
+          </svg>
+          <h3 className="text-lg font-medium text-red-800 mb-2">
+            Configuration Cloudinary manquante
+          </h3>
+          <p className="text-red-700 mb-4">
+            Les variables d&apos;environnement Cloudinary ne sont pas
+            configurées.
+          </p>
+          <div className="bg-white p-4 rounded border text-sm text-gray-700">
+            <p className="font-medium mb-2">Variables nécessaires :</p>
+            <ul className="space-y-1">
+              <li>• NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME</li>
+              <li>• NEXT_PUBLIC_CLOUDINARY_API_KEY</li>
+            </ul>
+            <p className="mt-2 text-xs text-gray-500">
+              Ajoutez ces variables dans votre fichier .env.local
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Upload Widget */}
@@ -129,12 +222,17 @@ export default function CloudinaryUpload({
             clientAllowedFormats: ["jpeg", "jpg", "png", "webp"],
             maxFileSize: 5000000, // 5MB
             folder: FOLDERS.products,
-            sources: ["local", "url", "camera"],
+            sources: ["local"],
+            showAdvancedOptions: false,
+            cropping: false,
+            showSkipCropButton: false,
+            showPoweredBy: false,
           }}
           onQueuesStart={handleQueuesStart}
           onQueuesEnd={handleQueuesEnd}
           onSuccess={handleUploadSuccess}
           onError={handleUploadError}
+          onClose={handleUploadClose}
         >
           {({ open }) => (
             <button
@@ -222,6 +320,34 @@ export default function CloudinaryUpload({
           <p>Session upload (state): {uploadedInSession.length}</p>
           <p>Session upload (ref): {uploadedImagesRef.current.length}</p>
           <p>En cours d&apos;upload: {isUploading ? "Oui" : "Non"}</p>
+          <p>Cloudinary configuré: {isCloudinaryConfigured ? "Oui" : "Non"}</p>
+          <p>
+            Cloud Name:{" "}
+            {process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "Non défini"}
+          </p>
+          <p>
+            API Key:{" "}
+            {process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY
+              ? "Défini"
+              : "Non défini"}
+          </p>
+          <p>Upload Preset: {UPLOAD_PRESETS.products}</p>
+
+          {/* Bouton de test */}
+          <div className="mt-3 pt-3 border-t border-yellow-300">
+            <button
+              type="button"
+              onClick={() => {
+                const testImage =
+                  "https://res.cloudinary.com/dlmcrlimw/image/upload/v1/sample";
+                onImagesChange([...images, testImage]);
+                console.log("Test image added");
+              }}
+              className="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600"
+            >
+              Test: Ajouter image
+            </button>
+          </div>
         </div>
       )}
 

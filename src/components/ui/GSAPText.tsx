@@ -101,62 +101,77 @@ export default function GSAPText({
         elements = [container];
       }
 
-      elements.forEach((element) => {
-        elementRef.current.push(element);
-
-        // Utiliser l'instance de SplitText directement
-        const split = new SplitText(element, {
-          type: "lines",
-          mask: "lines",
-          linesClass: "line++",
-        }) as unknown as SplitTextInstance;
-
-        splitRef.current.push(split);
-
-        const computedStyle = window.getComputedStyle(element);
-        const textIndent = computedStyle.textIndent;
-
-        if (textIndent && textIndent !== "0px") {
-          if (split.lines.length > 0) {
-            (split.lines[0] as HTMLElement).style.paddingLeft = textIndent;
+      // Vérifier que les polices sont chargées avant de créer les splits
+      const waitForFonts = () => {
+        return new Promise<void>((resolve) => {
+          if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(() => resolve());
+          } else {
+            // Fallback si document.fonts n'est pas supporté
+            setTimeout(resolve, 100);
           }
-          element.style.textIndent = "0";
-        }
-
-        lines.current.push(...split.lines);
-      });
-
-      // Configuration initiale avec ou sans opacity
-      const initialProps: gsap.TweenVars = { y: initialY };
-      if (useOpacity) {
-        initialProps.opacity = 0;
-      }
-      gsap.set(lines.current, initialProps);
-
-      const animationProps: gsap.TweenVars = {
-        stagger,
-        y: "0%",
-        duration,
-        ease,
-        delay,
+        });
       };
 
-      if (useOpacity) {
-        animationProps.opacity = 1;
-      }
+      // Créer les splits après que les polices soient chargées
+      waitForFonts().then(() => {
+        elements.forEach((element) => {
+          elementRef.current.push(element);
 
-      if (animateOnScroll && !useInView) {
-        gsap.to(lines.current, {
-          ...animationProps,
-          scrollTrigger: {
-            trigger: containerRef.current,
-            start: "top 75%",
-            once,
-          },
+          // Utiliser l'instance de SplitText directement
+          const split = new SplitText(element, {
+            type: "lines",
+            mask: "lines",
+            linesClass: "line++",
+          }) as unknown as SplitTextInstance;
+
+          splitRef.current.push(split);
+
+          const computedStyle = window.getComputedStyle(element);
+          const textIndent = computedStyle.textIndent;
+
+          if (textIndent && textIndent !== "0px") {
+            if (split.lines.length > 0) {
+              (split.lines[0] as HTMLElement).style.paddingLeft = textIndent;
+            }
+            element.style.textIndent = "0";
+          }
+
+          lines.current.push(...split.lines);
         });
-      } else if (!useInView) {
-        gsap.to(lines.current, animationProps);
-      }
+
+        // Configuration initiale avec ou sans opacity
+        const initialProps: gsap.TweenVars = { y: initialY };
+        if (useOpacity) {
+          initialProps.opacity = 0;
+        }
+        gsap.set(lines.current, initialProps);
+
+        const animationProps: gsap.TweenVars = {
+          stagger,
+          y: "0%",
+          duration,
+          ease,
+          delay,
+        };
+
+        if (useOpacity) {
+          animationProps.opacity = 1;
+        }
+
+        if (animateOnScroll && !useInView) {
+          gsap.to(lines.current, {
+            ...animationProps,
+            scrollTrigger: {
+              trigger: containerRef.current,
+              start: "top 75%",
+              once,
+            },
+          });
+        } else if (!useInView) {
+          gsap.to(lines.current, animationProps);
+        }
+      });
 
       return () => {
         splitRef.current.forEach((split) => {
@@ -187,7 +202,7 @@ export default function GSAPText({
   if (React.Children.count(children) === 1) {
     // Utiliser une approche plus simple sans cloneElement
     return (
-      <div ref={containerRef} style={{ display: "contents" }}>
+      <div ref={containerRef} style={{ display: "contents", position: "relative" }}>
         {children}
       </div>
     );
@@ -197,6 +212,7 @@ export default function GSAPText({
     <div
       ref={containerRef}
       data-gsap-text-wrapper="true"
+      style={{ position: "relative" }}
       className="relative overflow-hidden"
     >
       {children}

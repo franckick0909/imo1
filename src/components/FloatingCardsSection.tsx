@@ -149,6 +149,7 @@ export default function FloatingCardsSection() {
         style={{
           willChange: "transform",
           containIntrinsicSize: "1px 100vh",
+          position: "relative",
         }}
       >
         {/* Overlay blanc total */}
@@ -172,7 +173,6 @@ export default function FloatingCardsSection() {
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
               className="object-cover image-optimized"
-              priority
             />
           </div>
         </motion.div>
@@ -213,7 +213,6 @@ export default function FloatingCardsSection() {
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
                   className="object-cover object-center image-optimized"
-                  priority
                 />
               </motion.div>
             </motion.div>
@@ -366,7 +365,7 @@ export default function FloatingCardsSection() {
               </span>
             </h2>
           </div>
-          <div className="flex-1 min-w-[220px] flex items-center justify-between">
+          <div className="flex-1 min-w-[220px] flex-wrap-reverse  flex items-center justify-between">
             <p className="text-sm-responsive text-gray-800 font-light leading-relaxed max-w-xs mt-2">
               Des produits honnêtes et sans réserve qui fonctionnent vraiment,
               qui sont doux pour la peau et la planète sans exception !
@@ -417,7 +416,6 @@ export default function FloatingCardsSection() {
                       fill
                       sizes="(max-width: 768px) 92vw, (max-width: 1024px) 80vw, 70vw"
                       className="object-cover object-center image-optimized"
-                      priority
                     />
                   </motion.div>
                 </motion.div>

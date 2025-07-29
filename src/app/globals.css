@@ -262,6 +262,10 @@ html.lenis body {
 
 /* Titres de section (h2, h3, h4) */
 
+.heading-transparentSection {
+  font-size: clamp(2.7rem, 9vw, 10rem);
+}
+
 .heading-xxxl {
   font-size: clamp(5rem, 7vw, 9rem);
 }
@@ -269,10 +273,10 @@ html.lenis body {
   font-size: clamp(4rem, 6vw, 7rem);
 }
 .heading-xxl {
-  font-size: clamp(4rem, 5vw, 7rem);
+  font-size: clamp(3rem, 5vw, 7rem);
 }
 .subheading-xxl {
-  font-size: clamp(3rem, 4vw, 6rem);
+  font-size: clamp(2.7rem, 4vw, 6rem);
 }
 
 .heading-xl {
