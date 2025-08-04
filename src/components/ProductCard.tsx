@@ -35,10 +35,10 @@ interface ProductCardProps {
   badgeText?: string;
 }
 
-export default function ProductCard({ 
-  product, 
-  showBadge = false, 
-  badgeText = "Best-seller" 
+export default function ProductCard({
+  product,
+  showBadge = false,
+  badgeText = "Best-seller",
 }: ProductCardProps) {
   const { addItem } = useCart();
   const { success, error } = useToast();
@@ -101,8 +101,11 @@ export default function ProductCard({
               src={product.images[0].url}
               alt={product.images[0].alt || product.name}
               fill
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+              sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
               className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+              quality={90}
+              placeholder="blur"
+              blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-300 bg-gray-100">
@@ -137,7 +140,11 @@ export default function ProductCard({
             onClick={handleToggleFavorite}
             disabled={isUpdating === product.id}
             className="bg-white/90 hover:bg-white text-gray-900 p-1.5 sm:p-2 rounded-full shadow-md lg:opacity-0 group-hover:opacity-100 transition-all duration-300 disabled:opacity-50"
-            title={isFavorite(product.id) ? "Retirer des favoris" : "Ajouter aux favoris"}
+            title={
+              isFavorite(product.id)
+                ? "Retirer des favoris"
+                : "Ajouter aux favoris"
+            }
           >
             {isUpdating === product.id ? (
               <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
@@ -213,4 +220,4 @@ export default function ProductCard({
       </div>
     </motion.div>
   );
-} 
+}

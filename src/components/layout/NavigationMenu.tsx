@@ -234,7 +234,7 @@ export default function NavigationMenu({
                   duration: 0.7,
                   ease: [0.76, 0, 0.24, 1] as const,
                 }}
-                className="fixed left-0 top-0 bg-white shadow-2xl flex flex-col z-[100] border-r border-gray-300 min-h-screen"
+                className="fixed left-0 top-0 bg-white shadow-2xl flex flex-col z-[9999] border-r border-gray-300 min-h-screen"
                 style={{
                   width: "500px",
                   maxWidth: "90vw",

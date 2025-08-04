@@ -163,9 +163,12 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
             src={product.images[0].url}
             alt={product.images[0].alt || product.name}
             fill
-            sizes="(max-width: 640px) 280px, (max-width: 1024px) 320px, 380px"
+            sizes="(max-width: 640px) 300px, (max-width: 768px) 340px, (max-width: 1024px) 360px, 420px"
             className="object-cover transition-transform duration-300 ease-out group-hover:scale-105"
             priority
+            quality={90}
+            placeholder="blur"
+            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gray-200">
@@ -302,6 +305,7 @@ export default function SectionBandeauLeft({
 }: SectionBandeauLeftProps) {
   // Détection d'appareil tactile améliorée
   const isTouchDevice = () => {
+    if (typeof window === "undefined") return false;
     return (
       "ontouchstart" in window ||
       navigator.maxTouchPoints > 0 ||
