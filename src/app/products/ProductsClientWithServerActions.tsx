@@ -13,6 +13,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import "swiper/css";
+import "swiper/css/pagination";
+import { Pagination } from "swiper/modules";
+import { Swiper, SwiperSlide } from "swiper/react";
 
 gsap.registerPlugin(ScrollTrigger, Draggable, useGSAP);
 
@@ -334,9 +338,11 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
 function CategorySection({
   category,
   products,
+  isMobile,
 }: {
   category: Category;
   products: Product[];
+  isMobile: boolean;
 }) {
   const sliderRef = useRef<HTMLDivElement>(null);
   const sliderContainerRef = useRef<HTMLDivElement>(null);
@@ -366,18 +372,6 @@ function CategorySection({
     }
   };
 
-  // Détection d'appareil tactile améliorée
-  const isTouchDevice = () => {
-    if (typeof window === "undefined") return false;
-    return (
-      "ontouchstart" in window ||
-      navigator.maxTouchPoints > 0 ||
-      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-        navigator.userAgent
-      )
-    );
-  };
-
   useGSAP(
     () => {
       if (sliderRef.current && sliderContainerRef.current) {
@@ -404,8 +398,8 @@ function CategorySection({
           let isDragging = false;
           let dragDirection = 0;
 
-          // Sur mobile, utiliser un défilement horizontal standard
-          if (isTouchDevice()) {
+          // Sur mobile, ne pas initialiser GSAP Draggable
+          if (isMobile) {
             // Désactiver le glissement tactile sur mobile
             if (draggableInstanceRef.current) {
               draggableInstanceRef.current.kill();
@@ -588,55 +582,78 @@ function CategorySection({
                 {getCategoryDescription(category.slug)}
               </p>
 
-              {/* Flèches de navigation - Desktop: à côté de la description */}
-              <div className="flex items-center gap-4">
-                <button
-                  type="button"
-                  onClick={() => handleArrowClick("left")}
-                  className="group"
-                  title="Précédent"
-                >
-                  <CircleButton
-                    href="#"
-                    direction="right"
-                    variant="dark"
-                    size="medium"
-                    className="pointer-events-none rotate-180"
-                  />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleArrowClick("right")}
-                  className="group"
-                  title="Suivant"
-                >
-                  <CircleButton
-                    href="#"
-                    direction="right"
-                    variant="dark"
-                    size="medium"
-                    className="pointer-events-none"
-                  />
-                </button>
-              </div>
+              {/* Flèches de navigation - Desktop uniquement */}
+              {!isMobile && (
+                <div className="flex items-center gap-4">
+                  <button
+                    type="button"
+                    onClick={() => handleArrowClick("left")}
+                    className="group"
+                    title="Précédent"
+                  >
+                    <CircleButton
+                      href="#"
+                      direction="right"
+                      variant="dark"
+                      size="medium"
+                      className="pointer-events-none rotate-180"
+                    />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleArrowClick("right")}
+                    className="group"
+                    title="Suivant"
+                  >
+                    <CircleButton
+                      href="#"
+                      direction="right"
+                      variant="dark"
+                      size="medium"
+                      className="pointer-events-none"
+                    />
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
 
         {/* Slider */}
-        <div
-          ref={sliderContainerRef}
-          className={`relative ${isTouchDevice() ? "overflow-x-auto overflow-y-hidden" : "overflow-hidden"}`}
-        >
-          <div
-            ref={sliderRef}
-            className={`flex gap-4 h-full items-center relative ${isTouchDevice() ? "flex-nowrap" : ""}`}
-          >
-            {categoryProducts.slice(0, 6).map((product, index) => (
-              <ProductCard key={product.id} product={product} index={index} />
-            ))}
+        {isMobile ? (
+          // Swiper pour mobile
+          <div className="relative">
+            <Swiper
+              modules={[Pagination]}
+              spaceBetween={10}
+              slidesPerView={1}
+              pagination={{
+                clickable: true,
+                bulletClass: "swiper-pagination-bullet-custom",
+                bulletActiveClass: "swiper-pagination-bullet-custom-active",
+              }}
+              className="h-full"
+            >
+              {categoryProducts.slice(0, 6).map((product, index) => (
+                <SwiperSlide key={product.id}>
+                  <ProductCard product={product} index={index} />
+                </SwiperSlide>
+              ))}
+            </Swiper>
           </div>
-        </div>
+        ) : (
+          // GSAP Draggable pour desktop
+          <div ref={sliderContainerRef} className="relative overflow-hidden">
+            <div
+              ref={sliderRef}
+              className="flex gap-4 h-full items-center relative"
+            >
+              {categoryProducts.slice(0, 6).map((product, index) => (
+                <ProductCard key={product.id} product={product} index={index} />
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Indicateur de glissement */}
         <div className="mt-6 text-center">
@@ -657,6 +674,26 @@ export default function ProductsClientWithServerActions({
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Détection mobile côté client uniquement
+  useEffect(() => {
+    const checkMobile = () => {
+      if (typeof window !== "undefined") {
+        const isTouch =
+          "ontouchstart" in window || navigator.maxTouchPoints > 0;
+        const isMobileDevice =
+          /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+            navigator.userAgent
+          );
+        setIsMobile(isTouch || isMobileDevice);
+      }
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   // Charger les données et les searchParams en parallèle
   useEffect(() => {
@@ -786,13 +823,18 @@ export default function ProductsClientWithServerActions({
               <CategorySection
                 category={selectedCategoryData}
                 products={products}
+                isMobile={isMobile}
               />
             );
           })()
         : // Afficher toutes les catégories
           categoriesWithProducts.map((category, index) => (
             <div key={category.id} className={index > 0 ? "mt-6" : ""}>
-              <CategorySection category={category} products={products} />
+              <CategorySection
+                category={category}
+                products={products}
+                isMobile={isMobile}
+              />
             </div>
           ))}
     </div>

@@ -433,4 +433,20 @@ html.lenis body {
   .xs\:gap-4 {
     gap: 1rem;
   }
+
+  /* Styles personnalisés pour les points de pagination Swiper */
+  .swiper-pagination-bullet-custom {
+    width: 8px !important;
+    height: 8px !important;
+    background-color: #d1d5db !important; /* Gris clair */
+    opacity: 0.6 !important;
+    transition: all 0.3s ease !important;
+    margin: 0 4px !important;
+  }
+
+  .swiper-pagination-bullet-custom-active {
+    background-color: #171717 !important; /* Noir */
+    opacity: 1 !important;
+    transform: scale(1.2) !important;
+  }
 }

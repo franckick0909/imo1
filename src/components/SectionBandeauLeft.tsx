@@ -9,6 +9,10 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import "swiper/css";
+import "swiper/css/pagination";
+import { Pagination } from "swiper/modules";
+import { Swiper, SwiperSlide } from "swiper/react";
 import ImageParallax from "./ImageParallax";
 import { CircleButton } from "./ui/ExploreButton";
 import { useToast } from "./ui/ToastContainer";
@@ -303,22 +307,31 @@ export default function SectionBandeauLeft({
   loading,
   categorySlug = "hydratation",
 }: SectionBandeauLeftProps) {
-  // Détection d'appareil tactile améliorée
-  const isTouchDevice = () => {
-    if (typeof window === "undefined") return false;
-    return (
-      "ontouchstart" in window ||
-      navigator.maxTouchPoints > 0 ||
-      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-        navigator.userAgent
-      )
-    );
-  };
   const sliderRef = useRef<HTMLDivElement>(null);
   const sliderContainerRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLElement>(null);
   const draggableInstanceRef = useRef<DraggableInstance | null>(null);
   const [hydratationProducts, setHydratationProducts] = useState<Product[]>([]);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Détection mobile côté client uniquement
+  useEffect(() => {
+    const checkMobile = () => {
+      if (typeof window !== "undefined") {
+        const isTouch =
+          "ontouchstart" in window || navigator.maxTouchPoints > 0;
+        const isMobileDevice =
+          /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+            navigator.userAgent
+          );
+        setIsMobile(isTouch || isMobileDevice);
+      }
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   // Filtrer les produits d'hydratation
   useEffect(() => {
@@ -340,14 +353,9 @@ export default function SectionBandeauLeft({
             return;
           }
 
-          // Sur mobile, utiliser un défilement horizontal standard
-          if (isTouchDevice()) {
-            // Désactiver le glissement tactile sur mobile
-            if (draggableInstanceRef.current) {
-              draggableInstanceRef.current.kill();
-            }
-
-            // Animation d'entrée simple
+          // Sur mobile, ne pas initialiser GSAP Draggable
+          if (isMobile) {
+            // Animation d'entrée simple pour mobile
             gsap.fromTo(
               slider,
               { x: 200, opacity: 0 },
@@ -535,19 +543,47 @@ export default function SectionBandeauLeft({
               </div>
             </div>
           </div>
-          <div
-            ref={sliderContainerRef}
-            className={`relative px-8 lg:px-16 flex-1 ${isTouchDevice() ? "overflow-x-auto overflow-y-hidden" : "overflow-hidden"}`}
-          >
-            <div
-              ref={sliderRef}
-              className={`flex gap-5 h-full items-center relative ${isTouchDevice() ? "flex-nowrap" : ""}`}
-            >
-              {hydratationProducts.slice(0, 6).map((product, index) => (
-                <ProductCard key={product.id} product={product} index={index} />
-              ))}
+          {isMobile ? (
+            // Swiper pour mobile
+            <div className="relative px-8 lg:px-4 flex-1">
+              <Swiper
+                modules={[Pagination]}
+                spaceBetween={20}
+                slidesPerView={1}
+                pagination={{
+                  clickable: true,
+                  bulletClass: "swiper-pagination-bullet-custom",
+                  bulletActiveClass: "swiper-pagination-bullet-custom-active",
+                }}
+                className="h-full"
+              >
+                {hydratationProducts.slice(0, 7).map((product, index) => (
+                  <SwiperSlide key={product.id}>
+                    <ProductCard product={product} index={index} />
+                  </SwiperSlide>
+                ))}
+              </Swiper>
             </div>
-          </div>
+          ) : (
+            // GSAP Draggable pour desktop
+            <div
+              ref={sliderContainerRef}
+              className="relative px-8 lg:px-16 flex-1 overflow-hidden"
+            >
+              <div
+                ref={sliderRef}
+                className="flex gap-5 h-full items-center relative"
+              >
+                {hydratationProducts.slice(0, 6).map((product, index) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    index={index}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
           <div className="h-32 flex justify-between items-center">
             <div className="px-8 lg:px-16 text-left">
               <p className="text-gray-900 text-xs-responsive sm:text-sm-responsive md:text-base-responsive font-light leading-relaxed max-w-xs uppercase">
