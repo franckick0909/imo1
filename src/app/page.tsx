@@ -8,7 +8,7 @@ import SectionBandeauLeft from "@/components/SectionBandeauLeft";
 import SectionBandeauRight from "@/components/SectionBandeauRight";
 import TransparentSection from "@/components/TransparentSection";
 import HeroLoader from "@/components/ui/HeroLoader";
-import { getCategoriesAction, getFeaturedProductsAction } from "@/lib/actions";
+import { getCategoriesAction, getFeaturedProductsAction, getProductsAction } from "@/lib/actions";
 import { Suspense } from "react";
 
 // Types pour les données
@@ -70,6 +70,21 @@ function extractFeaturedProducts(result: unknown): Product[] {
   return Array.isArray(products) ? products : [];
 }
 
+function extractAllProducts(result: unknown): Product[] {
+  if (
+    !result ||
+    typeof result !== "object" ||
+    !("success" in result) ||
+    !result.success
+  ) {
+    return [];
+  }
+
+  const data = result as { success: boolean; data?: { products?: unknown } };
+  const products = data.data?.products;
+  return Array.isArray(products) ? products : [];
+}
+
 function extractCategories(result: unknown): Category[] {
   if (
     !result ||
@@ -87,13 +102,15 @@ function extractCategories(result: unknown): Category[] {
 
 export default async function Home() {
   // Charger les données en parallèle avec les server actions
-  const [featuredResult, categoriesResult] = await Promise.all([
+  const [featuredResult, allProductsResult, categoriesResult] = await Promise.all([
     getFeaturedProductsAction(6),
+    getProductsAction({ limit: 50, isActive: true }), // Récupérer tous les produits actifs
     getCategoriesAction(),
   ]);
 
   // Extraction sécurisée des données
   const featuredProducts = extractFeaturedProducts(featuredResult);
+  const allProducts = extractAllProducts(allProductsResult);
   const categories = extractCategories(categoriesResult);
 
   console.log("🔄 Fetching featured products from database...");
@@ -104,6 +121,17 @@ export default async function Home() {
   } else {
     console.log(
       `❌ Failed to fetch featured products: ${featuredResult.error}`
+    );
+  }
+
+  console.log("🔄 Fetching all products from database...");
+  if (allProductsResult.success) {
+    console.log(
+      `✅ All products fetched: ${allProducts.length} items`
+    );
+  } else {
+    console.log(
+      `❌ Failed to fetch all products: ${allProductsResult.error}`
     );
   }
 
@@ -137,9 +165,9 @@ export default async function Home() {
 
       <section className="relative">
         {/* Première section - Image à gauche */}
-        <SectionBandeauLeft products={featuredProducts} loading={false} />
+        <SectionBandeauLeft products={allProducts} loading={false} />
         {/* Deuxième section - Image à droite */}
-        <SectionBandeauRight products={featuredProducts} loading={false} />
+        <SectionBandeauRight products={allProducts} loading={false} />
       </section>
       {/* Transparent Section */}
       <section className="relative">

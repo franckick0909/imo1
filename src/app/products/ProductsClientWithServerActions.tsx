@@ -2,6 +2,7 @@
 
 import { useToast } from "@/components/ui/ToastContainer";
 import { useCart } from "@/contexts/CartContext";
+import { useFavorites } from "@/hooks/useFavorites";
 import { Category, Product, getCategories, getProducts } from "@/lib/actions";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
@@ -104,6 +105,7 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
   const [isAdding, setIsAdding] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const { isFavorite, toggleFavorite, isUpdating } = useFavorites();
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -129,6 +131,10 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
     } finally {
       setIsAdding(false);
     }
+  };
+
+  const handleToggleFavorite = async () => {
+    await toggleFavorite(product.id);
   };
 
   const handleViewProduct = (e: React.MouseEvent) => {
@@ -200,6 +206,36 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
           {getCategoryLabel(product.category.slug)}
         </span>
         <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={handleToggleFavorite}
+            onMouseDown={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
+            disabled={isUpdating === product.id}
+            className="w-7 h-7 sm:w-8 sm:h-8 lg:w-9 lg:h-9 xl:w-10 xl:h-10 bg-white hover:bg-red-50 text-red-600 rounded-full flex items-center justify-center transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50 cursor-pointer"
+            title={
+              isFavorite(product.id)
+                ? "Retirer des favoris"
+                : "Ajouter aux favoris"
+            }
+          >
+            {isUpdating === product.id ? (
+              <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-4.5 lg:h-4.5 xl:w-5 xl:h-5 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              <svg
+                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-4.5 lg:h-4.5 xl:w-5 xl:h-5 ${isFavorite(product.id) ? "fill-current" : "fill-none"}`}
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                />
+              </svg>
+            )}
+          </button>
           <button
             type="button"
             onClick={handleViewProduct}

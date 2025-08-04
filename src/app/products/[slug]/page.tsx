@@ -1,9 +1,9 @@
 import AddToCartButton from "@/components/AddToCartButton";
 import ProductAccordion from "@/components/ProductAccordion";
+import ProductCard from "@/components/ProductCard";
 import ProductImageGallery from "@/components/ProductImageGallery";
 import prisma from "@/lib/prisma";
 import { Link } from "next-view-transitions";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 
 interface Product {
@@ -22,6 +22,8 @@ interface Product {
   stock: number;
   slug: string;
   weight?: number;
+  dimensions?: string | null;
+  barcode?: string | null;
   category: {
     id: string;
     name: string;
@@ -46,10 +48,10 @@ async function getProduct(slug: string): Promise<Product | null> {
     return name
       .toLowerCase()
       .trim()
-      .replace(/[^a-z0-9\s-]/g, '') // Supprimer les caractères spéciaux
-      .replace(/\s+/g, '-') // Remplacer les espaces par des tirets
-      .replace(/-+/g, '-') // Remplacer les tirets multiples par un seul
-      .replace(/^-+|-+$/g, '') // Supprimer les tirets en début et fin
+      .replace(/[^a-z0-9\s-]/g, "") // Supprimer les caractères spéciaux
+      .replace(/\s+/g, "-") // Remplacer les espaces par des tirets
+      .replace(/-+/g, "-") // Remplacer les tirets multiples par un seul
+      .replace(/^-+|-+$/g, "") // Supprimer les tirets en début et fin
       .trim();
   };
 
@@ -98,7 +100,7 @@ async function getProduct(slug: string): Promise<Product | null> {
     });
 
     // Chercher le produit dont le slug généré correspond
-    product = allProducts.find(p => generateSlug(p.name) === slug) || null;
+    product = allProducts.find((p) => generateSlug(p.name) === slug) || null;
   }
 
   if (!product) return null;
@@ -533,6 +535,43 @@ export default async function ProductDetailPage({ params }: PageProps) {
                   </svg>
                 ),
               },
+              {
+                id: "specifications",
+                title: "Caractéristiques physiques",
+                content: (() => {
+                  const specs = [];
+                  if (product.weight) {
+                    specs.push(`• Poids : ${product.weight} kg`);
+                  }
+                  if (product.dimensions) {
+                    specs.push(`• Dimensions : ${product.dimensions}`);
+                  }
+                  if (product.barcode) {
+                    specs.push(`• Code-barres : ${product.barcode}`);
+                  }
+
+                  if (specs.length === 0) {
+                    return "Informations techniques non disponibles pour ce produit.";
+                  }
+
+                  return specs.join("\n");
+                })(),
+                icon: (
+                  <svg
+                    className="w-5 h-5 text-purple-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                    />
+                  </svg>
+                ),
+              },
             ]}
           />
         </div>
@@ -540,10 +579,10 @@ export default async function ProductDetailPage({ params }: PageProps) {
         {/* Description longue si elle existe */}
         {product.longDescription && (
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-stone-200/50 p-8 mb-12">
-            <h2 className="text-3xl font-bold text-stone-900 mb-8 text-center">
+            <h2 className="heading-lg font-medium text-stone-900 mb-8 text-center">
               Description détaillée
             </h2>
-            <div className="prose max-w-none text-stone-700 text-lg leading-relaxed">
+            <div className="prose max-w-none text-stone-700 text-base-responsive leading-relaxed font-light">
               <p>{product.longDescription}</p>
             </div>
           </div>
@@ -552,57 +591,16 @@ export default async function ProductDetailPage({ params }: PageProps) {
         {/* Produits similaires */}
         {similarProducts.length > 0 && (
           <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-sm border border-stone-200/50 p-8">
-            <h2 className="text-3xl font-bold text-stone-900 mb-8 text-center">
+            <h2 className="heading-lg font-medium text-stone-900 mb-8 text-center">
               Vous pourriez aussi aimer
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {similarProducts.map((similar) => (
-                <Link
+                <ProductCard
                   key={similar.id}
-                  href={`/products/${similar.slug}`}
-                  className="group bg-stone-50/80 backdrop-blur-sm rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300 border border-stone-200/50"
-                >
-                  <div className="aspect-square bg-white relative overflow-hidden">
-                    {similar.images[0] ? (
-                      <Image
-                        src={similar.images[0].url}
-                        alt={similar.images[0].alt || similar.name}
-                        width={300}
-                        height={300}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-stone-300">
-                        <svg
-                          className="w-16 h-16"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M4 3a2 2 0 000 4h12a2 2 0 000-4H4zm0 6a2 2 0 000 4h12a2 2 0 000-4H4zm0 6a2 2 0 000 4h12a2 2 0 000-4H4z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-6">
-                    <h3 className="font-semibold text-stone-900 mb-3 line-clamp-2 group-hover:text-emerald-600 transition-colors">
-                      {similar.name}
-                    </h3>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl font-bold text-stone-900">
-                        €{Number(similar.price).toFixed(2)}
-                      </span>
-                      {similar.comparePrice && (
-                        <span className="text-sm text-stone-400 line-through">
-                          €{similar.comparePrice.toFixed(2)}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </Link>
+                  product={similar}
+                  showBadge={false}
+                />
               ))}
             </div>
           </div>

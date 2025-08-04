@@ -2,12 +2,6 @@
 
 import { useSession } from "@/lib/auth-client";
 import {
-  AdminUser,
-  useAdminStats,
-  useAdminStore,
-  useAdminUsers,
-} from "@/stores/admin-store";
-import {
   CheckCircle,
   Eye,
   Loader2,
@@ -21,7 +15,49 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import {
+  banUserAction,
+  getAdminStatsAction,
+  getUsersAction,
+  setUserRoleAction,
+  unbanUserAction,
+} from "./actions";
+
+// Types pour les utilisateurs admin
+interface AdminUser {
+  id: string;
+  name: string | null;
+  email: string;
+  role: string | null;
+  banned: boolean | null;
+  banReason: string | null;
+  banExpires: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  _count: {
+    orders: number;
+  };
+}
+
+// Types pour les statistiques admin
+interface AdminStats {
+  totalUsers: number;
+  totalOrders: number;
+  totalRevenue: number;
+  activeUsers: number;
+  bannedUsers: number;
+  newUsersToday: number;
+  newOrdersToday: number;
+  lowStockProducts: number;
+}
+
+// Types pour les filtres utilisateurs
+interface UsersFilters {
+  search?: string;
+  role?: string;
+  banned?: boolean;
+}
 
 export default function AdminDashboard() {
   const { data: session, isPending } = useSession();
@@ -31,18 +67,17 @@ export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // Utiliser les stores admin
-  const { stats, isLoadingStats } = useAdminStats();
-  const {
-    users,
-    usersPagination,
-    isLoadingUsers,
-    loadUsers,
-    banUser,
-    unbanUser,
-    setUserRole,
-  } = useAdminUsers();
-  const { loadAll } = useAdminStore();
+  // États locaux pour les données
+  const [stats, setStats] = useState<AdminStats | null>(null);
+  const [users, setUsers] = useState<AdminUser[]>([]);
+  const [usersPagination, setUsersPagination] = useState<{
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  } | null>(null);
+  const [isLoadingStats, setIsLoadingStats] = useState(false);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
 
   useEffect(() => {
     if (!isPending && !session) {
@@ -50,7 +85,12 @@ export default function AdminDashboard() {
     }
   }, [session, isPending, router]);
 
-  // Vérifier les permissions admin
+  // Fonction pour charger toutes les données
+  const loadAll = useCallback(async () => {
+    await Promise.all([loadStats(), loadUsers(1)]);
+  }, []);
+
+  // Vérifier les permissions admin et charger les données
   useEffect(() => {
     const checkAdminStatus = async () => {
       if (session?.user?.role === "admin") {
@@ -67,6 +107,38 @@ export default function AdminDashboard() {
     }
   }, [session, router, loadAll]);
 
+  // Fonction pour charger les statistiques
+  const loadStats = async () => {
+    setIsLoadingStats(true);
+    try {
+      const data = await getAdminStatsAction();
+      setStats(data);
+    } catch (error) {
+      console.error("Erreur lors du chargement des statistiques:", error);
+    } finally {
+      setIsLoadingStats(false);
+    }
+  };
+
+  // Fonction pour charger les utilisateurs
+  const loadUsers = async (page: number, filters: UsersFilters = {}) => {
+    setIsLoadingUsers(true);
+    try {
+      const data = await getUsersAction(page, 10, filters);
+      setUsers(data.users);
+      setUsersPagination({
+        page: data.page,
+        limit: data.limit,
+        total: data.total,
+        totalPages: data.totalPages,
+      });
+    } catch (error) {
+      console.error("Erreur lors du chargement des utilisateurs:", error);
+    } finally {
+      setIsLoadingUsers(false);
+    }
+  };
+
   // Gérer la recherche
   const handleSearch = (term: string) => {
     setSearchTerm(term);
@@ -77,33 +149,39 @@ export default function AdminDashboard() {
     }
   };
 
-  // Gérer le bannissement avec optimistic update
+  // Gérer le bannissement
   const handleBanUser = async (
     userId: string,
     reason: string = "Violation des règles"
   ) => {
     try {
-      await banUser(userId, reason);
+      await banUserAction(userId, reason);
+      // Recharger les utilisateurs pour mettre à jour l'affichage
+      await loadUsers(1, { search: searchTerm });
       setShowUserModal(false);
     } catch (error) {
       console.error("Erreur lors du bannissement:", error);
     }
   };
 
-  // Gérer le débannissement avec optimistic update
+  // Gérer le débannissement
   const handleUnbanUser = async (userId: string) => {
     try {
-      await unbanUser(userId);
+      await unbanUserAction(userId);
+      // Recharger les utilisateurs pour mettre à jour l'affichage
+      await loadUsers(1, { search: searchTerm });
       setShowUserModal(false);
     } catch (error) {
       console.error("Erreur lors du débannissement:", error);
     }
   };
 
-  // Gérer le changement de rôle avec optimistic update
+  // Gérer le changement de rôle
   const handleSetRole = async (userId: string, role: string) => {
     try {
-      await setUserRole(userId, role);
+      await setUserRoleAction(userId, role);
+      // Recharger les utilisateurs pour mettre à jour l'affichage
+      await loadUsers(1, { search: searchTerm });
       setShowUserModal(false);
     } catch (error) {
       console.error("Erreur lors du changement de rôle:", error);
@@ -112,8 +190,7 @@ export default function AdminDashboard() {
 
   // Gérer la pagination
   const handlePageChange = (page: number) => {
-    const filters = searchTerm ? { search: searchTerm } : {};
-    loadUsers(page, filters);
+    loadUsers(page, { search: searchTerm });
   };
 
   if (isPending || (isLoadingStats && isLoadingUsers)) {
@@ -150,11 +227,11 @@ export default function AdminDashboard() {
       {/* Navigation */}
       <nav className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
+          <div className="flex flex-wrap justify-between items-center min-h-16 gap-4">
+            <div className="flex items-center space-x-4 sm:space-x-8 md:space-x-10 lg:space-x-12">
               <div className="flex items-center space-x-2">
                 <Shield className="h-6 w-6 text-emerald-600" />
-                <h1 className="text-xl font-bold text-gray-900">
+                <h1 className="heading-md font-metal font-bold text-gray-900">
                   Administration
                 </h1>
               </div>
@@ -165,7 +242,7 @@ export default function AdminDashboard() {
                 ← Retour au dashboard
               </Link>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-4 ml-8 ">
               <span className="text-sm text-gray-600">
                 Connecté en tant que{" "}
                 <strong>{session.user.name || session.user.email}</strong>
@@ -220,7 +297,7 @@ export default function AdminDashboard() {
                   </div>
                 ) : (
                   <p className="text-2xl font-bold text-gray-900">
-                    {stats?.totalProducts || 0}
+                    {stats?.lowStockProducts || 0}
                   </p>
                 )}
               </div>
@@ -281,7 +358,7 @@ export default function AdminDashboard() {
           <h2 className="text-xl font-semibold text-gray-900 mb-4">
             Navigation rapide
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Link
               href="/admin/products"
               className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-emerald-50 hover:border-emerald-300 transition-colors group"
@@ -296,19 +373,6 @@ export default function AdminDashboard() {
             </Link>
 
             <Link
-              href="/admin/categories"
-              className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-colors group"
-            >
-              <div className="bg-blue-100 p-3 rounded-lg group-hover:bg-blue-200 transition-colors">
-                <div className="w-6 h-6 text-blue-600">📁</div>
-              </div>
-              <div className="ml-4">
-                <h3 className="font-medium text-gray-900">Catégories</h3>
-                <p className="text-sm text-gray-500">Organiser les produits</p>
-              </div>
-            </Link>
-
-            <Link
               href="/admin/orders"
               className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-purple-50 hover:border-purple-300 transition-colors group"
             >
@@ -318,6 +382,19 @@ export default function AdminDashboard() {
               <div className="ml-4">
                 <h3 className="font-medium text-gray-900">Commandes</h3>
                 <p className="text-sm text-gray-500">Suivi des ventes</p>
+              </div>
+            </Link>
+
+            <Link
+              href="/admin/revenue"
+              className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-green-50 hover:border-green-300 transition-colors group"
+            >
+              <div className="bg-green-100 p-3 rounded-lg group-hover:bg-green-200 transition-colors">
+                <TrendingUp className="w-6 h-6 text-green-600" />
+              </div>
+              <div className="ml-4">
+                <h3 className="font-medium text-gray-900">Revenus</h3>
+                <p className="text-sm text-gray-500">Analyses financières</p>
               </div>
             </Link>
 
@@ -335,7 +412,7 @@ export default function AdminDashboard() {
 
         {/* Gestion des utilisateurs */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0 mb-6">
             <div>
               <h2 className="text-xl font-semibold text-gray-900">
                 Gestion des utilisateurs
@@ -352,7 +429,7 @@ export default function AdminDashboard() {
                   placeholder="Rechercher un utilisateur..."
                   value={searchTerm}
                   onChange={(e) => handleSearch(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 w-full sm:w-64"
                 />
               </div>
             </div>
@@ -372,19 +449,19 @@ export default function AdminDashboard() {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Utilisateur
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="hidden sm:table-cell px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Rôle
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="hidden md:table-cell px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Statut
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="hidden lg:table-cell px-3 sm:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Inscription
                       </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-3 sm:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Actions
                       </th>
                     </tr>
@@ -392,7 +469,7 @@ export default function AdminDashboard() {
                   <tbody className="bg-white divide-y divide-gray-200">
                     {users.map((user) => (
                       <tr key={user.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="flex-shrink-0 h-10 w-10">
                               <div className="h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center">
@@ -408,14 +485,32 @@ export default function AdminDashboard() {
                               </div>
                               <div className="text-sm text-gray-500 flex items-center">
                                 {user.email}
-                                {user.emailVerified && (
-                                  <CheckCircle className="h-4 w-4 text-green-500 ml-1" />
-                                )}
+                              </div>
+                              {/* Informations supplémentaires sur mobile */}
+                              <div className="sm:hidden mt-1">
+                                <span
+                                  className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full mr-2 ${
+                                    user.role === "admin"
+                                      ? "bg-purple-100 text-purple-800"
+                                      : "bg-gray-100 text-gray-800"
+                                  }`}
+                                >
+                                  {user.role || "user"}
+                                </span>
+                                <span
+                                  className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                    user.banned
+                                      ? "bg-red-100 text-red-800"
+                                      : "bg-green-100 text-green-800"
+                                  }`}
+                                >
+                                  {user.banned ? "Banni" : "Actif"}
+                                </span>
                               </div>
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="hidden sm:table-cell px-3 sm:px-6 py-4 whitespace-nowrap">
                           <span
                             className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                               user.role === "admin"
@@ -426,7 +521,7 @@ export default function AdminDashboard() {
                             {user.role || "user"}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="hidden md:table-cell px-3 sm:px-6 py-4 whitespace-nowrap">
                           <span
                             className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                               user.banned
@@ -437,10 +532,10 @@ export default function AdminDashboard() {
                             {user.banned ? "Banni" : "Actif"}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <td className="hidden lg:table-cell px-3 sm:px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {new Date(user.createdAt).toLocaleDateString("fr-FR")}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <td className="px-3 sm:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <div className="flex items-center justify-end space-x-2">
                             <button
                               onClick={() => {
@@ -483,7 +578,7 @@ export default function AdminDashboard() {
               {/* Pagination */}
               {usersPagination && usersPagination.totalPages > 1 && (
                 <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 sm:px-6">
-                  <div className="flex justify-between items-center">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-2 sm:space-y-0">
                     <div>
                       <p className="text-sm text-gray-700">
                         Affichage de{" "}

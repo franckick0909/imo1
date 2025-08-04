@@ -1,9 +1,9 @@
 "use client";
 
+import Footer from "@/components/layout/Footer";
 import { signOut } from "@/lib/auth-client";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Bell,
   ChevronLeft,
   ChevronRight,
   Edit,
@@ -11,7 +11,6 @@ import {
   Home,
   LogOut,
   Package,
-  Search,
   Settings,
   User,
 } from "lucide-react";
@@ -137,12 +136,6 @@ export default function DashboardClientLayout({
               </div>
               <div className="text-emerald-700">Commandes</div>
             </div>
-            <div className="text-center">
-              <div className="font-bold text-emerald-600">
-                {stats.loyaltyPoints || 0}
-              </div>
-              <div className="text-emerald-700">Points</div>
-            </div>
           </div>
         </div>
       )}
@@ -188,7 +181,7 @@ export default function DashboardClientLayout({
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-20">
+    <div className="min-h-screen bg-gray-50 pt-20 overflow-x-hidden">
       {/* Sidebar Toggle Button - Languette */}
       <motion.button
         type="button"
@@ -247,41 +240,25 @@ export default function DashboardClientLayout({
       </div>
 
       {/* Main content */}
-      <div className="lg:ml-72">
+      <div className="lg:ml-72 flex flex-col min-h-screen">
         {/* Top bar */}
         <div className="bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-            </div>
-
-            <div className="flex items-center space-x-4">
-              {/* Search button */}
-              <button
-                type="button"
-                title="Rechercher"
-                aria-label="Rechercher"
-                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <Search className="h-5 w-5" />
-              </button>
-
-              {/* Notifications */}
-              <button
-                type="button"
-                title="Notifications"
-                aria-label="Voir les notifications"
-                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors relative"
-              >
-                <Bell className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full"></span>
-              </button>
+              <h1 className="heading-lg font-metal font-bold text-gray-900 ">
+                Dashboard
+              </h1>
             </div>
           </div>
         </div>
 
         {/* Page content */}
-        <main className="p-6">{children}</main>
+        <main className="flex-1 p-6">{children}</main>
+
+        {/* Footer - s'étend sur toute la largeur */}
+        <div className="lg:ml-[-18rem] lg:mr-[-18rem] lg:px-0">
+          <Footer />
+        </div>
       </div>
     </div>
   );

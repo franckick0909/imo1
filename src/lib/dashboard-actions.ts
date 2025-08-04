@@ -51,48 +51,73 @@ export async function getDashboardStatsAction() {
     }
 
     // Récupérer les statistiques utilisateur de manière optimisée
-    const [ordersCount, totalSpentResult, favoritesCount, recentOrdersCount] =
-      await Promise.all([
-        // Nombre total de commandes
-        prisma.order.count({
-          where: { userId },
-        }),
+    const [
+      ordersCount,
+      totalSpentResult,
+      favoritesCount,
+      recentOrdersCount,
+      completedOrdersCount,
+      pendingOrdersCount,
+    ] = await Promise.all([
+      // Nombre total de commandes
+      prisma.order.count({
+        where: { userId },
+      }),
 
-        // Total dépensé (somme des commandes livrées)
-        prisma.order.aggregate({
-          where: {
-            userId,
-            status: "DELIVERED",
+      // Total dépensé (somme des commandes livrées)
+      prisma.order.aggregate({
+        where: {
+          userId,
+          status: "DELIVERED",
+        },
+        _sum: {
+          totalAmount: true,
+        },
+      }),
+
+      // Nombre de favoris
+      prisma.favorite.count({
+        where: { userId },
+      }),
+
+      // Commandes récentes (30 derniers jours)
+      prisma.order.count({
+        where: {
+          userId,
+          createdAt: {
+            gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
           },
-          _sum: {
-            totalAmount: true,
+        },
+      }),
+
+      // Commandes complétées
+      prisma.order.count({
+        where: {
+          userId,
+          status: "DELIVERED",
+        },
+      }),
+
+      // Commandes en attente
+      prisma.order.count({
+        where: {
+          userId,
+          status: {
+            in: ["PENDING", "PROCESSING", "SHIPPED"],
           },
-        }),
+        },
+      }),
+    ]);
 
-        // Nombre de favoris (placeholder pour l'instant)
-        Promise.resolve(0),
-
-        // Commandes récentes (30 derniers jours)
-        prisma.order.count({
-          where: {
-            userId,
-            createdAt: {
-              gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-            },
-          },
-        }),
-      ]);
-
-    // Calculer les points de fidélité (1 point par euro dépensé)
     const totalSpent = Number(totalSpentResult._sum.totalAmount || 0);
-    const loyaltyPoints = Math.floor(totalSpent);
 
     const stats = {
       totalOrders: ordersCount,
       totalSpent: totalSpent,
       favoriteProducts: favoritesCount,
-      loyaltyPoints: loyaltyPoints,
       recentOrders: recentOrdersCount,
+      completedOrders: completedOrdersCount,
+      pendingOrders: pendingOrdersCount,
       memberSince: session.user.createdAt,
       lastUpdated: new Date().toISOString(),
     };
@@ -163,8 +188,8 @@ export async function getDashboardProfileAction() {
         // Dates
         createdAt: true,
         updatedAt: true,
-    },
-  });
+      },
+    });
 
     if (!user) {
       return {
@@ -444,44 +469,211 @@ export async function getDashboardFavoritesAction() {
       };
     }
 
-    // Pour l'instant, on utilise des données simulées
-    // TODO: Implémenter une vraie table favorites dans Prisma
-    const favorites = [
-      {
-        id: "1",
-        name: "Crème hydratante visage",
-        brand: "Natural Beauty",
-        price: 29.99,
-        rating: 4.8,
-        reviews: 127,
-        image: "/images/creme-verte.png",
-        inStock: true,
-        slug: "creme-hydratante-visage",
-        categoryId: "cat1",
+    const userId = session.user.id;
+
+    // Récupérer les favoris de l'utilisateur
+    const favorites = await prisma.favorite.findMany({
+      where: { userId },
+      include: {
+        product: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            price: true,
+            stock: true,
+            isActive: true,
+            images: {
+              select: {
+                url: true,
+                alt: true,
+              },
+              take: 1,
+            },
+            category: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+              },
+            },
+          },
+        },
       },
-      {
-        id: "2",
-        name: "Sérum anti-âge",
-        brand: "Premium Care",
-        price: 59.99,
-        rating: 4.9,
-        reviews: 89,
-        image: "/images/creme-rose.png",
-        inStock: true,
-        slug: "serum-anti-age",
-        categoryId: "cat2",
-      },
-    ];
+      orderBy: { createdAt: "desc" },
+    });
+
+    // Transformer les données
+    const transformedFavorites = favorites
+      .filter((fav) => fav.product && fav.product.isActive)
+      .map((fav) => ({
+        id: fav.id,
+        productId: fav.productId,
+        name: fav.product.name,
+        slug: fav.product.slug,
+        price: Number(fav.product.price),
+        stock: fav.product.stock,
+        inStock: fav.product.stock > 0,
+        image: fav.product.images[0]?.url || "/placeholder.jpg",
+        category: fav.product.category,
+        addedAt: fav.createdAt,
+      }));
 
     return {
       success: true,
-      data: favorites,
+      data: transformedFavorites,
     };
   } catch (error) {
     console.error("[DASHBOARD_FAVORITES_ACTION_ERROR]", error);
     return {
       success: false,
       error: "Erreur lors du chargement des favoris",
+    };
+  }
+}
+
+export async function addToFavoritesAction(productId: string) {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session?.user?.id) {
+      return {
+        success: false,
+        error: "Non autorisé",
+      };
+    }
+
+    const userId = session.user.id;
+
+    // Vérifier si le produit existe et est actif
+    const product = await prisma.product.findUnique({
+      where: { id: productId, isActive: true },
+    });
+
+    if (!product) {
+      return {
+        success: false,
+        error: "Produit non trouvé",
+      };
+    }
+
+    // Vérifier si le favori existe déjà
+    const existingFavorite = await prisma.favorite.findUnique({
+      where: {
+        userId_productId: {
+          userId,
+          productId,
+        },
+      },
+    });
+
+    if (existingFavorite) {
+      return {
+        success: false,
+        error: "Produit déjà dans vos favoris",
+      };
+    }
+
+    // Ajouter aux favoris
+    await prisma.favorite.create({
+      data: {
+        userId,
+        productId,
+      },
+    });
+
+    return {
+      success: true,
+      message: "Produit ajouté aux favoris",
+    };
+  } catch (error) {
+    console.error("[ADD_TO_FAVORITES_ACTION_ERROR]", error);
+    return {
+      success: false,
+      error: "Erreur lors de l'ajout aux favoris",
+    };
+  }
+}
+
+export async function removeFromFavoritesAction(favoriteId: string) {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session?.user?.id) {
+      return {
+        success: false,
+        error: "Non autorisé",
+      };
+    }
+
+    const userId = session.user.id;
+
+    // Vérifier que le favori appartient à l'utilisateur
+    const favorite = await prisma.favorite.findFirst({
+      where: {
+        id: favoriteId,
+        userId,
+      },
+    });
+
+    if (!favorite) {
+      return {
+        success: false,
+        error: "Favori non trouvé",
+      };
+    }
+
+    // Supprimer le favori
+    await prisma.favorite.delete({
+      where: { id: favoriteId },
+    });
+
+    return {
+      success: true,
+      message: "Produit retiré des favoris",
+    };
+  } catch (error) {
+    console.error("[REMOVE_FROM_FAVORITES_ACTION_ERROR]", error);
+    return {
+      success: false,
+      error: "Erreur lors de la suppression du favori",
+    };
+  }
+}
+
+export async function clearAllFavoritesAction() {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    if (!session?.user?.id) {
+      return {
+        success: false,
+        error: "Non autorisé",
+      };
+    }
+
+    const userId = session.user.id;
+
+    // Supprimer tous les favoris de l'utilisateur
+    await prisma.favorite.deleteMany({
+      where: { userId },
+    });
+
+    return {
+      success: true,
+      message: "Tous les favoris ont été supprimés",
+    };
+  } catch (error) {
+    console.error("[CLEAR_ALL_FAVORITES_ACTION_ERROR]", error);
+    return {
+      success: false,
+      error: "Erreur lors de la suppression des favoris",
     };
   }
 }

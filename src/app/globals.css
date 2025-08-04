@@ -44,7 +44,6 @@ body {
   font-family: var(--font-metal);
 }
 
-
 /*p {
   font-size: clamp(1rem, 1.5vw, 1.2rem);
 }*/
@@ -372,4 +371,66 @@ html.lenis body {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Grille responsive avec auto-fit */
+.grid-auto-fit {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+/* Classes pour très petits écrans (xs) */
+@media (min-width: 475px) {
+  .xs\:text-base {
+    font-size: 1rem;
+  }
+  .xs\:text-lg {
+    font-size: 1.125rem;
+  }
+  .xs\:text-xl {
+    font-size: 1.25rem;
+  }
+  .xs\:p-1\.5 {
+    padding: 0.375rem;
+  }
+  .xs\:p-2 {
+    padding: 0.5rem;
+  }
+  .xs\:p-3 {
+    padding: 0.75rem;
+  }
+  .xs\:p-4 {
+    padding: 1rem;
+  }
+  .xs\:w-3 {
+    width: 0.75rem;
+  }
+  .xs\:h-3 {
+    height: 0.75rem;
+  }
+  .xs\:w-4 {
+    width: 1rem;
+  }
+  .xs\:h-4 {
+    height: 1rem;
+  }
+  .xs\:w-10 {
+    width: 2.5rem;
+  }
+  .xs\:h-5 {
+    height: 1.25rem;
+  }
+  .xs\:w-12 {
+    width: 3rem;
+  }
+  .xs\:h-6 {
+    height: 1.5rem;
+  }
+  .xs\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .xs\:gap-4 {
+    gap: 1rem;
+  }
 }

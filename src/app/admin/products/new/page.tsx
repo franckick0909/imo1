@@ -32,7 +32,7 @@ const productSchema = z.object({
   categoryId: z.string().min(1, "Veuillez sélectionner une catégorie"),
 
   // SEO amélioré
-  slug: z.string().optional(),
+  slug: z.string().min(1, "Le slug est requis"),
   metaTitle: z.string().optional(),
   metaDescription: z.string().optional(),
 
@@ -130,6 +130,9 @@ export default function NewProductPage() {
       if (!watchMetaTitle) {
         setValue("metaTitle", `${watchName} - Cosmétiques Bio Premium`);
       }
+    } else {
+      // Réinitialiser le slug si le nom est vide
+      setValue("slug", "");
     }
   }, [watchName, setValue, watchMetaTitle]);
 
@@ -147,9 +150,26 @@ export default function NewProductPage() {
     setIsSubmitting(true);
 
     try {
+      // Nettoyer les données avant envoi
+      const cleanedData = {
+        ...data,
+        // Convertir les chaînes vides en null pour les champs optionnels
+        sku: data.sku || null,
+        barcode: data.barcode || null,
+        longDescription: data.longDescription || null,
+        ingredients: data.ingredients || null,
+        usage: data.usage || null,
+        benefits: data.benefits || null,
+        comparePrice: data.comparePrice || null,
+        weight: data.weight || null,
+        dimensions: data.dimensions || null,
+        metaTitle: data.metaTitle || null,
+        metaDescription: data.metaDescription || null,
+      };
+
       // Préparer les données avec les images
       const productData = {
-        ...data,
+        ...cleanedData,
         images: images,
       };
 
@@ -286,10 +306,7 @@ export default function NewProductPage() {
                   {...register("categoryId")}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-none placeholder:text-gray-400 text-zinc-700"
                 >
-                  <option
-                    value=""
-                    title="Sélectionner une catégorie"
-                  >
+                  <option value="" title="Sélectionner une catégorie">
                     {categories.length === 0
                       ? "Chargement des catégories..."
                       : "Sélectionner une catégorie"}

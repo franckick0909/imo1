@@ -47,10 +47,10 @@ export default function ProductAccordion({ items }: ProductAccordionProps) {
               className="w-full px-6 py-5 flex items-center justify-between text-left hover:bg-gray-100 transition-colors duration-200"
             >
               <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
+                {/*  <div className="w-10 h-10 flex items-center justify-center flex-shrink-0 ">
                   {item.icon}
-                </div>
-                <h3 className="text-base font-thin uppercase text-gray-900">
+                </div> */}
+                <h3 className="text-base-responsive font-light uppercase text-gray-900">
                   {item.title}
                 </h3>
               </div>
@@ -109,7 +109,7 @@ export default function ProductAccordion({ items }: ProductAccordionProps) {
                   <div className="px-6 pb-6">
                     <div className="pt-2">
                       <motion.p
-                        className="text-gray-600 leading-relaxed whitespace-pre-line text-sm"
+                        className="text-gray-600 leading-relaxed whitespace-pre-line text-sm-responsive font-light"
                         initial={{ y: -10, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ duration: 0.3, delay: 0.2 }}

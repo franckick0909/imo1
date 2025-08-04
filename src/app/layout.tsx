@@ -1,4 +1,4 @@
-import Footer from "@/components/layout/Footer";
+import ConditionalFooter from "@/components/layout/ConditionalFooter";
 import Header from "@/components/layout/Header";
 import { ToastProvider } from "@/components/ui/ToastContainer";
 import { CartProvider } from "@/contexts/CartContext";
@@ -133,7 +133,7 @@ export default function RootLayout({
                 <div className="min-h-screen flex flex-col">
                   <Header />
                   <main className="flex-1">{children}</main>
-                  <Footer />
+                  <ConditionalFooter />
                 </div>
               </CartProvider>
             </ToastProvider>

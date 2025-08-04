@@ -1,9 +1,65 @@
+import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+
+    // Vérifier si l'utilisateur est admin
+    if (!session?.user?.id || session.user.role !== "admin") {
+      return NextResponse.json(
+        { error: "Accès non autorisé" },
+        { status: 401 }
+      );
+    }
+
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "10");
+    const search = searchParams.get("search") || "";
+    const categoryId = searchParams.get("categoryId") || "";
+    const isActive = searchParams.get("isActive");
+    const isFeatured = searchParams.get("isFeatured");
+    const lowStock = searchParams.get("lowStock");
+
+    const offset = (page - 1) * limit;
+
+    // Construire la clause where
+    const where: any = {};
+
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: "insensitive" } },
+        { description: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    if (categoryId) {
+      where.categoryId = categoryId;
+    }
+
+    if (isActive !== null && isActive !== undefined) {
+      where.isActive = isActive === "true";
+    }
+
+    if (isFeatured !== null && isFeatured !== undefined) {
+      where.isFeatured = isFeatured === "true";
+    }
+
+    if (lowStock === "true") {
+      where.stock = { lte: { lowStockThreshold: true } };
+    }
+
+    // Compter le total
+    const total = await prisma.product.count({ where });
+
+    // Récupérer les produits
     const products = await prisma.product.findMany({
+      where,
       include: {
         category: {
           select: {
@@ -26,6 +82,8 @@ export async function GET() {
       orderBy: {
         createdAt: "desc",
       },
+      skip: offset,
+      take: limit,
     });
 
     // Sérialiser les données pour éviter les erreurs Decimal
@@ -36,7 +94,13 @@ export async function GET() {
       weight: product.weight ? Number(product.weight) : null,
     }));
 
-    return NextResponse.json(serializedProducts);
+    return NextResponse.json({
+      products: serializedProducts,
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    });
   } catch (error) {
     console.error("Erreur lors de la récupération des produits:", error);
     return NextResponse.json(
@@ -59,6 +123,26 @@ export async function POST(request: Request) {
       );
     }
 
+    // Validation du slug
+    if (!body.slug) {
+      return NextResponse.json(
+        { error: "Le slug est requis pour créer un produit" },
+        { status: 400 }
+      );
+    }
+
+    // Vérifier si le slug existe déjà
+    const existingProduct = await prisma.product.findUnique({
+      where: { slug: body.slug },
+    });
+
+    if (existingProduct) {
+      return NextResponse.json(
+        { error: "Un produit avec ce slug existe déjà" },
+        { status: 400 }
+      );
+    }
+
     // Créer le produit avec Prisma
     const product = await prisma.product.create({
       data: {
@@ -70,8 +154,8 @@ export async function POST(request: Request) {
         benefits: body.benefits,
         price: body.price,
         comparePrice: body.comparePrice,
-        sku: body.sku,
-        barcode: body.barcode,
+        sku: body.sku || null,
+        barcode: body.barcode || null,
         stock: body.stock || 0,
         lowStockThreshold: body.lowStockThreshold || 5,
         trackStock: body.trackStock !== undefined ? body.trackStock : true,
@@ -119,8 +203,18 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("Erreur lors de la création du produit:", error);
+
+    // Log détaillé de l'erreur
+    if (error instanceof Error) {
+      console.error("Message d'erreur:", error.message);
+      console.error("Stack trace:", error.stack);
+    }
+
     return NextResponse.json(
-      { error: "Erreur lors de la création du produit" },
+      {
+        error: "Erreur lors de la création du produit",
+        details: error instanceof Error ? error.message : "Erreur inconnue",
+      },
       { status: 500 }
     );
   }

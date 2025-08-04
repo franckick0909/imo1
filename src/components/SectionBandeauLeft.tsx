@@ -1,13 +1,14 @@
 "use client";
 
 import { useCart } from "@/contexts/CartContext";
+import { useFavorites } from "@/hooks/useFavorites";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import { Draggable } from "gsap/Draggable";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ImageParallax from "./ImageParallax";
 import { CircleButton } from "./ui/ExploreButton";
 import { useToast } from "./ui/ToastContainer";
@@ -66,6 +67,7 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
   const [isAdding, setIsAdding] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const { isFavorite, toggleFavorite, isUpdating } = useFavorites();
 
   const handleAddToCart = async () => {
     if (product.stock === 0) {
@@ -90,6 +92,10 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
     } finally {
       setIsAdding(false);
     }
+  };
+
+  const handleToggleFavorite = async () => {
+    await toggleFavorite(product.id);
   };
 
   const handleViewProduct = (e: React.MouseEvent) => {
@@ -155,6 +161,34 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
           PURE HYDRATATION
         </span>
         <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={handleToggleFavorite}
+            disabled={isUpdating === product.id}
+            className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 bg-white hover:bg-red-50 text-red-600 rounded-full flex items-center justify-center transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50"
+            title={
+              isFavorite(product.id)
+                ? "Retirer des favoris"
+                : "Ajouter aux favoris"
+            }
+          >
+            {isUpdating === product.id ? (
+              <div className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              <svg
+                className={`w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 ${isFavorite(product.id) ? "fill-current" : "fill-none"}`}
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                />
+              </svg>
+            )}
+          </button>
           <button
             type="button"
             onClick={handleViewProduct}
@@ -259,6 +293,15 @@ export default function SectionBandeauLeft({
   const sliderContainerRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLElement>(null);
   const draggableInstanceRef = useRef<DraggableInstance | null>(null);
+  const [hydratationProducts, setHydratationProducts] = useState<Product[]>([]);
+
+  // Filtrer les produits d'hydratation
+  useEffect(() => {
+    const filteredProducts = products.filter(
+      (product) => product.category.slug === categorySlug
+    );
+    setHydratationProducts(filteredProducts);
+  }, [products, categorySlug]);
 
   useGSAP(
     () => {
@@ -385,7 +428,7 @@ export default function SectionBandeauLeft({
         setTimeout(initSlider, 300);
       }
     },
-    { scope: containerRef, dependencies: [products] }
+    { scope: containerRef, dependencies: [hydratationProducts] }
   );
 
   if (loading) {
@@ -444,16 +487,9 @@ export default function SectionBandeauLeft({
             className="overflow-hidden relative px-8 lg:px-16 flex-1"
           >
             <div ref={sliderRef} className="flex gap-5 h-full items-center">
-              {products
-                .filter((product) => product.category.slug === categorySlug)
-                .slice(0, 6)
-                .map((product, index) => (
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    index={index}
-                  />
-                ))}
+              {hydratationProducts.slice(0, 6).map((product, index) => (
+                <ProductCard key={product.id} product={product} index={index} />
+              ))}
             </div>
           </div>
           <div className="h-32 flex justify-between items-center">
