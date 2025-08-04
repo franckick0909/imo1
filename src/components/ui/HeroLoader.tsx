@@ -108,7 +108,7 @@ export default function HeroLoader() {
         word1Ref.current,
         {
           y: "0%",
-          duration: 0.8, // Réduit de 1.2 à 0.8
+          duration: 1.2, // Augmenté de 0.8 à 1.2
         },
         "<"
       );
@@ -117,7 +117,7 @@ export default function HeroLoader() {
         word2Ref.current,
         {
           y: "0%",
-          duration: 0.8, // Réduit de 1.2 à 0.8
+          duration: 1.2, // Augmenté de 0.8 à 1.2
         },
         "<"
       );
@@ -127,8 +127,8 @@ export default function HeroLoader() {
       dividerRef.current,
       {
         scaleY: 1,
-        duration: 0.3, // Réduit de 0.5 à 0.3
-        delay: 0.1, // Réduit de 0.2 à 0.1
+        duration: 0.6, // Augmenté de 0.3 à 0.6
+        delay: 0.2, // Augmenté de 0.1 à 0.2
         ease: "power4.inOut",
       },
       "<"
@@ -137,7 +137,7 @@ export default function HeroLoader() {
     // Disparition du divider vers le bas
     tl.to(dividerRef.current, {
       y: "100%",
-      duration: 0.2, // Réduit de 0.3 à 0.2
+      duration: 0.4, // Augmenté de 0.2 à 0.4
       ease: "power2.out",
     });
 
@@ -146,7 +146,7 @@ export default function HeroLoader() {
       insetLeftRef.current,
       {
         clipPath: "inset(0 0 100% 0)",
-        duration: 0.6, // Réduit de 0.9 à 0.6
+        duration: 1.0, // Augmenté de 0.6 à 1.0
       },
       "<"
     );
@@ -155,7 +155,7 @@ export default function HeroLoader() {
       insetRightRef.current,
       {
         clipPath: "inset(0 0 100% 0)",
-        duration: 0.7, // Réduit de 1 à 0.7
+        duration: 1.2, // Augmenté de 0.7 à 1.2
       },
       "<"
     );
@@ -164,7 +164,7 @@ export default function HeroLoader() {
       word1Ref.current,
       {
         y: "100%",
-        duration: 0.5, // Réduit de 0.7 à 0.5
+        duration: 0.8, // Augmenté de 0.5 à 0.8
         opacity: 0,
       },
       "<"
@@ -174,7 +174,7 @@ export default function HeroLoader() {
       word2Ref.current,
       {
         y: "-100%",
-        duration: 0.5, // Réduit de 0.7 à 0.5
+        duration: 0.8, // Augmenté de 0.5 à 0.8
         opacity: 0,
       },
       "<"
@@ -425,7 +425,7 @@ export default function HeroLoader() {
 
         {/* Compteur de chiffres */}
         <div
-          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[500] text-white font-light text-[clamp(20rem,15vw,30rem)] leading-[0.9] tracking-tighter origin-center text-center"
+          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[500] text-white font-light text-[clamp(16rem,12vw,24rem)] leading-[0.9] tracking-tighter origin-center text-center"
           id="counter"
         >
           {numbers.map((pair, i) => (

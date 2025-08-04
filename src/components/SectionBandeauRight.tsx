@@ -153,96 +153,11 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
   return (
     <div
       ref={cardRef}
-      className="min-w-[240px] max-w-[280px] sm:min-w-[280px] sm:max-w-[320px] lg:min-w-[320px] lg:max-w-[380px] w-full max-h-[420px] sm:max-h-[480px] lg:max-h-[540px] h-full bg-[#D4E8F8] rounded-2xl px-3 py-4 sm:px-4 sm:py-6 flex flex-col justify-between gap-3 sm:gap-4 cursor-grab active:cursor-grabbing select-none flex-shrink-0 group"
+      className="min-w-[240px] max-w-[280px] sm:min-w-[280px] sm:max-w-[320px] lg:min-w-[320px] lg:max-w-[380px] w-full max-h-[420px] sm:max-h-[480px] lg:max-h-[540px] h-full rounded-2xl relative overflow-hidden cursor-grab active:cursor-grabbing select-none flex-shrink-0 group"
       onMouseEnter={handleMouseEnter}
     >
-      <div className="flex justify-between items-center">
-        <span className="bg-white text-gray-600 px-3 py-2 sm:px-4 sm:py-2 lg:px-6 lg:py-3 text-xs font-medium uppercase tracking-wider rounded-full">
-          PURE PURIFICATION
-        </span>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={handleToggleFavorite}
-            disabled={isUpdating === product.id}
-            className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 bg-white hover:bg-red-50 text-red-600 rounded-full flex items-center justify-center transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50"
-            title={
-              isFavorite(product.id)
-                ? "Retirer des favoris"
-                : "Ajouter aux favoris"
-            }
-          >
-            {isUpdating === product.id ? (
-              <div className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
-            ) : (
-              <svg
-                className={`w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 ${isFavorite(product.id) ? "fill-current" : "fill-none"}`}
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                />
-              </svg>
-            )}
-          </button>
-          <button
-            type="button"
-            onClick={handleViewProduct}
-            className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 bg-white hover:bg-stone-50 text-zinc-700 rounded-full flex items-center justify-center transition-all duration-300 shadow-md hover:shadow-lg cursor-pointer"
-            title="Voir le produit"
-          >
-            <svg
-              className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1}
-                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-              />
-            </svg>
-          </button>
-          <button
-            type="button"
-            onClick={handleAddToCart}
-            disabled={isAdding || product.stock === 0}
-            className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 bg-white hover:bg-gray-50 text-gray-700 rounded-full flex items-center justify-center transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50"
-            title="Ajouter au panier"
-          >
-            {isAdding ? (
-              <div className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4 border-2 border-gray-700 border-t-transparent rounded-full animate-spin"></div>
-            ) : (
-              <svg
-                className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1}
-                  d="M16 11V7a4 4 0 00-8 0v4M5 9h14l-1 7a2 2 0 01-2 2H8a2 2 0 01-2-2L5 9z"
-                />
-              </svg>
-            )}
-          </button>
-        </div>
-      </div>
-      <div className="relative flex-1 rounded-lg overflow-hidden h-[280px] sm:h-[300px] lg:h-[320px]">
+      {/* Image de fond qui prend toute la carte */}
+      <div className="absolute inset-0">
         {product.images && product.images.length > 0 ? (
           <Image
             src={product.images[0].url}
@@ -268,13 +183,113 @@ function ProductCard({ product, index }: { product: Product; index: number }) {
           </div>
         )}
       </div>
-      <div className="flex items-center justify-between gap-4 sm:gap-6 lg:gap-20">
-        <h4 className="text-gray-600 font-normal text-sm sm:text-base uppercase tracking-tight">
-          {product.name}
-        </h4>
-        <p className="text-gray-700 font-normal text-base sm:text-lg">
-          {Number(product.price).toFixed(2).replace(".", ",")}€
-        </p>
+
+      {/* Overlay sombre pour améliorer la lisibilité */}
+      <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300"></div>
+
+      {/* Contenu superposé */}
+      <div className="relative h-full flex flex-col justify-between p-3 sm:p-4 lg:p-6">
+        {/* En-tête avec tag et icônes verticales */}
+        <div className="flex justify-between items-start">
+          <span className="bg-white/90 backdrop-blur-sm text-gray-700 px-2 py-1 sm:px-3 sm:py-2 lg:px-4 lg:py-2 text-xs font-medium uppercase tracking-wider rounded-full shadow-sm">
+            PURE PURIFICATION
+          </span>
+
+          {/* Icônes verticales */}
+          <div className="flex flex-col gap-1 sm:gap-1.5 lg:gap-2">
+            <button
+              type="button"
+              onClick={handleToggleFavorite}
+              disabled={isUpdating === product.id}
+              className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 bg-white/90 backdrop-blur-sm hover:bg-red-50 text-red-600 rounded-full flex items-center justify-center transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50"
+              title={
+                isFavorite(product.id)
+                  ? "Retirer des favoris"
+                  : "Ajouter aux favoris"
+              }
+            >
+              {isUpdating === product.id ? (
+                <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 lg:w-3.5 lg:h-3.5 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <svg
+                  className={`w-2.5 h-2.5 sm:w-3 sm:h-3 lg:w-3.5 lg:h-3.5 ${isFavorite(product.id) ? "fill-current" : "fill-none"}`}
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                  />
+                </svg>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleViewProduct}
+              className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 bg-white/90 backdrop-blur-sm hover:bg-stone-50 text-gray-700 rounded-full flex items-center justify-center transition-all duration-300 shadow-md hover:shadow-lg cursor-pointer"
+              title="Voir le produit"
+            >
+              <svg
+                className="w-2.5 h-2.5 sm:w-3 sm:h-3 lg:w-3.5 lg:h-3.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1}
+                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                />
+              </svg>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleAddToCart}
+              disabled={isAdding || product.stock === 0}
+              className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 bg-white/90 backdrop-blur-sm hover:bg-stone-50 text-gray-700 rounded-full flex items-center justify-center transition-all duration-300 shadow-md hover:shadow-lg disabled:opacity-50"
+              title="Ajouter au panier"
+            >
+              {isAdding ? (
+                <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 lg:w-3.5 lg:h-3.5 border-2 border-gray-700 border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <svg
+                  className="w-2.5 h-2.5 sm:w-3 sm:h-3 lg:w-3.5 lg:h-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1}
+                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l-1 7a2 2 0 01-2 2H8a2 2 0 01-2-2L5 9z"
+                  />
+                </svg>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Pied de carte avec nom et prix */}
+        <div className="flex items-center justify-between gap-2 sm:gap-3 lg:gap-4">
+          <h4 className="text-white font-medium text-xs sm:text-sm lg:text-base uppercase tracking-tight flex-1 line-clamp-2 drop-shadow-lg">
+            {product.name}
+          </h4>
+          <p className="text-white font-semibold text-sm sm:text-base lg:text-lg flex-shrink-0 drop-shadow-lg">
+            {Number(product.price).toFixed(2).replace(".", ",")}€
+          </p>
+        </div>
       </div>
     </div>
   );
@@ -285,9 +300,15 @@ export default function SectionBandeauRight({
   loading,
   categorySlug = "purification",
 }: SectionBandeauRightProps) {
-  // Détection d'appareil tactile
+  // Détection d'appareil tactile améliorée
   const isTouchDevice = () => {
-    return "ontouchstart" in window || navigator.maxTouchPoints > 0;
+    return (
+      "ontouchstart" in window ||
+      navigator.maxTouchPoints > 0 ||
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      )
+    );
   };
   const sliderRef = useRef<HTMLDivElement>(null);
   const sliderContainerRef = useRef<HTMLDivElement>(null);
@@ -323,12 +344,12 @@ export default function SectionBandeauRight({
             type: "x",
             bounds: { minX: -maxScroll, maxX: 0 },
             inertia: {
-              resistance: 50,
-              minDuration: 0.3,
-              maxDuration: 2,
+              resistance: isTouchDevice() ? 25 : 50,
+              minDuration: isTouchDevice() ? 0.1 : 0.3,
+              maxDuration: isTouchDevice() ? 1.2 : 2,
             },
-            edgeResistance: 0.9,
-            dragResistance: 0.1,
+            edgeResistance: isTouchDevice() ? 0.8 : 0.9,
+            dragResistance: isTouchDevice() ? 0.02 : 0.1,
             allowNativeTouchScrolling: isTouchDevice(),
             preventDefault: !isTouchDevice(),
             onPress: function () {
@@ -341,13 +362,13 @@ export default function SectionBandeauRight({
               const totalDeltaX = this.x - this.startX;
               if (Math.abs(totalDeltaX) > 5) {
                 dragDirection = totalDeltaX > 0 ? 1 : -1;
-                const baseRotation = 5 * dragDirection;
+                const baseRotation = isTouchDevice() ? 2 : 5 * dragDirection;
                 const cards = slider.children;
                 Array.from(cards).forEach((card) => {
                   const element = card as HTMLElement;
                   gsap.to(element, {
                     rotation: baseRotation,
-                    scale: 0.9,
+                    scale: isTouchDevice() ? 0.95 : 0.9,
                     duration: 0.2,
                     transformOrigin: "center center",
                     ease: "power2.out",
@@ -358,12 +379,12 @@ export default function SectionBandeauRight({
             onThrowUpdate: function () {
               if (dragDirection !== 0) {
                 const cards = slider.children;
-                const inertiaRotation = 8 * dragDirection;
+                const inertiaRotation = isTouchDevice() ? 4 : 8 * dragDirection;
                 Array.from(cards).forEach((card) => {
                   const element = card as HTMLElement;
                   gsap.to(element, {
                     rotation: inertiaRotation,
-                    scale: 0.95,
+                    scale: isTouchDevice() ? 0.98 : 0.95,
                     duration: 0.1,
                     transformOrigin: "center center",
                     ease: "power2.out",
@@ -378,8 +399,8 @@ export default function SectionBandeauRight({
                 gsap.to(card, {
                   rotation: 0,
                   scale: 1,
-                  duration: 1,
-                  delay: index * 0.02,
+                  duration: isTouchDevice() ? 0.6 : 1,
+                  delay: index * (isTouchDevice() ? 0.01 : 0.02),
                   ease: "power3.out",
                 });
               });
@@ -391,8 +412,8 @@ export default function SectionBandeauRight({
                 gsap.to(card, {
                   rotation: 0,
                   scale: 1,
-                  duration: 0.4,
-                  delay: index * 0.01,
+                  duration: isTouchDevice() ? 0.3 : 0.4,
+                  delay: index * (isTouchDevice() ? 0.005 : 0.01),
                   ease: "power3.out",
                 });
               });
@@ -469,7 +490,10 @@ export default function SectionBandeauRight({
             ref={sliderContainerRef}
             className="overflow-hidden relative px-8 lg:px-16 flex-1"
           >
-            <div ref={sliderRef} className="flex gap-4 h-full items-center">
+            <div
+              ref={sliderRef}
+              className="flex gap-4 h-full items-center relative"
+            >
               {products
                 .filter((product) => product.category.slug === categorySlug)
                 .slice(0, 6)
