@@ -326,6 +326,34 @@ export default function SectionBandeauRight({
             setTimeout(initSlider, 200);
             return;
           }
+
+          // Sur mobile, utiliser un défilement horizontal standard
+          if (isTouchDevice()) {
+            // Désactiver le glissement tactile sur mobile
+            if (draggableInstanceRef.current) {
+              draggableInstanceRef.current.kill();
+            }
+
+            // Animation d'entrée simple
+            gsap.fromTo(
+              slider,
+              { x: 200, opacity: 0 },
+              {
+                x: 0,
+                opacity: 1,
+                duration: 1.2,
+                ease: "power4.out",
+                scrollTrigger: {
+                  trigger: container,
+                  start: "top 80%",
+                  toggleActions: "play none none none",
+                },
+              }
+            );
+            return;
+          }
+
+          // Sur desktop, garder le système Draggable
           let totalWidth = 0;
           Array.from(cards).forEach((card) => {
             const cardElement = card as HTMLElement;
@@ -344,14 +372,14 @@ export default function SectionBandeauRight({
             type: "x",
             bounds: { minX: -maxScroll, maxX: 0 },
             inertia: {
-              resistance: isTouchDevice() ? 25 : 50,
-              minDuration: isTouchDevice() ? 0.1 : 0.3,
-              maxDuration: isTouchDevice() ? 1.2 : 2,
+              resistance: 50,
+              minDuration: 0.3,
+              maxDuration: 2,
             },
-            edgeResistance: isTouchDevice() ? 0.8 : 0.9,
-            dragResistance: isTouchDevice() ? 0.02 : 0.1,
-            allowNativeTouchScrolling: isTouchDevice(),
-            preventDefault: !isTouchDevice(),
+            edgeResistance: 0.9,
+            dragResistance: 0.1,
+            allowNativeTouchScrolling: false,
+            preventDefault: true,
             onPress: function () {
               gsap.killTweensOf(slider);
               isDragging = true;
@@ -362,13 +390,13 @@ export default function SectionBandeauRight({
               const totalDeltaX = this.x - this.startX;
               if (Math.abs(totalDeltaX) > 5) {
                 dragDirection = totalDeltaX > 0 ? 1 : -1;
-                const baseRotation = isTouchDevice() ? 2 : 5 * dragDirection;
+                const baseRotation = 5 * dragDirection;
                 const cards = slider.children;
                 Array.from(cards).forEach((card) => {
                   const element = card as HTMLElement;
                   gsap.to(element, {
                     rotation: baseRotation,
-                    scale: isTouchDevice() ? 0.95 : 0.9,
+                    scale: 0.9,
                     duration: 0.2,
                     transformOrigin: "center center",
                     ease: "power2.out",
@@ -379,12 +407,12 @@ export default function SectionBandeauRight({
             onThrowUpdate: function () {
               if (dragDirection !== 0) {
                 const cards = slider.children;
-                const inertiaRotation = isTouchDevice() ? 4 : 8 * dragDirection;
+                const inertiaRotation = 8 * dragDirection;
                 Array.from(cards).forEach((card) => {
                   const element = card as HTMLElement;
                   gsap.to(element, {
                     rotation: inertiaRotation,
-                    scale: isTouchDevice() ? 0.98 : 0.95,
+                    scale: 0.95,
                     duration: 0.1,
                     transformOrigin: "center center",
                     ease: "power2.out",
@@ -399,8 +427,8 @@ export default function SectionBandeauRight({
                 gsap.to(card, {
                   rotation: 0,
                   scale: 1,
-                  duration: isTouchDevice() ? 0.6 : 1,
-                  delay: index * (isTouchDevice() ? 0.01 : 0.02),
+                  duration: 1,
+                  delay: index * 0.02,
                   ease: "power3.out",
                 });
               });
@@ -412,8 +440,8 @@ export default function SectionBandeauRight({
                 gsap.to(card, {
                   rotation: 0,
                   scale: 1,
-                  duration: isTouchDevice() ? 0.3 : 0.4,
-                  delay: index * (isTouchDevice() ? 0.005 : 0.01),
+                  duration: 0.4,
+                  delay: index * 0.01,
                   ease: "power3.out",
                 });
               });
@@ -488,11 +516,11 @@ export default function SectionBandeauRight({
           </div>
           <div
             ref={sliderContainerRef}
-            className="overflow-hidden relative px-8 lg:px-16 flex-1"
+            className={`relative px-8 lg:px-16 flex-1 ${isTouchDevice() ? "overflow-x-auto overflow-y-hidden" : "overflow-hidden"}`}
           >
             <div
               ref={sliderRef}
-              className="flex gap-4 h-full items-center relative"
+              className={`flex gap-4 h-full items-center relative ${isTouchDevice() ? "flex-nowrap" : ""}`}
             >
               {products
                 .filter((product) => product.category.slug === categorySlug)
