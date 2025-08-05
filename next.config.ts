@@ -8,6 +8,8 @@ const nextConfig: NextConfig = {
       "lucide-react",
       "@react-email/components",
     ],
+    // Optimisation du preloading
+    optimizeCss: true,
   },
 
   // Configuration Turbopack

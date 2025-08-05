@@ -12,6 +12,7 @@ import {
   Metal,
   Monsieur_La_Doulaise,
 } from "next/font/google";
+// Import des styles avec priorité
 import "../styles/responsive.css";
 import "./globals.css";
 
@@ -34,6 +35,7 @@ const inter = Inter({
   subsets: ["latin"],
   display: "swap", // Améliore les performances de chargement
   preload: true,
+  fallback: ["system-ui", "arial"],
 });
 
 // Police décorative - chargement optimisé

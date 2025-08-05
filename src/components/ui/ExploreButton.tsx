@@ -135,7 +135,7 @@ export default function ExploreButton({
     >
       {/* Texte centré avec soulignement */}
       <div className="flex-1 flex justify-center">
-        <span className="text-sm sm:text-base font-normal uppercase tracking-tighter relative inline-block after:content-[''] after:absolute after:left-0 after:right-0 after:bottom-1 after:h-[1px] after:bg-gray-900 after:transform after:scale-x-100 after:origin-bottom-left hover:after:scale-x-0 after:transition-transform after:duration-300 after:ease-out hover:after:origin-bottom-right">
+        <span className="text-sm sm:text-base md:text-lg lg:text-xl font-normal uppercase tracking-tight relative inline-block after:content-[''] after:absolute after:left-0 after:right-0 after:bottom-1 after:h-[1px] after:bg-gray-900 after:transform after:scale-x-100 after:origin-bottom-left hover:after:scale-x-0 after:transition-transform after:duration-300 after:ease-out hover:after:origin-bottom-right font-metal">
           {children}
         </span>
       </div>

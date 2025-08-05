@@ -150,6 +150,7 @@ export default function FloatingCardsSection() {
           willChange: "transform",
           containIntrinsicSize: "1px 100vh",
           position: "relative",
+          transform: "translateZ(0)", // Force GPU acceleration
         }}
       >
         {/* Overlay blanc total */}

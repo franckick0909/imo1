@@ -351,46 +351,48 @@ export default function HeroLoader() {
           style={{
             clipPath: "inset(0 0 0 0)",
           }}
-          className="absolute top-0 left-0 w-[50.1%] h-full bg-[#303030]"
+          className="absolute top-0 left-0 w-[50.1%] h-full bg-neutral-800"
         />
         <div
           ref={insetRightRef}
           style={{
-            clipPath: "inset(0 0 0 0)",
+            clipPath: "inset(0 0 0 0)", 
           }}
-          className="absolute top-0 right-0 w-[50.1%] h-full bg-[#303030] z-[500]"
+          className="absolute top-0 right-0 w-[50.1%] h-full bg-neutral-800 z-[500]"
         />
 
         {/* Logo */}
         <div
           ref={logoRef}
-          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex leading-tight overflow-hidden z-[500]"
+          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex leading-tight overflow-hidden z-[500] text-center font-metal tracking-tight font-semibold"
           id="intro-logo"
         >
           <div
             ref={word1Ref}
-            className="relative overflow-hidden -left-2"
+            className="relative overflow-hidden left-3"
             id="word-1"
             style={{
               transform: "translateY(-100%)",
               willChange: "transform",
             }}
           >
-            <h1 className="text-center font-medium tracking-tight text-rose-400">
-              <span className="antialiased subheading-xxxl">King</span>
+            <h1 className="">
+              <span className="antialiased subheading-xxxl text-neutral-50">
+                Skin.
+              </span>
             </h1>
           </div>
           <div
             ref={word2Ref}
-            className="overflow-hidden"
+            className="relative overflow-hidden left-3"
             id="word-2"
             style={{
               transform: "translateY(100%)",
               willChange: "transform",
             }}
           >
-            <h1 className="text-center text-white font-medium subheading-xxxl tracking-tight">
-              <span className="antialiased">King</span>
+            <h1 className="">
+              <span className="antialiased subheading-xxxl text-neutral-100 pr-4">Dern</span>
             </h1>
           </div>
         </div>
@@ -498,12 +500,12 @@ export default function HeroLoader() {
               <div className="max-w-4xl mx-auto flex flex-col gap-4 items-center justify-center overflow-hidden">
                 <h1
                   ref={contentRef}
-                  className="title-line font-light text-white tracking-tighter text-[clamp(3.2rem,7vw,14rem)] uppercase leading-[0.8] overflow-hidden"
+                  className=" font-light text-white tracking-tighter text-[clamp(3.2rem,7vw,14rem)] uppercase leading-[0.8] overflow-hidden"
                 >
                   Bienveillant
                 </h1>
 
-                <h2 className="title-line font-light text-rose-400 tracking-tight text-[clamp(2rem,4vw,15rem)] font-metal overflow-hidden leading-[0.8] pr-1">
+                <h2 className="title-line font-light text-neutral-800 tracking-tight text-[clamp(2rem,4vw,15rem)] font-metal overflow-hidden leading-[0.8] pr-1">
                   Envers la Nature
                 </h2>
               </div>

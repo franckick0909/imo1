@@ -8,7 +8,11 @@ import SectionBandeauLeft from "@/components/SectionBandeauLeft";
 import SectionBandeauRight from "@/components/SectionBandeauRight";
 import TransparentSection from "@/components/TransparentSection";
 import HeroLoader from "@/components/ui/HeroLoader";
-import { getCategoriesAction, getFeaturedProductsAction, getProductsAction } from "@/lib/actions";
+import {
+  getCategoriesAction,
+  getFeaturedProductsAction,
+  getProductsAction,
+} from "@/lib/actions";
 import { Suspense } from "react";
 
 // Types pour les données
@@ -102,11 +106,12 @@ function extractCategories(result: unknown): Category[] {
 
 export default async function Home() {
   // Charger les données en parallèle avec les server actions
-  const [featuredResult, allProductsResult, categoriesResult] = await Promise.all([
-    getFeaturedProductsAction(6),
-    getProductsAction({ limit: 50, isActive: true }), // Récupérer tous les produits actifs
-    getCategoriesAction(),
-  ]);
+  const [featuredResult, allProductsResult, categoriesResult] =
+    await Promise.all([
+      getFeaturedProductsAction(6),
+      getProductsAction({ limit: 50, isActive: true }), // Récupérer tous les produits actifs
+      getCategoriesAction(),
+    ]);
 
   // Extraction sécurisée des données
   const featuredProducts = extractFeaturedProducts(featuredResult);
@@ -126,13 +131,9 @@ export default async function Home() {
 
   console.log("🔄 Fetching all products from database...");
   if (allProductsResult.success) {
-    console.log(
-      `✅ All products fetched: ${allProducts.length} items`
-    );
+    console.log(`✅ All products fetched: ${allProducts.length} items`);
   } else {
-    console.log(
-      `❌ Failed to fetch all products: ${allProductsResult.error}`
-    );
+    console.log(`❌ Failed to fetch all products: ${allProductsResult.error}`);
   }
 
   console.log("🔄 Fetching categories from database...");

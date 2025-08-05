@@ -2,62 +2,29 @@
 
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Link } from "next-view-transitions";
-import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+
+import { useEffect, useRef, useState } from "react";
 import CartSidebar from "../CartSidebar";
 import NavigationMenu from "./NavigationMenu";
 import UserMenu from "./UserMenu";
 
 // Enregistrer les plugins GSAP
-gsap.registerPlugin(useGSAP);
+gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 export default function Header() {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isAtTop, setIsAtTop] = useState(true);
   const [hasScrolledUp, setHasScrolledUp] = useState(false);
-  const [backgroundIsDark, setBackgroundIsDark] = useState(true);
-
-  // Hook Next.js pour détecter les changements de route
-  const pathname = usePathname();
 
   // Ref pour l'animation GSAP
   const headerRef = useRef<HTMLDivElement>(null);
 
-  // Fonction pour détecter la couleur du fond avec useCallback
-  const detectBackgroundColor = useCallback(() => {
-    // Sur les pages dashboard, le fond est clair
-    if (pathname.startsWith("/dashboard") || pathname.startsWith("/admin")) {
-      setBackgroundIsDark(false);
-      return;
-    }
-
-    // Sur la page d'accueil, détecter selon la position de scroll
-    if (pathname === "/") {
-      const scrollY = window.scrollY;
-      // En haut de la page d'accueil (hero section), le fond est sombre
-      setBackgroundIsDark(scrollY < 300);
-    } else {
-      // Par défaut, considérer que le fond est clair
-      setBackgroundIsDark(false);
-    }
-  }, [pathname]);
-
-  // Effet pour détecter les changements de route
   useEffect(() => {
-    detectBackgroundColor();
-  }, [detectBackgroundColor]);
-
-  useEffect(() => {
-    // Détecter la couleur du fond au chargement
-    detectBackgroundColor();
-
     const controlHeader = () => {
       const currentScrollY = window.scrollY;
-
-      // Détecter la couleur du fond à chaque scroll
-      detectBackgroundColor();
 
       // Détecter si on est en haut de page
       setIsAtTop(currentScrollY <= 50);
@@ -93,9 +60,9 @@ export default function Header() {
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [lastScrollY, detectBackgroundColor]);
+  }, [lastScrollY]);
 
-  // Animation GSAP pour l'apparition/disparition
+  // Animation GSAP pour l'apparition/disparition du header
   useGSAP(() => {
     if (headerRef.current) {
       gsap.to(headerRef.current, {
@@ -105,6 +72,64 @@ export default function Header() {
       });
     }
   }, [isVisible]);
+
+  // Animation GSAP pour le logo avec ScrollTrigger
+  useGSAP(() => {
+    const logoContainer = document.querySelector('[href="/"]');
+    const logoS = document.getElementById("logo-s");
+    const logoD = document.getElementById("logo-d");
+
+    if (logoContainer && logoS && logoD) {
+      // Timeline pour l'animation du logo
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: logoContainer,
+          start: "top 80%",
+          end: "bottom 20%",
+          toggleActions: "play none none reverse",
+        },
+      });
+
+      // Animation du cercle (scale)
+      tl.fromTo(
+        logoContainer,
+        { scale: 0, rotation: -180 },
+        {
+          scale: 1,
+          rotation: 0,
+          duration: 0.8,
+          ease: "back.out(1.7)",
+          delay: 6,
+        }
+      );
+
+      // Animation du S (vient d'en haut)
+      tl.fromTo(
+        logoS,
+        { y: -20, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.6,
+          ease: "power3.out",
+        },
+        "-=0.4"
+      );
+
+      // Animation du D (vient d'en bas)
+      tl.fromTo(
+        logoD,
+        { y: 25, opacity: 0 },
+        {
+          y: 6,
+          opacity: 1,
+          duration: 0.6,
+          ease: "power3.out",
+        },
+        "-=0.2"
+      );
+    }
+  }, []);
 
   // Déterminer le style du header selon l'état
   const getHeaderStyle = () => {
@@ -116,11 +141,6 @@ export default function Header() {
       return "bg-white/95 backdrop-blur-md shadow-sm";
     }
     return "bg-transparent";
-  };
-
-  // Couleur pour la partie "Crème" du logo
-  const getCremeColor = () => {
-    return backgroundIsDark ? "text-white" : "text-slate-700";
   };
 
   return (
@@ -138,14 +158,24 @@ export default function Header() {
         <div className="flex-1 flex justify-center">
           <Link
             href="/"
-            className="heading-xl transition-all duration-300 cursor-pointer font-light"
+            className="relative w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 flex items-center justify-center"
           >
-            <span className=" text-emerald-400 font-light">Bio</span>
-            <span
-              className={`transition-all duration-300 tracking-tight ${getCremeColor()}`}
-            >
-              Crème
-            </span>
+            <div className="relative w-full h-full bg-neutral-800 rounded-full flex items-center justify-center overflow-hidden">
+              <span className="text-white font-metal uppercase font-normal text-lg sm:text-xl md:text-2xl lg:text-3xl tracking-tight relative z-10">
+                <span
+                  className="inline-block transform -translate-y-2 opacity-0"
+                  id="logo-s"
+                >
+                  S
+                </span>
+                <span
+                  className="inline-block transform translate-y-2 opacity-0"
+                  id="logo-d"
+                >
+                  D
+                </span>
+              </span>
+            </div>
           </Link>
         </div>
 
